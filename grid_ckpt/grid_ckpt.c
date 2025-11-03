@@ -1,0 +1,86 @@
+#include <asm/prctl.h>
+
+#include <immintrin.h> // AVX
+
+#include <stdint.h>
+#include <string.h>
+
+#include <sys/mman.h>
+
+#ifndef ALLOCATOR_AREA_SIZE
+#define ALLOCATOR_AREA_SIZE 0x400000UL
+#endif
+
+#ifndef MOD
+#define MOD 64
+#endif
+
+#if MOD == 64
+#define BITARRAY_SIZE ALLOCATOR_AREA_SIZE / 8
+#elif MOD == 128
+#define BITARRAY_SIZE ALLOCATOR_AREA_SIZE / 16
+#elif MOD == 256
+#define BITARRAY_SIZE ALLOCATOR_AREA_SIZE / 32
+#else
+#define BITARRAY_SIZE ALLOCATOR_AREA_SIZE / 64
+#endif
+
+extern int arch_prctl(int code, unsigned long addr);
+
+void *tls_setup() {
+    unsigned long addr;
+    size_t size;
+#if MOD == 512
+    size = 128;
+#else
+    size = 64;
+#endif
+    addr = (unsigned long)mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, 0, 0);
+    *(unsigned long *)addr = addr;
+    if (arch_prctl(ARCH_SET_GS, addr)) {
+        return NULL;
+    }
+    return (void *)addr;
+}
+
+void restore_area(int8_t *area) {
+    int8_t *bitarray = area + 2 * ALLOCATOR_AREA_SIZE;
+    int8_t *src = area + ALLOCATOR_AREA_SIZE;
+    int8_t *dst = area;
+    u_int16_t current_word;
+    int target_offset;
+
+    for (int offset = 0; offset < BITARRAY_SIZE; offset += 32) {
+        __m256i bitarray_vec = _mm256_loadu_si256((__m256i *)(bitarray + offset));
+        if (_mm256_testz_si256(bitarray_vec, bitarray_vec)) {
+            continue;
+        }
+        for (int i = 0; i < 32; i += 2) {
+            current_word = *(u_int16_t *)(bitarray + offset + i);
+            if (current_word == 0) {
+                continue;
+            }
+            for (int k = 0; k < 16; k++) {
+                if (((current_word >> k) & 1) == 1) {
+#if MOD == 64
+                    target_offset = ((offset + i) * 8 + k) * 8;
+                    *(u_int64_t *)(dst + target_offset) = *(u_int64_t *)(src + target_offset);
+#elif MOD == 128
+                    target_offset = ((offset + i) * 8 + k) * 16;
+                    *(__int128 *)(dst + target_offset) = *(__int128 *)(src + target_offset);
+#elif MOD == 256
+                    target_offset = ((offset + i) * 8 + k) * 32;
+                    __m256i ckpt_value = _mm256_loadu_si256((__m256i *)(src + target_offset));
+                    _mm256_storeu_si256((__m256i *)(dst + target_offset), ckpt_value);
+#else
+                    target_offset = ((offset + i) * 8 + k) * 64;
+                    __m512i ckpt_value = _mm512_load_si512((void *)(src + target_offset));
+                    _mm512_storeu_si512((void *)(dst + target_offset), ckpt_value);
+
+#endif
+                }
+            }
+        }
+    }
+    memset(bitarray, 0, BITARRAY_SIZE);
+}
