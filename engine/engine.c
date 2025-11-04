@@ -1,13 +1,11 @@
 #define _GNU_SOURCE
-
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-
 #include <sys/resource.h>
 #include <sys/time.h>
+#include <unistd.h>
 
 #include "memory.h"
 #include "queue.h"
@@ -35,12 +33,9 @@ typedef struct _thread_startup {
     long vTID;
     int minID;
     int maxID;
-    int cpuID;              // the thread need to pin to this CPU ID in order
-                            // to correctly stay on the NUMA node ID
-    int numaNodeID;         // this is the NUMA node id
-                            // where the thread will reside
-    int numaNodePerObjects; // this is the NUIMA node where
-                            // the objects started up by this thread will reside
+    int cpuID;              // the thread need to pin to this CPU ID in order to correctly stay on the NUMA node ID
+    int numaNodeID;         // this is the NUMA node id where the thread will reside
+    int numaNodePerObjects; // this is the NUMA node where the objects started up by this thread will reside
     // the below fields are for reaching the stuff needed
     // for NUMA oriented workload distribution
     int *c;
@@ -63,7 +58,7 @@ inline int get_current(void) { return current; }
 
 inline int get_NUMAnode(void) {
     return numaNodePerObjects; // NUMAnode;
-    // return NUMAnode;
+                               // return NUMAnode;
 }
 
 inline int *getcounter(void) { return thread_startup_data->c; }
@@ -72,7 +67,6 @@ inline int *getmax(void) { return thread_startup_data->max; }
 
 // This is the PARSIR worker thread
 void *thread(void *me) {
-
     pthread_t thread; // for self recognition
     cpu_set_t cpuset;
     int i;
@@ -86,8 +80,7 @@ void *thread(void *me) {
     int maxID = ((thread_startup *)me)->maxID;
     int cpuID = ((thread_startup *)me)->cpuID;
     int numaNodeID = ((thread_startup *)me)->numaNodeID;
-    event_buffer *the_event;
-    // this is only used for awoiding compile-time warning
+    event_buffer *the_event; // this is only used for awoiding compile-time warning
 
     thread_startup_data = (thread_startup *)me;
 
@@ -98,7 +91,9 @@ void *thread(void *me) {
     // it is exploited by PARSIR for the memory startup of the objects
     NUMAnode = numaNodeID;
 
-    printf("PARSIR worker thread %ld started - CPU to pin on is %d - NUMA node is %d\n", aux, cpuID, numaNodeID);
+    printf("PARSIR worker thread %ld started - CPU to pin on is %d - NUMA node "
+           "is %d\n",
+           aux, cpuID, numaNodeID);
 
     CPU_SET(cpuID, &cpuset);
     if (pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpuset) != 0) {
@@ -115,14 +110,18 @@ void *thread(void *me) {
         AUDIT printf("thread %ld - starting up object %d\n", aux, minID);
         fflush(stdout);
         current = minID;
-        object_allocator_setup(); // you cannot init any object if its chunk allocator is not setup
+        object_allocator_setup(); // you cannot init any object if its chunk
+                                  // allocator is not setup
         AUDIT printf("thread %ld - setting up object %d\n", aux, current);
         ProcessEvent(minID, STARTUP_TIME, INIT, NULL, 0, NULL);
         current = -1;
     }
 
 #if GRID_CKPT
-    tls_setup();
+    if (tls_setup() == NULL) {
+        fprintf(stderr, "TLS setup failed\n");
+        exit(EXIT_FAILURE);
+    }
 #endif
 
     // the init phase is over
@@ -354,7 +353,9 @@ int main(int argc, char **argv) {
             c[numaNodeInit] += (startup_info[i].maxID - startup_info[i].minID + 1);
             max[numaNodeInit] = startup_info[i].maxID;
             if (((int)((double)startup_info[i].maxID / (double)NUMAratio)) > numaNodeInit) {
-                printf("update of the NUMA node for object startup is requested (i is %ld)\n", i);
+                printf("update of the NUMA node for object startup is requested (i is "
+                       "%ld)\n",
+                       i);
                 numaNodeInit++;
                 min[numaNodeInit] = startup_info[i].maxID + 1;
             };

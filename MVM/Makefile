@@ -86,8 +86,6 @@ movm: base head startup asm-patch patch
 	cd $(OBJ) ; ld -i *.o -o $(LIB)/movm.o
 
 backup-files: checks
-	cd $(APP) ; touch $(EXECUTABLE) ; rm $(EXECUTABLE)
-	cd $(APP) ; tar -cvf $(TEMP)/$(SHADOW)/backup.tar *
 	cp $(TARGET_MODULES) $(TEMP)/$(SHADOW) 
 
 restore-files: 

@@ -1,8 +1,6 @@
 #include <numaif.h>
-
 #include <stdio.h>
 #include <stdlib.h>
-
 #include <sys/mman.h>
 
 #include "queue.h"
@@ -12,9 +10,7 @@
 #define MAX_CHUNK_SIZE (MIN_CHUNK_SIZE << 7) // 4KB is the currently set max chunk size
 #define EPSILON 0.000001
 
-#ifndef MAX_MEMORY
-#define MAX_MEMORY (1 << 21) // maximum amount of memory manageable per object
-#endif
+unsigned long MAX_MEMORY = (1<<21);//maximum amount of memory manageable per object
 
 #if MOD == 64
 #define BITARRAY_SIZE MAX_MEMORY / 8

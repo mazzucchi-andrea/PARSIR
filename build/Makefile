@@ -14,7 +14,7 @@ ifeq ($(GRID_CKPT), 1)
 	gcc -c ../queue/barrier-synchronization.c $(GRID_CKPT_FLAGS) -o ../lib/barrier-synchronization.o -I ../include
 	gcc -c -O3 ../stubs/stubs.c $(GRID_CKPT_FLAGS) -o ../lib/stubs.o -I../include 
 	gcc -c -O3 ../random/random.c $(GRID_CKPT_FLAGS) -o ../lib/random.o -I../include
-	gcc -c -O3 ../memory/memory.c $(GRID_CKPT_FLAGS) -o ../lib/memory.o -I ../include -DGRID_CKPT -DMAX_MEMORY=$(MAX_MEMORY)
+	gcc -c -O3 ../memory/memory.c $(GRID_CKPT_FLAGS) -o ../lib/memory.o -I ../include -DGRID_CKPT
 	gcc -c -O3 ../engine/engine.c $(GRID_CKPT_FLAGS) -o ../lib/engine.o -I ../include -DGRID_CKPT
 	gcc -c -O3 ../grid_ckpt/grid_ckpt.c $(GRID_CKPT_FLAGS) -mavx -mavx2 -mavx512f -o ../lib/grid_ckpt.o -I ../include -DMOD=$(MOD)
 else
