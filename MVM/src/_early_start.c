@@ -1,5 +1,6 @@
 #include "head.h"
 #include <errno.h>
+#include <stdio.h>
 #include <sys/mman.h>
 #include <unistd.h>
 

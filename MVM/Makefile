@@ -44,7 +44,7 @@ ADDITIONAL_FLAGS = -O3 -DCKPT -DAPPLY_PATCHES -DVERBOSE
 #the VERBOSE macro simply leads to the massive production of output messages 
 
 #CKPT FLAGS
-ALLOCATOR_AREA_SIZE=0x400000UL
+ALLOCATOR_AREA_SIZE=0x200000UL
 MOD=64
 
 THE_VM = -DVM_NAME=\"MVM\"
@@ -87,7 +87,7 @@ movm: base head startup asm-patch patch
 
 backup-files: checks
 	cd $(APP) ; touch $(EXECUTABLE) ; rm $(EXECUTABLE)
-#cd $(APP) ; tar -cvf $(TEMP)/$(SHADOW)/backup.tar *
+	cd $(APP) ; tar -cvf $(TEMP)/$(SHADOW)/backup.tar *
 	cp $(TARGET_MODULES) $(TEMP)/$(SHADOW) 
 
 restore-files: 
