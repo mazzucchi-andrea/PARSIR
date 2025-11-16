@@ -33,6 +33,7 @@ else
 endif 
 
 phold: runtime
+	@if [ ! -d ../bin ]; then mkdir -p ../bin; fi
 ifeq ($(GRID_CKPT), 1)
 	cd ../MVM ; make checks backup-files file-rewriting ALLOCATOR_AREA_SIZE=$(MAX_MEMORY)
 	cd ../models/phold ; make GRID_CKPT=$(GRID_CKPT)		
