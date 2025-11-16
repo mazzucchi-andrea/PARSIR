@@ -57,8 +57,7 @@ __thread int numaNodePerObjects = 0;
 inline int get_current(void) { return current; }
 
 inline int get_NUMAnode(void) {
-    return numaNodePerObjects; // NUMAnode;
-                               // return NUMAnode;
+    return numaNodePerObjects; // return NUMAnode;
 }
 
 inline int *getcounter(void) { return thread_startup_data->c; }
@@ -102,16 +101,14 @@ void *thread(void *me) {
         exit(EXIT_FAILURE);
     }
 
-    whoami((unsigned)aux); // tell the queue layer your identity
-                           // this is used for TLS setup stuff
+    whoami((unsigned)aux); // tell the queue layer your identity this is used for TLS setup stuff
 
     AUDIT printf("PARSIR worker thread %ld received min %d and max %d\n", aux, minID, maxID);
     for (; minID <= maxID; minID++) {
         AUDIT printf("thread %ld - starting up object %d\n", aux, minID);
         fflush(stdout);
         current = minID;
-        object_allocator_setup(); // you cannot init any object if its chunk
-                                  // allocator is not setup
+        object_allocator_setup(); // you cannot init any object if its chunk allocator is not setup
         AUDIT printf("thread %ld - setting up object %d\n", aux, current);
         ProcessEvent(minID, STARTUP_TIME, INIT, NULL, 0, NULL);
         current = -1;
