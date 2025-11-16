@@ -45,195 +45,196 @@ the_patch_assembly:
 
 // CKPT ASM CODE
 ckpt_assembly:
+        mov %rax, %gs:0x00
+        mov %rbx, %gs:0x08
+        lahf
+        mov %ax, %gs:0x18
 #if MOD == 64
-	lea -0x1000(%rsp),%rsp //this is for the stack red zone
-	pushf
-        mov %rax,%rcx
+        mov %ecx, %eax
         and $0xffffffffffc00000, %rcx
         and $0x3fffff, %rax
-        test $7,%rax
+        test $7,%al
         jz second_qword
-        and $0x7ffff8,%rax
-        shr $3, %rax
-        mov %rax, %rbx
-        and $15, %rbx
-        shr $4, %rax
+        and $0x7ffff8,%eax
+        shr $3, %eax
+        mov %eax, %ebx
+        and $15, %ebx
+        shr $4, %eax
         bts %bx, (2 *ALLOCATOR_AREA_SIZE)(%rcx, %rax, 2)
         jc next_qword
-        shl $4, %rax
-        add %rbx, %rax
+        shl $4, %eax
+        add %ebx, %eax
         mov (%rcx, %rax, 8), %rbx
         mov %rbx, ALLOCATOR_AREA_SIZE(%rcx, %rax, 8)
         jmp check_last
 next_qword:
-        shl $4, %rax
-        add %rbx, %rax
+        shl $4, %eax
+        add %ebx, %eax
 check_last:
-        lea 8(,%rax, 8), %rax
+        lea 8(, %eax, 8), %eax
         cmp $ALLOCATOR_AREA_SIZE, %rax
-        jge end_checkpoint
+        je end_checkpoint
 second_qword:
-        shr $3, %rax
-        mov %rax, %rbx
-        and $15, %rbx
-        shr $4, %rax
+        shr $3, %eax
+        mov %eax, %ebx
+        and $15, %ebx
+        shr $4, %eax
         bts %bx, (2 * ALLOCATOR_AREA_SIZE)(%rcx, %rax, 2)
         jc end_checkpoint
-        shl $4, %rax
-        add %rbx, %rax
+        shl $4, %eax
+        add %ebx, %eax
         mov (%rcx, %rax, 8), %rbx
         mov %rbx, ALLOCATOR_AREA_SIZE(%rcx, %rax, 8)
 end_checkpoint:
-        mov %gs:0, %rax
-        mov %gs:8, %rbx
-        mov %gs:16, %rcx
-	popf
-	lea 0x1000(%rsp),%rsp
+        mov %gs:0x18, %ah
+        sahf
+        mov %gs:0x00, %rax
+        mov %gs:0x08, %rbx
+        mov %gs:0x10, %rcx
 
 #elif MOD == 128
-	lea -0x1000(%rsp),%rsp //this is for the stack red zone
-	pushf
-        mov %rax,%rcx
+        movdqa %xmm1, %gs:0x20
+        mov %ecx, %eax
         and $0xffffffffffc00000, %rcx
         and $0x3fffff, %rax
-        test $15,%rax
+        test $15,%ax
         jz second_dqword
-        and $0x7ffff0, %rax
-        shr $4, %rax
-        mov %rax, %rbx
-        and $15, %rbx
-        shr $4, %rax
+        and $0x7ffff0, %eax
+        movdqa (%rcx, %rax,), %xmm1
+        shr $4, %eax
+        mov %eax, %ebx
+        and $15, %ebx
+        shr $4, %eax
         bts %bx, (2 *ALLOCATOR_AREA_SIZE)(%rcx, %rax, 2)
         jc next_dqword
-        shl $4, %rax
-        add %rbx, %rax
-        shl $4, %rax
-        movdqu (%rcx, %rax,), %xmm1
-        movdqu %xmm1, ALLOCATOR_AREA_SIZE(%rcx, %rax,)
+        shl $4, %eax
+        add %ebx, %eax
+        shl $4, %eax
+        movdqa %xmm1, ALLOCATOR_AREA_SIZE(%rcx, %rax,)
         jmp check_last
 next_dqword:
-        shl $4, %rax
-        add %rbx, %rax
-        shl $4, %rax
+        shl $4, %eax
+        add %ebx, %eax
+        shl $4, %eax
 check_last:
-        add $16, %rax
-        cmp $ALLOCATOR_AREA_SIZE, %rax
-        jge end_checkpoint
+        cmp $(ALLOCATOR_AREA_SIZE - 16), %eax
+        je end_checkpoint
+        add $16, %eax
 second_dqword:
-        shr $4, %rax
-        mov %rax, %rbx
-        and $15, %rbx
-        shr $4, %rax
+        movdqa (%rcx, %rax,), %xmm1
+        shr $4, %eax
+        mov %eax, %ebx
+        and $15, %ebx
+        shr $4, %eax
         bts %bx, (2 * ALLOCATOR_AREA_SIZE)(%rcx, %rax, 2)
         jc end_checkpoint
-        shl $4, %rax
-        add %rbx, %rax
-        shl $4, %rax
-        movdqu (%rcx, %rax,), %xmm1
-        movdqu %xmm1, ALLOCATOR_AREA_SIZE(%rcx, %rax,)
+        shl $4, %eax
+        add %ebx, %eax
+        shl $4, %eax
+        movdqa %xmm1, ALLOCATOR_AREA_SIZE(%rcx, %rax,)
 end_checkpoint:
-        mov %gs:0, %rax
-        mov %gs:8, %rbx
-        mov %gs:16, %rcx
-        movdqu %gs:24, %xmm1
-	popf
-	lea 0x1000(%rsp),%rsp
+        mov %gs:0x18, %ah
+        sahf
+        mov %gs:0x00, %rax
+        mov %gs:0x08, %rbx
+        mov %gs:0x10, %rcx
+        movdqa %gs:0x20, %xmm1
 
 #elif MOD == 256
-	lea -0x1000(%rsp),%rsp //this is for the stack red zone
-	pushf
-        mov %rax,%rcx
+        vmovdqa %ymm1, %gs:0x20
+        mov %ecx, %eax
         and $0xffffffffffc00000, %rcx
         and $0x3fffff, %rax
-        test $31,%rax
+        test $31,%al
         jz second_256bit
-        and $0x7fffe0,%rax
-        shr $5, %rax
-        mov %rax, %rbx
-        and $15, %rbx
-        shr $4, %rax
+        and $0x7fffe0,%eax
+        vmovdqa (%rcx, %rax,), %ymm1
+        shr $5, %eax
+        mov %eax, %ebx
+        and $15, %ebx
+        shr $4, %eax
         bts %bx, (2 *ALLOCATOR_AREA_SIZE)(%rcx, %rax, 2)
         jc next_256bit
-        shl $4, %rax
-        add %rbx, %rax
-        shl $5, %rax
-        vmovdqu (%rcx, %rax,), %ymm1
-        vmovdqu %ymm1, ALLOCATOR_AREA_SIZE(%rcx, %rax,)
+        shl $4, %eax
+        add %ebx, %eax
+        shl $5, %eax
+        vmovdqa %ymm1, ALLOCATOR_AREA_SIZE(%rcx, %rax,)
         jmp check_last
 next_256bit:
-        shl $4, %rax
-        add %rbx, %rax
-        shl $5, %rax
+        shl $4, %eax
+        add %ebx, %eax
+        shl $5, %eax
 check_last:
-        add $32, %rax
-        cmp $ALLOCATOR_AREA_SIZE, %rax
-        jge end_checkpoint
+        cmp $(ALLOCATOR_AREA_SIZE - 32), %eax
+        je end_checkpoint
+        add $32, %eax
 second_256bit:
-        shr $5, %rax
-        mov %rax, %rbx
-        and $15, %rbx
-        shr $4, %rax
+        vmovdqa (%rcx, %rax,), %ymm1
+        shr $5, %eax
+        mov %eax, %ebx
+        and $15, %ebx
+        shr $4, %eax
         bts %bx, (2 * ALLOCATOR_AREA_SIZE)(%rcx, %rax, 2)
         jc end_checkpoint
-        shl $4, %rax
-        add %rbx, %rax
-        shl $5, %rax
-        vmovdqu (%rcx, %rax,), %ymm1
-        vmovdqu %ymm1, ALLOCATOR_AREA_SIZE(%rcx, %rax,)
+        shl $4, %eax
+        add %ebx, %eax
+        shl $5, %eax
+        vmovdqa %ymm1, ALLOCATOR_AREA_SIZE(%rcx, %rax,)
 end_checkpoint:
-        mov %gs:0, %rax
-        mov %gs:8, %rbx
-        mov %gs:16, %rcx
-        vmovdqu %gs:24, %ymm1
-	popf
-	lea 0x1000(%rsp),%rsp
+        mov %gs:0x18, %ah
+        sahf
+        mov %gs:0x00, %rax
+        mov %gs:0x08, %rbx
+        mov %gs:0x10, %rcx
+        vmovdqa %gs:0x20, %ymm1
 
-#else
-	lea -0x1000(%rsp),%rsp //this is for the stack red zone
-	pushf
-        mov %rax,%rcx
+#elif MOD == 512
+        vmovdqa64 %zmm1,%gs:0x40
+	mov %ecx, %eax
         and $0xffffffffffc00000, %rcx
         and $0x3fffff, %rax
-        test $63,%rax
+        test $63, %al
         jz second_512bit
-        and $0x7fffc0, %rax
-        shr $6, %rax
-        mov %rax, %rbx
-        and $15, %rbx
-        shr $4, %rax
+        and $0x7fffc0, %eax
+        shr $6, %eax
+        mov %eax, %ebx
+        and $15, %ebx
+        shr $4, %eax
         bts %bx, (2 *ALLOCATOR_AREA_SIZE)(%rcx, %rax, 2)
         jc next_512bit
-        shl $4, %rax
-        add %rbx, %rax
-        shl $6, %rax
-        vmovdqu64 (%rcx, %rax,), %zmm1
-        vmovdqu64 %zmm1, ALLOCATOR_AREA_SIZE(%rcx, %rax,)
+        shl $4, %eax
+        add %ebx, %eax
+        shl $6, %eax
+        vmovdqa64 (%rcx, %rax,), %zmm1
+        vmovdqa64 %zmm1, ALLOCATOR_AREA_SIZE(%rcx, %rax,)
         jmp check_last
 next_512bit:
-        shl $4, %rax
-        add %rbx, %rax
-        shl $6, %rax
+        shl $4, %eax
+        add %ebx, %eax
+        shl $6, %eax
 check_last:
-        add $64, %rax
-        cmp $ALLOCATOR_AREA_SIZE, %rax
-        jge end_checkpoint
+        cmp $(ALLOCATOR_AREA_SIZE - 64), %eax
+        je end_checkpoint
+        add $64, %eax
 second_512bit:
-        shr $6, %rax
-        mov %rax, %rbx
-        and $15, %rbx
-        shr $4, %rax
+        vmovdqa64 (%rcx, %rax,), %zmm1
+        shr $6, %eax
+        mov %eax, %ebx
+        and $15, %ebx
+        shr $4, %eax
         bts %bx, (2 * ALLOCATOR_AREA_SIZE)(%rcx, %rax, 2)
         jc end_checkpoint
-        shl $4, %rax
-        add %rbx, %rax
-        shl $6, %rax
-        vmovdqu64 (%rcx, %rax,), %zmm1
-        vmovdqu64 %zmm1, ALLOCATOR_AREA_SIZE(%rcx, %rax,)
+        shl $4, %eax
+        add %ebx, %eax
+        shl $6, %eax
+        vmovdqa64 %zmm1, ALLOCATOR_AREA_SIZE(%rcx, %rax,)
 end_checkpoint:
-        mov %gs:0, %rax
-        mov %gs:8, %rbx
-        mov %gs:16, %rcx
-        vmovdqu64 %gs:24, %zmm1
-	popf
-	lea 0x1000(%rsp),%rsp
+        mov %gs:0x18, %ah
+        sahf
+        mov %gs:0x00, %rax
+        mov %gs:0x08, %rbx
+        mov %gs:0x10, %rcx
+        vmovdqa64 %gs:0x40, %zmm1
+#else
+#error "Valid MODs are 64, 128, 256, and 512."
 #endif

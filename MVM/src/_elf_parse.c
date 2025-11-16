@@ -14,7 +14,6 @@
 void user_defined(instruction_record *, patch *);
 #if CKPT
 void ckpt_patch(instruction_record *, patch *);
-void save_regs_tls(patch *);
 #endif
 
 uint64_t asl_randomization = 0;
@@ -111,18 +110,18 @@ void build_patches(void) {
     uint64_t intermediate_target;
 
     uint64_t test_code = (uint64_t)the_patch_assembly;
-    int test_code_size = 0x1; // this is taken from the compiled version of the src/_asm_patch.S file
+    int test_code_size = 0x52; // this is taken from the compiled version of the src/_asm_patch.S file
 
 #if CKPT
     uint64_t ckpt_code = (uint64_t)ckpt_assembly;
 #if MOD == 64
-    int ckpt_code_size = 0xbe; // this is taken from the compiled version of the src/_asm_patch.S file
+    int ckpt_code_size = 0xbd; // this is taken from the compiled version of the src/_asm_patch.S file
 #elif MOD == 128
-    int ckpt_code_size = 0xd4;
+    int ckpt_code_size = 0xda;
 #elif MOD == 256
-    int ckpt_code_size = 0xd4;
+    int ckpt_code_size = 0xd8;
 #else
-    int ckpt_code_size = 0xde;
+    int ckpt_code_size = 0xe4;
 #endif
 #endif
 
@@ -181,21 +180,10 @@ void build_patches(void) {
 #endif
 
 #ifdef CKPT
-#if MOD == 64
-        memset((char *)(patches[i].code), 0x90, 37 + ckpt_code_size);
-        save_regs_tls(&patches[i]);
-        patches[i].code = patches[i].code + 27; // 27 is the size of the instructions to save the regs in gs
-#elif MOD == 128 || MOD == 256
-        memset((char *)(patches[i].code), 0x90, 47 + ckpt_code_size);
-        save_regs_tls(&patches[i]);
-        patches[i].code = patches[i].code + 37; // 37 is the size of the instructions to save the regs in gs
-#else
-        memset((char *)(patches[i].code), 0x90, 49 + ckpt_code_size);
-        save_regs_tls(&patches[i]);
-        patches[i].code = patches[i].code + 39;
-#endif
+        memset((char *)(patches[i].code), 0x90, 19 + ckpt_code_size);
         ckpt_patch(&instructions[i], &patches[i]);
-        patches[i].code = patches[i].code + 10; // 10 is the mazimum size of the lea instruction
+        patches[i].code =
+            patches[i].code + 19; // 10 is the maximum size of the lea instruction and 9 is the instruction to save rcx
         memcpy((char *)(patches[i].code), (char *)(ckpt_code), ckpt_code_size);
         patches[i].code = patches[i].code + ckpt_code_size;
 #endif
@@ -207,13 +195,7 @@ void build_patches(void) {
         // move again at the begin of the block of instructions forming the patch
         // NOTE: you will need to have patches[i].code point again to patches[i].block before proceeding with the
         // following if/else
-#if MOD == 64
-        patches[i].code = patches[i].code - 37 - ckpt_code_size;
-#elif MOD == 128 || MOD == 256
-        patches[i].code = patches[i].code - 47 - ckpt_code_size;
-#else
-        patches[i].code = patches[i].code - 49 - ckpt_code_size;
-#endif
+        patches[i].code = patches[i].code - 19 - ckpt_code_size;
 #endif
 
 #ifdef ASM_PREAMBLE
@@ -244,9 +226,8 @@ void build_patches(void) {
         } else {
             intermediate_target = book_intermediate_target(instruction_address, size);
             if (intermediate_target == 0x0) {
-                printf("no intermediate target available for the mov instruction in function %s at runtime address %p "
-                       "index is %d\n",
-                       instructions[i].function, (void *)instruction_address, i);
+                printf("no intermediate target available for the mov instruction at runtime address %p index is %d\n",
+                       (void *)instruction_address, i);
                 fflush(stdout);
                 exit(EXIT_FAILURE);
             } else {
@@ -291,13 +272,7 @@ void build_patches(void) {
 #ifdef CKPT
         // NOTE: for the below code fragment you will need to have patches[i].code point to the copy of the original
         // instruction - you will need to step forward other preceeding instructions forming the patch
-#if MOD == 64
-        patches[i].code = patches[i].code + 37 + ckpt_code_size;
-#elif MOD == 128 || MOD == 256
-        patches[i].code = patches[i].code + 47 + ckpt_code_size;
-#else
-        patches[i].code = patches[i].code + 49 + ckpt_code_size;
-#endif
+        patches[i].code = patches[i].code + 19 + ckpt_code_size;
 #endif
 
 #ifdef ASM_PREAMBLE
@@ -490,11 +465,12 @@ int elf_parse(char **function_names, char *parsable_elf) {
         exit(EXIT_FAILURE);
     }
 
+    char *function_name = (char *)malloc(256 + 4);
     for (i = 0; i < num_functions; i++) { // parsing all the functions
         AUDIT
         printf("searching for function %s\n", function_names[i]);
         offset = fseek(the_file, 0, SEEK_SET); // moving to the beginning of the ELF file
-
+        sprintf(function_name, "<%s>:", function_names[i]);
         while (1) {
             guard = fgets(buffer, LINE_SIZE, the_file);
             if (guard == NULL) {
@@ -505,7 +481,7 @@ int elf_parse(char **function_names, char *parsable_elf) {
                 break;
             }
             strtok(buffer, "\n");
-            if (strstr(buffer, function_names[i])) {
+            if (strstr(buffer, function_name)) {
                 AUDIT
                 printf("found line for function %s\n", function_names[i]);
                 strtok(buffer, " ");
@@ -810,6 +786,7 @@ int elf_parse(char **function_names, char *parsable_elf) {
             }
         }
     }
+    free(function_name);
 
     return target_instructions;
 }

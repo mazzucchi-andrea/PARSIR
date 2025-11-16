@@ -6,8 +6,8 @@ EXECUTABLE = $(APP)/PARSIR-simulator
 APP_OBJ = $(APP)/PARSIR-simulator.o
 #TARGET_MODULES= a.c  sub-dir/b.c this is an example usage
 TARGET_MODULES= ../models/phold/application.c
-#TARGET_FUNCTIONS="<a>","<b>" this is an example usage
-TARGET_FUNCTIONS="<add1>","<dell1>","<add2>","<dell2>","<read1>","<read2>","<ProcessEvent>"
+#TARGET_FUNCTIONS="a","b" this is an example usage
+TARGET_FUNCTIONS="add1","dell1","add2","dell2","read1","read2","ProcessEvent"
 LIBS = -lpthread -lnuma
 
 INCLUDE = $(PWD)/include
@@ -72,6 +72,9 @@ head:
 startup:
 	cd ./src; gcc _early_start.c -c -I$(INCLUDE) $(SECURITY_FLAGS) $(ADDITIONAL_FLAGS) -o $(OBJ)/_early_start.o
 
+ckpt:
+	cd ./src; gcc _ckpt_setup.c -c -mavx -mavx2 -mavx512f -I$(INCLUDE) $(SECURITY_FLAGS) $(ADDITIONAL_FLAGS) -DALLOCATOR_AREA_SIZE=$(ALLOCATOR_AREA_SIZE) -DMOD=$(MOD) -o $(OBJ)/_ckpt_setup.o
+
 asm-patch:
 	cd ./src; gcc _asm_patches.S -c -I$(INCLUDE) $(SECURITY_FLAGS) $(ADDITIONAL_FLAGS) -DALLOCATOR_AREA_SIZE=$(ALLOCATOR_AREA_SIZE) -DMOD=$(MOD) -o $(OBJ)/_asm_patches.o
 	objdump -Dw $(OBJ)/_asm_patches.o > $(TEMP)/disassembly_asm_patch                   
@@ -86,6 +89,8 @@ movm: base head startup asm-patch patch
 	cd $(OBJ) ; ld -i *.o -o $(LIB)/movm.o
 
 backup-files: checks
+	cd $(APP) ; touch $(EXECUTABLE) ; rm $(EXECUTABLE)
+	@if [ -n "$$(ls -A /path/to/directory)" ]; then cd $(APP) ; tar -cvf $(TEMP)/$(SHADOW)/backup.tar *; fi
 	cp $(TARGET_MODULES) $(TEMP)/$(SHADOW) 
 
 restore-files: 
