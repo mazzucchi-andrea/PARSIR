@@ -10,7 +10,7 @@
 #define MAX_CHUNK_SIZE (MIN_CHUNK_SIZE << 7) // 4KB is the currently set max chunk size
 #define EPSILON 0.000001
 
-unsigned long MAX_MEMORY = (1<<21);//maximum amount of memory manageable per object
+unsigned long MAX_MEMORY = (1 << 21); // maximum amount of memory manageable per object
 
 #if MOD == 64
 #define BITARRAY_SIZE MAX_MEMORY / 8
@@ -90,14 +90,22 @@ void object_allocator_setup(void) {
             printf("mmap failure for object %d\n", current);
             exit(EXIT_FAILURE);
         };
+#if GRID_CKPT
+        ret = mbind(addr, MAX_MEMORY * 2 + BITARRAY_SIZE, MPOL_BIND, &mask, sizeof(unsigned long), 0);
+#else
         ret = mbind(addr, MAX_MEMORY, MPOL_BIND, &mask, sizeof(unsigned long), 0);
+#endif
         if (ret == -1) {
             printf("mbibd failure for object %d\n", current);
             exit(EXIT_FAILURE);
         };
         *(char *)addr = 'f'; // materialize the 3-rd level page table entry
         AUDIT printf("mapped zone at address %p for object %d\n", (void *)target_address, current);
+#if GRID_CKPT
+        target_address += MAX_MEMORY * 3;
+#else
         target_address += MAX_MEMORY;
+#endif
         mask = mask < 1;
     }
 
