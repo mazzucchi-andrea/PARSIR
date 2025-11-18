@@ -69,9 +69,15 @@ void object_allocator_setup(void) {
     void *aux;
 
     base_address = 8 * (1024 * MAX_MEMORY); // this can be setup in a different manner if needed
+    AUDIT printf("base_address: 0x%lx\n", base_address);
     current = get_current();
     NUMAnode = get_NUMAnode();
+
+#if GRID_CKPT
+    target_address = base_address + current * (3 * MAX_MEMORY * MEM_NODES);
+#else
     target_address = base_address + current * (MAX_MEMORY * MEM_NODES);
+#endif
 
     AUDIT printf("allocator setup for object %d\n", current);
 
@@ -109,7 +115,11 @@ void object_allocator_setup(void) {
         mask = mask < 1;
     }
 
+#if GRID_CKPT
+    target_address = base_address + current * (3 * MAX_MEMORY * MEM_NODES);
+#else
     target_address = base_address + current * (MAX_MEMORY * MEM_NODES);
+#endif
     base[current] = (void *)target_address;
 
     // the allocator is based on a stack of free-chunk addresses

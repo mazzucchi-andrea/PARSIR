@@ -7,22 +7,24 @@
 
 #include <sys/mman.h>
 
-#ifndef ALLOCATOR_AREA_SIZE
-#define ALLOCATOR_AREA_SIZE 0x400000UL
-#endif
+#include "setup.h"
 
 #ifndef MOD
 #define MOD 64
 #endif
 
+#ifndef ALLOCATOR_AREA_SIZE
+#define ALLOCATOR_AREA_SIZE 0x200000UL
+#endif
+
 #if MOD == 64
-#define BITARRAY_SIZE ALLOCATOR_AREA_SIZE / 8
+#define BITARRAY_SIZE (ALLOCATOR_AREA_SIZE / 8) / 8
 #elif MOD == 128
-#define BITARRAY_SIZE ALLOCATOR_AREA_SIZE / 16
+#define BITARRAY_SIZE (ALLOCATOR_AREA_SIZE / 16) / 8
 #elif MOD == 256
-#define BITARRAY_SIZE ALLOCATOR_AREA_SIZE / 32
+#define BITARRAY_SIZE (ALLOCATOR_AREA_SIZE / 32) / 8
 #else
-#define BITARRAY_SIZE ALLOCATOR_AREA_SIZE / 64
+#define BITARRAY_SIZE (ALLOCATOR_AREA_SIZE / 64) / 8
 #endif
 
 extern int arch_prctl(int code, unsigned long addr);
@@ -36,6 +38,7 @@ void *tls_setup() {
     size = 64;
 #endif
     addr = (unsigned long)mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, 0, 0);
+    memset((void *)addr, 0, size);
     *(unsigned long *)addr = addr;
     if (arch_prctl(ARCH_SET_GS, addr)) {
         return NULL;
@@ -50,12 +53,11 @@ void restore_area(int8_t *area) {
     u_int16_t current_word;
     int target_offset;
 
-    for (int offset = 0; offset < BITARRAY_SIZE; offset += 32) {
-        __m256i bitarray_vec = _mm256_loadu_si256((__m256i *)(bitarray + offset));
-        if (_mm256_testz_si256(bitarray_vec, bitarray_vec)) {
+    for (int offset = 0; offset < BITARRAY_SIZE; offset += 8) {
+        if (*(u_int64_t *)(bitarray + offset) == 0) {
             continue;
         }
-        for (int i = 0; i < 32; i += 2) {
+        for (int i = 0; i < 8; i += 2) {
             current_word = *(u_int16_t *)(bitarray + offset + i);
             if (current_word == 0) {
                 continue;
@@ -83,4 +85,9 @@ void restore_area(int8_t *area) {
         }
     }
     memset(bitarray, 0, BITARRAY_SIZE);
+}
+
+void set_ckpt(int obj_index) {
+    void *base_address = (void *)(8 * (1024 * ALLOCATOR_AREA_SIZE) + obj_index * (3 * ALLOCATOR_AREA_SIZE * MEM_NODES));
+    memset(base_address + 2 * ALLOCATOR_AREA_SIZE, 0, BITARRAY_SIZE);
 }

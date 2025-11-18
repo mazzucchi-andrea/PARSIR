@@ -8,7 +8,7 @@ all: runtime
 
 runtime:
 	cd ../scripts ; make get-HW-info
-	
+	@if [ ! -d ../lib ]; then mkdir -p ../lib; fi
 ifeq ($(GRID_CKPT), 1)
 	gcc -c -O3 ../queue/queue.c $(GRID_CKPT_FLAGS) -o ../lib/queue.o -I ../include
 	gcc -c ../queue/barrier-synchronization.c $(GRID_CKPT_FLAGS) -o ../lib/barrier-synchronization.o -I ../include
@@ -16,7 +16,7 @@ ifeq ($(GRID_CKPT), 1)
 	gcc -c -O3 ../random/random.c $(GRID_CKPT_FLAGS) -o ../lib/random.o -I../include
 	gcc -c -O3 ../memory/memory.c $(GRID_CKPT_FLAGS) -o ../lib/memory.o -I ../include -DGRID_CKPT
 	gcc -c -O3 ../engine/engine.c $(GRID_CKPT_FLAGS) -o ../lib/engine.o -I ../include -DGRID_CKPT
-	gcc -c -O3 ../grid_ckpt/grid_ckpt.c $(GRID_CKPT_FLAGS) -mavx -mavx2 -mavx512f -o ../lib/grid_ckpt.o -I ../include -DMOD=$(MOD)
+	gcc -c -O3 ../grid_ckpt/grid_ckpt.c $(GRID_CKPT_FLAGS) -mavx -mavx2 -mavx512f -o ../lib/grid_ckpt.o -I ../include -DMOD=$(MOD) -DALLOCATOR_AREA_SIZE=$(MAX_MEMORY)
 else
 	gcc -c -O3 ../queue/queue.c -o ../lib/queue.o -I ../include
 	gcc -c ../queue/barrier-synchronization.c -o ../lib/barrier-synchronization.o -I ../include
