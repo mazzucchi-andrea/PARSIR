@@ -10,7 +10,7 @@ runtime:
 	cd ../scripts ; make get-HW-info
 	@if [ ! -d ../lib ]; then mkdir -p ../lib; fi
 ifeq ($(GRID_CKPT), 1)
-	gcc -c -O3 ../queue/queue.c $(GRID_CKPT_FLAGS) -o ../lib/queue.o -I ../include
+	gcc -c -O3 ../queue/queue.c $(GRID_CKPT_FLAGS) -o ../lib/queue.o -I ../include -DGRID_CKPT
 	gcc -c ../queue/barrier-synchronization.c $(GRID_CKPT_FLAGS) -o ../lib/barrier-synchronization.o -I ../include
 	gcc -c -O3 ../stubs/stubs.c $(GRID_CKPT_FLAGS) -o ../lib/stubs.o -I../include 
 	gcc -c -O3 ../random/random.c $(GRID_CKPT_FLAGS) -o ../lib/random.o -I../include
@@ -44,6 +44,9 @@ else
 	cd ../models/phold ; make
 	gcc -o ../bin/PARSIR-simulator ../lib/PARSIR-runtime.o -I ../include -lpthread -lnuma ../models/phold/phold.o
 endif
+
+restore-files:
+	cd ../MVM ; make restore-files
 
 clean:
 	find .. -name "*.o" -type f -delete ; rm -f ../bin/PARSIR-simulator
