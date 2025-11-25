@@ -103,6 +103,13 @@ void *thread(void *me) {
 
     whoami((unsigned)aux); // tell the queue layer your identity this is used for TLS setup stuff
 
+#if GRID_CKPT
+    if (tls_setup()) {
+        fprintf(stderr, "TLS setup failed\n");
+        exit(EXIT_FAILURE);
+    }
+#endif
+
     AUDIT printf("PARSIR worker thread %ld received min %d and max %d\n", aux, minID, maxID);
     for (; minID <= maxID; minID++) {
         AUDIT printf("thread %ld - starting up object %d\n", aux, minID);
@@ -113,13 +120,6 @@ void *thread(void *me) {
         ProcessEvent(minID, STARTUP_TIME, INIT, NULL, 0, NULL);
         current = -1;
     }
-
-#if GRID_CKPT
-    if (tls_setup() == NULL) {
-        fprintf(stderr, "TLS setup failed\n");
-        exit(EXIT_FAILURE);
-    }
-#endif
 
     // the init phase is over
     // we need to wait each other for correct
