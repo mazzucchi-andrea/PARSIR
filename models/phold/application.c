@@ -54,6 +54,15 @@ void read2(datatype2 **p) {
         p = (*p)->p;
     }
 }
+void alloc_lp_state_memory(unsigned int me) {
+    // Initialize the LP's state
+    state = (lp_state_type *)malloc(sizeof(lp_state_type));
+
+    if (state == NULL) {
+        printf("out of memory at startup\n");
+        exit(EXIT_FAILURE);
+    }
+}
 // callback function for processing an event at an object
 void ProcessEvent(unsigned int me, double now, int event_type, void *event_content, unsigned int size, void *ptr) {
     double timestamp;
@@ -73,13 +82,7 @@ void ProcessEvent(unsigned int me, double now, int event_type, void *event_conte
     switch (event_type) {
 
     case INIT:
-
-        // Initialize the LP's state
-        state = (lp_state_type *)malloc(sizeof(lp_state_type));
-        if (state == NULL) {
-            printf("out of memory at startup\n");
-            exit(EXIT_FAILURE);
-        }
+        alloc_lp_state_memory(me);
         state->event_count = 0;
 
         s1 = &(state->seed1);
