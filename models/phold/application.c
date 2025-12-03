@@ -17,8 +17,9 @@ void add1(datatype1 **head, datatype1 *buff) {
 }
 void dell1(datatype1 **head) {
     datatype1 *aux;
-    if (*head == NULL)
+    if (*head == NULL) {
         return;
+    }
     aux = *head;
     *head = (*head)->p;
     free((void *)aux);
@@ -29,8 +30,9 @@ void add2(datatype2 **head, datatype2 *buff) {
 }
 void dell2(datatype2 **head) {
     datatype2 *aux;
-    if (*head == NULL)
+    if (*head == NULL) {
         return;
+    }
     aux = *head;
     *head = (*head)->p;
     free((void *)aux);
@@ -118,9 +120,9 @@ void ProcessEvent(unsigned int me, double now, int event_type, void *event_conte
     case NORMAL:
 
         res = (state->event_count++) % 1000;
-        // res = res;
-        if (!res)
+        if (!res) {
             printf("object %d - count of events is %d\n", me, state->event_count);
+        }
 
         s1 = &(state->seed1);
         s2 = &(state->seed2);
@@ -129,8 +131,9 @@ void ProcessEvent(unsigned int me, double now, int event_type, void *event_conte
         // timestamp = now + LOOKAHEAD + Expent(TA,s1,s2);
         timestamp = now + Expent(TA, s1, s2);
         // if(timestamp <= now + LOOKAHEAD) timestamp = now + LOOKAHEAD + FLT_EPSILON;
-        if (timestamp <= now + LOOKAHEAD)
+        if (timestamp <= now + LOOKAHEAD) {
             timestamp = now + LOOKAHEAD + Expent(TA, s1, s2);
+        }
         dest = (int)((double)(OBJECTS)*Random(s1, s2));
         // printf("destination is %d\n",dest);
 

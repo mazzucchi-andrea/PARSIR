@@ -82,11 +82,13 @@ void update_timing(void) {
 
     object_identifiers = 0;
 
-    for (i = 0; i < MAX_NUMA_NODES; i++)
+    for (i = 0; i < MAX_NUMA_NODES; i++) {
         object_identifiers_vector[i] = 0;
+    }
 
-    if (!pending_events)
+    if (!pending_events) {
         end = 1;
+    }
 }
 
 int queue_insert(queue_elem *elem) {
@@ -172,14 +174,18 @@ void fallback_check(void) {
 
         else {
             aux = temp->next;
-            if (fallback_queue.head == temp)
+            if (fallback_queue.head == temp) {
                 fallback_queue.head = temp->next;
-            if (fallback_queue.tail == temp)
+            }
+            if (fallback_queue.tail == temp) {
                 fallback_queue.tail = temp->prev;
-            if (temp->next)
+            }
+            if (temp->next) {
                 temp->next->prev = temp->prev;
-            if (temp->prev)
+            }
+            if (temp->prev) {
                 temp->prev->next = temp->next;
+            }
             index = (int)((temp->timestamp) / (double)SLOT_LEN);
             index = index % NUM_SLOTS;
             dest = temp->destination;
@@ -220,8 +226,9 @@ queue_elem *queue_extract() {
 
 start:
 #ifndef NUMA_BALANCING
-    if (target == -1)
+    if (target == -1) {
         target = __sync_fetch_and_add(&object_identifiers, 1);
+    }
 #else
     if (target == -1) {
     retry:
@@ -231,8 +238,9 @@ start:
                 stealNUMAindex++;
                 myNUMAindex = (myNUMAindex + 1) % TOT_NUMA_NODES;
                 goto retry;
-            } else
+            } else {
                 target = OBJECTS;
+            }
         } else {
             target += _min[myNUMAindex];
         }
@@ -241,8 +249,9 @@ start:
 #endif
 
 redo:
-    if (end)
+    if (end) {
         return NULL;
+    }
     if (target < OBJECTS) {
         index = my_index;
         head = &queue[target][index].head;
@@ -261,8 +270,9 @@ redo:
                     myNUMAindex = (myNUMAindex + 1) % TOT_NUMA_NODES;
                     index = -1;
                     goto start;
-                } else
+                } else {
                     target = OBJECTS;
+                }
             } else {
                 target += _min[myNUMAindex];
             }
@@ -294,8 +304,9 @@ redo:
         pthread_spin_unlock(&locks[target][index].lock);
         if (end) {
             return NULL;
-        } else
+        } else {
             goto redo;
+        }
     }
 
     // regular extraction from a non-empty slot

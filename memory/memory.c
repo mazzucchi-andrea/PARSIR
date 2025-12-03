@@ -164,8 +164,9 @@ void *__wrap_malloc(size_t size) {
     int i;
 
     current = get_current();
-    if (size == 0)
+    if (size == 0) {
         return NULL;
+    }
     for (i = 0; min_chunk_size <= max_chunk_size; i++) {
         if (size <= min_chunk_size) {
             index = i;

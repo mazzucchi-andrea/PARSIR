@@ -36,7 +36,7 @@ typedef struct _thread_startup {
     int cpuID;              // the thread need to pin to this CPU ID in order to correctly stay on the NUMA node ID
     int numaNodeID;         // this is the NUMA node id where the thread will reside
     int numaNodePerObjects; // this is the NUMA node where the objects started up by this thread will reside
-    
+
     // the below fields are for reaching the stuff needed for NUMA oriented workload distribution
     int *c;
     int *min;
@@ -202,13 +202,15 @@ void get_hw_config(void) {
     printf("HW level config file available\n");
     hw = 1;
 
-    for (i = 0; i < 3; i++)
+    for (i = 0; i < 3; i++) {
         ret = fscanf(config, "%s", buff);
+    }
     NUMA_NODES = strtol(buff, NULL, 10);
     printf("PARSIR running with %d NUMA node(s)\n", NUMA_NODES);
     for (j = 0; j < NUMA_NODES; j++) {
-        for (i = 0; i < 3; i++)
+        for (i = 0; i < 3; i++) {
             ret = fscanf(config, "%s", buff);
+        }
         p = fgets(buff, LINE, config);
         printf("%s", buff);
         fflush(stdout);
@@ -238,8 +240,9 @@ void get_hw_config(void) {
         cpus_per_numa_node[j] = counter;
         printf("assigned %d CPUs to the entry of node %d\n", counter, j);
         printf("ids are: ");
-        for (z = 0; z < counter; z++)
+        for (z = 0; z < counter; z++) {
             printf("%d ", cpu_id_per_numa_node[j][z]);
+        }
         printf("\n");
     }
 
@@ -250,8 +253,9 @@ void get_hw_config(void) {
 default_config:
     NUMA_NODES = 1;
     cpus_per_numa_node[0] = CPUs;
-    for (i = 0; i < CPUs; i++)
+    for (i = 0; i < CPUs; i++) {
         cpu_id_per_numa_node[0][i] = i;
+    }
     c[0] = OBJECTS;
     min[0] = 0;
     max[0] = OBJECTS - 1;
@@ -283,13 +287,15 @@ int main(int argc, char **argv) {
     allocators_base_init();
 
     ratio = (float)OBJECTS / (float)THREADS;
-    if (ratio - (int)ratio > 0)
+    if (ratio - (int)ratio > 0) {
         corrector = 1;
+    }
     printf("engine - ratio is %f\n", ratio);
 
     NUMAratio = (float)OBJECTS / (float)NUMA_NODES;
-    if (NUMAratio - (int)NUMAratio > 0)
+    if (NUMAratio - (int)NUMAratio > 0) {
         NUMAcorrector = 1;
+    }
     printf("engine - NUMA ratio is %f\n", NUMAratio);
 
     current_min = 0;
@@ -298,8 +304,9 @@ int main(int argc, char **argv) {
         startup_info[i].minID = current_min;
         startup_info[i].maxID = current_min + (int)ratio + corrector - 1;
         // this check enables threads to discard setup of objects with maxID < minID
-        if (startup_info[i].maxID > OBJECTS - 1)
+        if (startup_info[i].maxID > OBJECTS - 1) {
             startup_info[i].maxID = OBJECTS - 1;
+        }
         current_min += (int)ratio + corrector;
         if (NUMA_NODES == 1) {
             startup_info[i].cpuID = cpu_id_per_numa_node[0][i];
@@ -332,8 +339,9 @@ int main(int argc, char **argv) {
         // this neews to occurr oly if maxID >= minID
         // otherwise the NUMA node id is a do not care
         startup_info[i].numaNodePerObjects = 0;
-        if (NUMA_NODES == 1)
+        if (NUMA_NODES == 1) {
             goto NUMAdone;
+        }
 
         // current NUMA node is used for objects startup
         startup_info[i].numaNodePerObjects = numaNodeInit;
