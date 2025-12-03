@@ -1,6 +1,5 @@
 #include <pthread.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
 
 #include "queue.h"
@@ -271,14 +270,15 @@ redo:
             goto redo;
         }
     } else {
-        printf("found empty slot with index %d\n", index);
-        fflush(stdout);
+        AUDIT {
+            printf("found empty slot with index %d\n", index);
+            fflush(stdout);
+        }
         if (barrier()) {
             update_timing(); // this call updates the queue layout and releases the objects taken by threads in the last
                              // epoch
         }
         barrier();
-        pause();
         my_index = current_index;
         target = -1;
         // reset stuff for NUMA aware workload distribution
