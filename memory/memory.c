@@ -12,14 +12,18 @@
 
 unsigned long MAX_MEMORY = (1 << 21); // maximum amount of memory manageable per object
 
+#if GRID_CKPT
 #if MOD == 64
-#define BITARRAY_SIZE MAX_MEMORY / 8
+#define BITARRAY_SIZE (MAX_MEMORY / 8) / 8
 #elif MOD == 128
-#define BITARRAY_SIZE MAX_MEMORY / 16
+#define BITARRAY_SIZE (MAX_MEMORY / 16) / 8
 #elif MOD == 256
-#define BITARRAY_SIZE MAX_MEMORY / 32
+#define BITARRAY_SIZE (MAX_MEMORY / 32) / 8
+#elif MOD == 512
+#define BITARRAY_SIZE (MAX_MEMORY / 64) / 8
 #else
-#define BITARRAY_SIZE MAX_MEMORY / 64
+#error "Valid MODs are 64, 128, 256, and 512."
+#endif
 #endif
 
 unsigned long base_address;
@@ -41,8 +45,8 @@ void allocators_base_init(void) {
 
     SEGMENTS = MAX_MEMORY >> 3; // each segment is configured to be a set of 64 pages
     SEGMENT_PAGES = SEGMENTS >> 12;
-    AUDIT printf("base allocators init - max memory is %ld - segment size is %ld "
-                 "- segment pages are %ld - memory areas are %d\n",
+    AUDIT printf("base allocators init - max memory is %ld - segment size is %ld - segment pages are %ld - memory "
+                 "areas are %d\n",
                  MAX_MEMORY, SEGMENTS, SEGMENT_PAGES, (int)((double)(MAX_MEMORY >> 12) / (double)(SEGMENT_PAGES)));
     for (i = 0; i < OBJECTS; i++) {
         allocators[i] = malloc((int)((double)(MAX_MEMORY >> 12) / (double)(SEGMENT_PAGES)) * sizeof(area));
@@ -83,15 +87,15 @@ void object_allocator_setup(void) {
 
     mask = 0x1 << NUMAnode; // this is for NUMA binding of memory zones
     AUDIT printf("thread running on NUMA node %d - mask for setting up object %d is %lu\n", NUMAnode, current, mask);
-    for (i = 0; i < 1; i++) { // the above line is left just to let the developer
-                              // restart from here for NUMA ubiquitousness
+    for (i = 0; i < 1; i++) {
+        // the above line is left just to let the developer restart from here for NUMA ubiquitousness
 #if GRID_CKPT
         addr = mmap((void *)target_address, MAX_MEMORY * 2 + BITARRAY_SIZE, PROT_READ | PROT_WRITE,
-                    MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED,
+                    MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED, 0, 0);
 #else
         addr = mmap((void *)target_address, MAX_MEMORY, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED,
-#endif
                     0, 0);
+#endif
         if (addr != (void *)target_address) {
             printf("mmap failure for object %d\n", current);
             exit(EXIT_FAILURE);

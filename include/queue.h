@@ -36,8 +36,6 @@ int queue_insert(queue_elem *elem);
 queue_elem *queue_extract(void);
 int barrier(void);
 
-#define AUDIT if (0)
-
 #define offsetof(TYPE, MEMBER) ((size_t)&((TYPE *)0)->MEMBER)
 
 #define container_of(ptr, type, member)                                                                                \

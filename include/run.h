@@ -4,5 +4,6 @@
 #define THREADS (8)
 #define OBJECTS (1024)
 #define LOOKAHEAD (1.0)
+#define AUDIT if (0)
 
 #endif

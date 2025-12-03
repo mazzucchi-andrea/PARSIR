@@ -39,6 +39,5 @@ transparent manner to the application level code
 
 REQUIREMENTS: PARSIR requires the numa library and its header to be installed on the system (it compiles with the -lnuma option)
 
-
-
+To use PARSIR-GRID_CKPT you can simply go to the build directory to compile runtime_grid_ckpt, the runtime, or phold_grid_ckpt, the phold, the berchmark,  target.
 

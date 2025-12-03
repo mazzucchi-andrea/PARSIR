@@ -63,3 +63,7 @@ dkms.conf
 
 # python venv
 *.venv
+
+bin/*
+
+MVM/temp/*

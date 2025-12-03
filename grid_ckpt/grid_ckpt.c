@@ -1,11 +1,11 @@
 #include <asm/prctl.h>
-
 #include <immintrin.h> // AVX
-
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-
 #include <sys/mman.h>
+#include <unistd.h>
 
 #include "setup.h"
 
@@ -13,42 +13,41 @@
 #define MOD 64
 #endif
 
-#ifndef ALLOCATOR_AREA_SIZE
-#define ALLOCATOR_AREA_SIZE 0x200000UL
+#ifndef MAX_MEMORY
+#define MAX_MEMORY 0x200000UL
 #endif
 
 #if MOD == 64
-#define BITARRAY_SIZE (ALLOCATOR_AREA_SIZE / 8) / 8
+#define BITARRAY_SIZE (MAX_MEMORY / 8) / 8
 #elif MOD == 128
-#define BITARRAY_SIZE (ALLOCATOR_AREA_SIZE / 16) / 8
+#define BITARRAY_SIZE (MAX_MEMORY / 16) / 8
 #elif MOD == 256
-#define BITARRAY_SIZE (ALLOCATOR_AREA_SIZE / 32) / 8
+#define BITARRAY_SIZE (MAX_MEMORY / 32) / 8
+#elif MOD == 512
+#define BITARRAY_SIZE (MAX_MEMORY / 64) / 8
 #else
-#define BITARRAY_SIZE (ALLOCATOR_AREA_SIZE / 64) / 8
+#error "Valid MODs are 64, 128, 256, and 512."
 #endif
 
 extern int arch_prctl(int code, unsigned long addr);
 
-int tls_setup() {
-    unsigned long addr;
-    size_t size;
-#if MOD == 512
-    size = 128;
-#else
-    size = 64;
-#endif
-    addr = (unsigned long)mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, 0, 0);
-    memset((void *)addr, 0, size);
-    if (arch_prctl(ARCH_SET_GS, addr)) {
-        return -1;
+void tls_setup() {
+    void *addr = mmap(NULL, 128, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, 0, 0);
+    if (addr == MAP_FAILED) {
+        perror("tls_setup fail caused by mmap");
+        exit(EXIT_FAILURE);
     }
-    return 0;
+    if (arch_prctl(ARCH_SET_GS, (unsigned long)addr)) {
+        perror("tls_setup fail caused by arch_prctl");
+        exit(EXIT_FAILURE);
+    }
 }
 
-void restore_area(int8_t *area) {
-    int8_t *bitarray = area + 2 * ALLOCATOR_AREA_SIZE;
-    int8_t *src = area + ALLOCATOR_AREA_SIZE;
-    int8_t *dst = area;
+void restore_obj(int obj_index) {
+    u_int8_t *area = (void *)(8 * (1024 * MAX_MEMORY) + obj_index * (3 * MAX_MEMORY * MEM_NODES));
+    u_int8_t *bitarray = area + 2 * MAX_MEMORY;
+    u_int8_t *src = area + MAX_MEMORY;
+    u_int8_t *dst = area;
     u_int16_t current_word;
     int target_offset;
 
@@ -87,6 +86,6 @@ void restore_area(int8_t *area) {
 }
 
 void set_ckpt(int obj_index) {
-    void *base_address = (void *)(8 * (1024 * ALLOCATOR_AREA_SIZE) + obj_index * (3 * ALLOCATOR_AREA_SIZE * MEM_NODES));
-    memset(base_address + 2 * ALLOCATOR_AREA_SIZE, 0, BITARRAY_SIZE);
+    void *bitarray = (void *)(8 * (1024 * MAX_MEMORY) + obj_index * (3 * MAX_MEMORY * MEM_NODES) + 2 * MAX_MEMORY);
+    memset(bitarray, 0, BITARRAY_SIZE);
 }

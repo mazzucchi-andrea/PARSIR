@@ -1,5 +1,7 @@
 #include <pthread.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 #include "queue.h"
 #include "setup.h"
@@ -13,7 +15,7 @@ int volatile current_index = 0;
 
 long pending_events __attribute__((aligned(64))) = 0;
 long object_identifiers __attribute__((aligned(64))) = 0;
-long object_identifiers_vector[MAX_NUMA_NODES] __attribute__((aligned(64))) = {[0 ... MAX_NUMA_NODES - 1] 0};
+long object_identifiers_vector[MAX_NUMA_NODES] __attribute__((aligned(64))) = {[0 ... MAX_NUMA_NODES - 1] = 0};
 int end = 0;
 
 __thread int seen_empty_slot = 0;
@@ -269,15 +271,14 @@ redo:
             goto redo;
         }
     } else {
-        AUDIT {
-            printf("found empty slot with index %d\n", index);
-            fflush(stdout);
-        }
+        printf("found empty slot with index %d\n", index);
+        fflush(stdout);
         if (barrier()) {
             update_timing(); // this call updates the queue layout and releases the objects taken by threads in the last
                              // epoch
         }
         barrier();
+        pause();
         my_index = current_index;
         target = -1;
         // reset stuff for NUMA aware workload distribution

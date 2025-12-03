@@ -100,8 +100,8 @@ void ProcessEvent(unsigned int me, double now, int event_type, void *event_conte
             timestamp = 0.01 * Expent(TA, s1, s2);
             dest = me;
             ScheduleNewEvent(dest, timestamp, NORMAL, NULL, 0);
-            //				printf("object %d - scheduled event %d - timestamp is %e - destination is %d\n
-            //", me, NORMAL, timestamp, dest);
+            // printf("object %d - scheduled event %d - timestamp is %e - destination is %d\n", me, NORMAL, timestamp,
+            // dest);
         }
 
         // setup of dynamic memory lists
@@ -135,7 +135,7 @@ void ProcessEvent(unsigned int me, double now, int event_type, void *event_conte
         // printf("destination is %d\n",dest);
 
         ScheduleNewEvent(dest, timestamp, NORMAL, NULL, 0);
-        // printf("object %d - scheduled event %d - timestamp is %e - destination is %d\n ",me, NORMAL, timestamp,
+        // printf("object %d - scheduled event %d - timestamp is %e - destination is %d\n ", me, NORMAL, timestamp,
         // dest);
 
         for (i = 0; i < REALLOCATION; i++) {

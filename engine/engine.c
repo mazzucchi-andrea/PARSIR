@@ -1,4 +1,5 @@
 #define _GNU_SOURCE
+
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,7 +10,6 @@
 
 #include "memory.h"
 #include "queue.h"
-
 #if GRID_CKPT
 #include "grid_ckpt.h"
 #endif
@@ -36,8 +36,8 @@ typedef struct _thread_startup {
     int cpuID;              // the thread need to pin to this CPU ID in order to correctly stay on the NUMA node ID
     int numaNodeID;         // this is the NUMA node id where the thread will reside
     int numaNodePerObjects; // this is the NUMA node where the objects started up by this thread will reside
-    // the below fields are for reaching the stuff needed
-    // for NUMA oriented workload distribution
+    
+    // the below fields are for reaching the stuff needed for NUMA oriented workload distribution
     int *c;
     int *min;
     int *max;
@@ -90,24 +90,20 @@ void *thread(void *me) {
     // it is exploited by PARSIR for the memory startup of the objects
     NUMAnode = numaNodeID;
 
-    printf("PARSIR worker thread %ld started - CPU to pin on is %d - NUMA node "
-           "is %d\n",
-           aux, cpuID, numaNodeID);
+    printf("PARSIR worker thread %ld started - CPU to pin on is %d - NUMA node is %d\n", aux, cpuID, numaNodeID);
 
     CPU_SET(cpuID, &cpuset);
-    if (pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpuset) != 0) {
+    if (pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpuset)) {
         printf("PARSIR worker thread %ld error while pinning to CPU %d\n", aux, cpuID);
         fflush(stdout);
         exit(EXIT_FAILURE);
     }
 
-    whoami((unsigned)aux); // tell the queue layer your identity this is used for TLS setup stuff
+    whoami((unsigned)aux); // tell the queue layer your identity
+    // this is used for TLS setup stuff
 
 #if GRID_CKPT
-    if (tls_setup()) {
-        fprintf(stderr, "TLS setup failed\n");
-        exit(EXIT_FAILURE);
-    }
+    tls_setup();
 #endif
 
     AUDIT printf("PARSIR worker thread %ld received min %d and max %d\n", aux, minID, maxID);
@@ -263,7 +259,6 @@ default_config:
 }
 
 int main(int argc, char **argv) {
-
     long i, j;
     event *the_event;
     queue_elem *q;
@@ -350,9 +345,7 @@ int main(int argc, char **argv) {
             c[numaNodeInit] += (startup_info[i].maxID - startup_info[i].minID + 1);
             max[numaNodeInit] = startup_info[i].maxID;
             if (((int)((double)startup_info[i].maxID / (double)NUMAratio)) > numaNodeInit) {
-                printf("update of the NUMA node for object startup is requested (i is "
-                       "%ld)\n",
-                       i);
+                printf("update of the NUMA node for object startup is requested (i is %ld)\n", i);
                 numaNodeInit++;
                 min[numaNodeInit] = startup_info[i].maxID + 1;
             };
@@ -361,7 +354,10 @@ int main(int argc, char **argv) {
     }
 
     for (i = 0; i < THREADS; i++) {
-        pthread_create(&tid, 0x0, thread, (void *)&(startup_info[i]));
+        if (pthread_create(&tid, 0x0, thread, (void *)&(startup_info[i]))) {
+            perror("pthread_create");
+            exit(EXIT_FAILURE);
+        }
     }
 
     for (i = 0; i < NUMA_NODES; i++) {
