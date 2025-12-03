@@ -2,6 +2,8 @@
 
 #include <immintrin.h> // AVX
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <sys/mman.h>
@@ -22,33 +24,30 @@
 #define BITARRAY_SIZE (ALLOCATOR_AREA_SIZE / 16) / 8
 #elif MOD == 256
 #define BITARRAY_SIZE (ALLOCATOR_AREA_SIZE / 32) / 8
-#else
+#elif MOD == 512
 #define BITARRAY_SIZE (ALLOCATOR_AREA_SIZE / 64) / 8
+#else
+#error "Valid MODs are 64, 128, 256, and 512."
 #endif
 
 extern int arch_prctl(int code, unsigned long addr);
 
-void *tls_setup() {
-    unsigned long addr;
-    size_t size;
-#if MOD == 512
-    size = 128;
-#else
-    size = 64;
-#endif
-    addr = (unsigned long)mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, 0, 0);
-    memset((void *)addr, 0, size);
-    *(unsigned long *)addr = addr;
-    if (arch_prctl(ARCH_SET_GS, addr)) {
-        return NULL;
+void tls_setup() {
+    void *addr = mmap(NULL, 128, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, 0, 0);
+    if (addr == MAP_FAILED) {
+        perror("tls_setup fail caused by mmap");
+        exit(EXIT_FAILURE);
     }
-    return (void *)addr;
+    if (arch_prctl(ARCH_SET_GS, (unsigned long)addr)) {
+        perror("tls_setup fail caused by arch_prctl");
+        exit(EXIT_FAILURE);
+    }
 }
 
-void restore_area(int8_t *area) {
-    int8_t *bitarray = area + 2 * ALLOCATOR_AREA_SIZE;
-    int8_t *src = area + ALLOCATOR_AREA_SIZE;
-    int8_t *dst = area;
+void _restore_area(u_int8_t *area) {
+    u_int8_t *bitarray = area + 2 * ALLOCATOR_AREA_SIZE;
+    u_int8_t *src = area + ALLOCATOR_AREA_SIZE;
+    u_int8_t *dst = area;
     u_int16_t current_word;
     int target_offset;
 
@@ -86,4 +85,4 @@ void restore_area(int8_t *area) {
     memset(bitarray, 0, BITARRAY_SIZE);
 }
 
-void set_ckpt(int8_t *area) { memset(area + 2 * ALLOCATOR_AREA_SIZE, 0, BITARRAY_SIZE); }
+void _set_ckpt(u_int8_t *area) { memset(area + 2 * ALLOCATOR_AREA_SIZE, 0, BITARRAY_SIZE); }

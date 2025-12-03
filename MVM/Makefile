@@ -52,7 +52,7 @@ THE_VM = -DVM_NAME=\"MVM\"
 all: checks backup-files file-rewriting compile-and-link restore-files
 
 compile-and-link: movm
-	gcc $(APP_OBJ) $(LIB)/movm.o -o $(EXECUTABLE) $(SECURITY_FLAGS) $(ADDITIONAL_FLAGS) $(LIBS) -I $(INCLUDE) -Xlinker --wrap=main
+	gcc $(APP_OBJ) $(LIB)/movm.o -o $(EXECUTABLE) $(SECURITY_FLAGS) $(ADDITIONAL_FLAGS) $(LIBS) -I$(INCLUDE) -Xlinker --wrap=main
 	objdump -Dw $(EXECUTABLE) > $(DISASSEMBLY) 
 
 checks:
@@ -62,6 +62,8 @@ checks:
 
 	@if [ ! -d $(OBJ) ]; then mkdir -p $(OBJ); fi
 	@if [ ! -d $(LIB) ]; then mkdir -p $(LIB); fi
+	@if [ ! -d $(TEMP) ]; then mkdir -p $(TEMP); fi
+	@if [ ! -d $(TEMP)/$(SHADOW) ]; then mkdir -p $(TEMP)/$(SHADOW); fi
 
 base:
 	./scripts/temp-dir.sh $(TEMP) $(TEMP)/$(INTERMEDIATEFILE)
@@ -90,7 +92,7 @@ movm: base head startup asm-patch patch
 
 backup-files: checks
 	cd $(APP) ; touch $(EXECUTABLE) ; rm $(EXECUTABLE)
-	@if [ -n "$$(ls -A /path/to/directory)" ]; then cd $(APP) ; tar -cvf $(TEMP)/$(SHADOW)/backup.tar *; fi
+	cd $(APP) ; touch $(APP_OBJ) ; tar -cvf $(TEMP)/$(SHADOW)/backup.tar *
 	cp $(TARGET_MODULES) $(TEMP)/$(SHADOW) 
 
 restore-files: 
@@ -101,4 +103,4 @@ file-rewriting:
 	export MVM_TEMP_FILE=$(TEMP)/__temp_file ; ./scripts/file-processor.sh $(APP) $(TARGET_MODULES)
 
 clean:
-	find . -name "*.o" -type f -delete ; rm -f $(EXECUTABLE)
+	find . -name "*.o" -type f -delete ; rm -f $(EXECUTABLE) ; rm -r $(TEMP)
