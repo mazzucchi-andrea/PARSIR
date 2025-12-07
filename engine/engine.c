@@ -115,6 +115,9 @@ void *thread(void *me) {
         AUDIT printf("thread %ld - setting up object %d\n", aux, current);
         ProcessEvent(minID, STARTUP_TIME, INIT, NULL, 0, NULL);
         current = -1;
+#if GRID_CKPT
+        set_ckpt(minID);
+#endif
     }
 
     // the init phase is over

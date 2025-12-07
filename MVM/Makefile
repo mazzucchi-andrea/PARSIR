@@ -6,8 +6,8 @@ EXECUTABLE = $(APP)/PARSIR-simulator
 APP_OBJ = $(APP)/PARSIR-simulator.o
 #TARGET_MODULES= a.c  sub-dir/b.c this is an example usage
 TARGET_MODULES= ../models/phold/application.c
-#TARGET_FUNCTIONS="a","b" this is an example usage
-TARGET_FUNCTIONS="add1","dell1","add2","dell2","read1","read2","ProcessEvent"
+#TARGET_FUNCTIONS="<a>:","<b>:" this is an example usage
+TARGET_FUNCTIONS="<add1>:","<dell1>:","<add2>:","<dell2>:","<read1>:","<read2>:","<ProcessEvent>:"
 LIBS = -lpthread -lnuma
 
 INCLUDE = $(PWD)/include
@@ -86,7 +86,7 @@ patch:
 #please rember to insert whatever Makefile in the user-defined directory
 	cd $(USER_DEFINED); make
 
-movm: base head startup asm-patch patch
+movm: base head startup asm-patch patch ckpt
 	cd ./src; gcc _elf_parse.c -c $(TEMPDIR) $(TEMPFILE) $(DISASSEMBLY_FILE) $(TEMPOBJ) $(TF) $(THE_VM) -I$(INCLUDE) $(SECURITY_FLAGS) $(ADDITIONAL_FLAGS) -DMOD=$(MOD) -o $(OBJ)/_elf_parse.o
 	cd $(OBJ) ; ld -i *.o -o $(LIB)/movm.o
 
@@ -103,4 +103,4 @@ file-rewriting:
 	export MVM_TEMP_FILE=$(TEMP)/__temp_file ; ./scripts/file-processor.sh $(APP) $(TARGET_MODULES)
 
 clean:
-	find . -name "*.o" -type f -delete ; rm -f $(EXECUTABLE) ; rm -r $(TEMP)
+	find . -name "*.o" -type f -delete ; rm -f $(EXECUTABLE) ; find $(TEMP) -type f -exec rm {} +

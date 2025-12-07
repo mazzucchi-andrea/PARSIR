@@ -30,7 +30,7 @@ runtime_grid_ckpt:
 	gcc -c -O3 ../random/random.c -o ../lib/random.o -I../include $(GRID_CKPT_FLAGS)
 	gcc -c -O3 ../memory/memory.c -o ../lib/memory.o -I../include -DGRID_CKPT -DMOD=$(MOD)
 	gcc -c -O3 ../engine/engine.c -o ../lib/engine.o -I../include $(GRID_CKPT_FLAGS)
-	gcc -c -O3 -Wextra -Wall -Wpedantic -I../include $(GRID_CKPT_FLAGS) -mavx -mavx2 -mavx512f ../grid_ckpt/grid_ckpt.c -o ../lib/grid_ckpt.o
+	gcc -c -O3 -Wextra -Wall -Wpedantic -I../include -I../MVM/include $(GRID_CKPT_FLAGS) -mavx -mavx2 -mavx512f ../grid_ckpt/grid_ckpt.c -o ../lib/grid_ckpt.o
 	ld -r ../lib/queue.o ../lib/memory.o ../lib/barrier-synchronization.o ../lib/stubs.o ../lib/random.o ../lib/engine.o ../lib/grid_ckpt.o -I../include -o ../lib/PARSIR-runtime.o
 
 phold_grid_ckpt: runtime_grid_ckpt
