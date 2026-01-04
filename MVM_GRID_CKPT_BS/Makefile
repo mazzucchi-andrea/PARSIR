@@ -32,7 +32,7 @@ UDTEMPDIR = -Duser_defined_dir=\"$(USER_DEFINED)\"
 UDTEMPFILE = -Duser_defined_temp_file=\"$(USER_DEFINED)/$(USER_DEFINED_FILE)\"
 UDTEMPOBJ = -Duser_defined_temp_obj_file=\"$(USER_DEFINED)/$(USER_DEFINED_OBJ_FILE)\"
 
-SECURITY_FLAGS = -pie -fPIE -fstack-protector-all
+SECURITY_FLAGS = -pie -fPIE -fstack-protector-all -fno-toplevel-reorder -fno-reorder-functions -fno-align-functions
 
 ADDITIONAL_FLAGS = -O3 -DCKPT -DAPPLY_PATCHES -DVERBOSE
 

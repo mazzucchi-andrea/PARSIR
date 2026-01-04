@@ -114,15 +114,9 @@ void build_patches(void) {
 
 #if CKPT
     uint64_t ckpt_code = (uint64_t)ckpt_assembly;
-#if MOD == 8
-    int ckpt_code_size = 0xbc; // this is taken from the compiled version of the src/_asm_patch.S file
-#elif MOD == 16
-    int ckpt_code_size = 0xd7;
-#elif MOD == 32
-    int ckpt_code_size = 0xd7;
-#else
-    int ckpt_code_size = 0xe3;
-#endif
+    size_t ckpt_code_size = (uintptr_t)dummy_ckpt - (uintptr_t)ckpt_assembly;
+    ;
+    printf("ckpt_code_size %lx\n", ckpt_code_size);
 #endif
 
     patches = (patch *)address1;
@@ -181,10 +175,11 @@ void build_patches(void) {
 #endif
 
 #ifdef CKPT
-        memset((char *)(patches[i].code), 0x90, 19 + ckpt_code_size);
+        memset((char *)(patches[i].code), 0x90, 46 + ckpt_code_size);
         ckpt_patch(&instructions[i], &patches[i]);
         patches[i].code =
-            patches[i].code + 19; // 10 is the maximum size of the lea instruction and 9 is the instruction to save rcx
+            patches[i].code + 46; // 36 is the size of the structions need to save regs in GS and 10 is the maximum size
+                                  // of the lea instruction and 9 is the instruction to save rcx
         memcpy((char *)(patches[i].code), (char *)(ckpt_code), ckpt_code_size);
         patches[i].code = patches[i].code + ckpt_code_size;
 #endif
@@ -196,7 +191,7 @@ void build_patches(void) {
         // move again at the begin of the block of instructions forming the patch
         // NOTE: you will need to have patches[i].code point again to patches[i].block before proceeding with the
         // following if/else
-        patches[i].code = patches[i].code - 19 - ckpt_code_size;
+        patches[i].code = patches[i].code - 46 - ckpt_code_size;
 #endif
 
 #ifdef ASM_PREAMBLE
@@ -274,7 +269,7 @@ void build_patches(void) {
 #ifdef CKPT
         // NOTE: for the below code fragment you will need to have patches[i].code point to the copy of the original
         // instruction - you will need to step forward other preceeding instructions forming the patch
-        patches[i].code = patches[i].code + 19 + ckpt_code_size;
+        patches[i].code = patches[i].code + 46 + ckpt_code_size;
 #endif
 
 #ifdef ASM_PREAMBLE

@@ -13,17 +13,7 @@
 unsigned long MAX_MEMORY = (1 << 21); // maximum amount of memory manageable per object
 
 #if GRID_CKPT
-#if MOD == 64
-#define BITARRAY_SIZE (MAX_MEMORY / 8) / 8
-#elif MOD == 128
-#define BITARRAY_SIZE (MAX_MEMORY / 16) / 8
-#elif MOD == 256
-#define BITARRAY_SIZE (MAX_MEMORY / 32) / 8
-#elif MOD == 512
-#define BITARRAY_SIZE (MAX_MEMORY / 64) / 8
-#else
-#error "Valid MODs are 64, 128, 256, and 512."
-#endif
+#define BITMAP_SIZE (MAX_MEMORY / MOD) / 8
 #endif
 
 unsigned long base_address;
@@ -90,7 +80,7 @@ void object_allocator_setup(void) {
     for (i = 0; i < 1; i++) {
         // the above line is left just to let the developer restart from here for NUMA ubiquitousness
 #if GRID_CKPT
-        addr = mmap((void *)target_address, MAX_MEMORY * 2 + BITARRAY_SIZE, PROT_READ | PROT_WRITE,
+        addr = mmap((void *)target_address, MAX_MEMORY * 2 + BITMAP_SIZE, PROT_READ | PROT_WRITE,
                     MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED, 0, 0);
 #else
         addr = mmap((void *)target_address, MAX_MEMORY, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED,
@@ -101,7 +91,7 @@ void object_allocator_setup(void) {
             exit(EXIT_FAILURE);
         };
 #if GRID_CKPT
-        ret = mbind(addr, MAX_MEMORY * 2 + BITARRAY_SIZE, MPOL_BIND, &mask, sizeof(unsigned long), 0);
+        ret = mbind(addr, MAX_MEMORY * 2 + BITMAP_SIZE, MPOL_BIND, &mask, sizeof(unsigned long), 0);
 #else
         ret = mbind(addr, MAX_MEMORY, MPOL_BIND, &mask, sizeof(unsigned long), 0);
 #endif

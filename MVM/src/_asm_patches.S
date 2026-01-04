@@ -45,17 +45,16 @@ the_patch_assembly:
 
 // CKPT ASM CODE
 ckpt_assembly:
-#if MOD == 64
         mov %rax, %gs:0x00
         mov %rbx, %gs:0x08
         lahf
         mov %ah, %gs:0x18
+#if MOD == 8
         mov %ecx, %eax
-        and $0xffffffffffc00000, %rcx
-        and $0x3fffff, %rax
+        and $(~(ALLOCATOR_AREA_SIZE - 1)), %rcx
         test $7,%al
         jz second_qword
-        and $0x7ffff8,%eax
+        and $(ALLOCATOR_AREA_SIZE - MOD),%eax
         shr $3, %eax
         mov %eax, %ebx
         and $15, %ebx
@@ -75,6 +74,7 @@ check_last:
         cmp $ALLOCATOR_AREA_SIZE, %rax
         je end_checkpoint
 second_qword:
+        and $(ALLOCATOR_AREA_SIZE - 1), %rax
         shr $3, %eax
         mov %eax, %ebx
         and $15, %ebx
@@ -86,24 +86,14 @@ second_qword:
         mov (%rcx, %rax, 8), %rbx
         mov %rbx, ALLOCATOR_AREA_SIZE(%rcx, %rax, 8)
 end_checkpoint:
-        mov %gs:0x18, %ah
-        sahf
-        mov %gs:0x10, %rcx
-        mov %gs:0x08, %rbx
-        mov %gs:0x00, %rax
-        
-#elif MOD == 128
-        mov %rax, %gs:0x00
-        mov %ebx, %gs:0x08
-        lahf
-        mov %ah, %gs:0x18
+
+#elif MOD == 16
         movdqa %xmm1, %gs:0x20
         mov %ecx, %eax
-        and $0xffffffffffc00000, %rcx
-        and $0x3fffff, %rax
+        and $(~(ALLOCATOR_AREA_SIZE - 1)), %rcx
         test $15,%al
         jz second_dqword
-        and $0x7ffff0, %eax
+        and $(ALLOCATOR_AREA_SIZE - MOD), %eax
         movdqa (%rcx, %rax,), %xmm1
         shr $4, %eax
         mov %eax, %ebx
@@ -125,6 +115,7 @@ check_last:
         je end_checkpoint
         add $16, %eax
 second_dqword:
+        and $(ALLOCATOR_AREA_SIZE - 1), %rax
         movdqa (%rcx, %rax,), %xmm1
         shr $4, %eax
         mov %eax, %ebx
@@ -138,24 +129,14 @@ second_dqword:
         movdqa %xmm1, ALLOCATOR_AREA_SIZE(%rcx, %rax,)
 end_checkpoint:
         movdqa %gs:0x20, %xmm1
-        mov %gs:0x18, %ah
-        sahf
-        mov %gs:0x10, %rcx
-        mov %gs:0x08, %ebx
-        mov %gs:0x00, %rax
 
-#elif MOD == 256
-        mov %rax, %gs:0x00
-        mov %ebx, %gs:0x08
-        lahf
-        mov %ah, %gs:0x18
+#elif MOD == 32
         vmovdqa %ymm1, %gs:0x20
         mov %ecx, %eax
-        and $0xffffffffffc00000, %rcx
-        and $0x3fffff, %rax
+        and $(~(ALLOCATOR_AREA_SIZE - 1)), %rcx
         test $31,%al
         jz second_256bit
-        and $0x7fffe0,%eax
+        and $(ALLOCATOR_AREA_SIZE - MOD),%eax
         vmovdqa (%rcx, %rax,), %ymm1
         shr $5, %eax
         mov %eax, %ebx
@@ -177,6 +158,7 @@ check_last:
         je end_checkpoint
         add $32, %eax
 second_256bit:
+        and $(ALLOCATOR_AREA_SIZE - 1), %rax
         vmovdqa (%rcx, %rax,), %ymm1
         shr $5, %eax
         mov %eax, %ebx
@@ -190,24 +172,14 @@ second_256bit:
         vmovdqa %ymm1, ALLOCATOR_AREA_SIZE(%rcx, %rax,)
 end_checkpoint:
         vmovdqa %gs:0x20, %ymm1
-        mov %gs:0x18, %ah
-        sahf
-        mov %gs:0x10, %rcx
-        mov %gs:0x08, %ebx
-        mov %gs:0x00, %rax
 
-#elif MOD == 512
-        mov %rax, %gs:0x00
-        mov %ebx, %gs:0x08
-        lahf
-        mov %ah, %gs:0x18
+#elif MOD == 64
         vmovdqa64 %zmm1,%gs:0x40
 	mov %ecx, %eax
-        and $0xffffffffffc00000, %rcx
-        and $0x3fffff, %rax
+        and $(~(ALLOCATOR_AREA_SIZE - 1)), %rcx
         test $63, %al
         jz second_512bit
-        and $0x7fffc0, %eax
+        and $(ALLOCATOR_AREA_SIZE - MOD), %eax
         shr $6, %eax
         mov %eax, %ebx
         and $15, %ebx
@@ -229,6 +201,7 @@ check_last:
         je end_checkpoint
         add $64, %eax
 second_512bit:
+        and $(ALLOCATOR_AREA_SIZE - 1), %rax
         vmovdqa64 (%rcx, %rax,), %zmm1
         shr $6, %eax
         mov %eax, %ebx
@@ -242,11 +215,11 @@ second_512bit:
         vmovdqa64 %zmm1, ALLOCATOR_AREA_SIZE(%rcx, %rax,)
 end_checkpoint:
         vmovdqa64 %gs:0x40, %zmm1
-        mov %gs:0x18, %ah
-        sahf
-        mov %gs:0x10, %rcx
-        mov %gs:0x08, %ebx
-        mov %gs:0x00, %rax
 #else
 #error "Valid MODs are 64, 128, 256, and 512."
 #endif
+        mov %gs:0x18, %ah
+        sahf
+        mov %gs:0x00, %rax
+        mov %gs:0x08, %rbx
+        mov %gs:0x10, %rcx
