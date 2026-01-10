@@ -30,16 +30,16 @@ runtime_grid_ckpt:
 	gcc -c -O3 ../random/random.c -o ../lib/random.o -I../include $(GRID_CKPT_FLAGS)
 	gcc -c -O3 ../memory/memory.c -o ../lib/memory.o -I../include -pie -fPIE -fstack-protector-all -DGRID_CKPT -DMOD=$(MOD)
 	gcc -c -O3 ../engine/engine.c -o ../lib/engine.o -I../include $(GRID_CKPT_FLAGS)
-	gcc -c -O3 ../grid_ckpt/grid_ckpt.c -o ../lib/grid_ckpt.o -I../include -I../MVM/include $(GRID_CKPT_FLAGS)
+	gcc -c -O3 ../grid_ckpt/grid_ckpt.c -o ../lib/grid_ckpt.o -I../include -I../MVM_GRID_CKPT/include $(GRID_CKPT_FLAGS)
 	ld -r ../lib/queue.o ../lib/memory.o ../lib/barrier-synchronization.o ../lib/stubs.o ../lib/random.o ../lib/engine.o ../lib/grid_ckpt.o -I../include -o ../lib/PARSIR-runtime.o
 
 phold_grid_ckpt: runtime_grid_ckpt
 	@if [ ! -d ../bin ]; then mkdir -p ../bin; fi
-	cd ../MVM ; make checks backup-files file-rewriting
+	cd ../MVM_GRID_CKPT ; make checks backup-files file-rewriting
 	cd ../models/phold ; make grid_ckpt
-	ld -r ../models/phold/phold.o ../lib/PARSIR-runtime.o -I../include -I../MVM/include -o ../bin/PARSIR-simulator.o
-	cd ../MVM ; make compile-and-link restore-files MOD=$(MOD) ALLOCATOR_AREA_SIZE=$(MAX_MEMORY)
-	@echo MVM CKPT applied to PARSIR
+	ld -r ../models/phold/phold.o ../lib/PARSIR-runtime.o -I../include -I../MVM_GRID_CKPT/include -o ../bin/PARSIR-simulator.o
+	cd ../MVM_GRID_CKPT ; make compile-and-link restore-files MOD=$(MOD) ALLOCATOR_AREA_SIZE=$(MAX_MEMORY)
+	@echo MVM_GRID_CKPT CKPT applied to PARSIR
 
 runtime_grid_ckpt_bs:
 	cd ../scripts ; make get-HW-info
@@ -62,7 +62,7 @@ phold_grid_ckpt_bs: runtime_grid_ckpt_bs
 	@echo MVM_GRID_CKPT_BS applied to PARSIR
 
 restore-files:
-	cd ../MVM_GRID_CKPT_BS ; make restore-files ; cd ../MVM ; make restore-files
+	cd ../MVM_GRID_CKPT_BS ; make restore-files ; cd ../MVM_GRID_CKPT ; make restore-files
 
 clean:
-	find .. -name "*.o" -type f -delete ; rm -f ../bin/PARSIR-simulator ; cd ../MVM ; make clean ; cd ../MVM_GRID_CKPT_BS ; make clean
+	find .. -name "*.o" -type f -delete ; rm -f ../bin/PARSIR-simulator ; cd ../MVM_GRID_CKPT ; make clean ; cd ../MVM_GRID_CKPT_BS ; make clean

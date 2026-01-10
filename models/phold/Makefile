@@ -1,6 +1,6 @@
 CC = gcc 
 CFLAGS = -c -Wall -Wextra -Wpedantic -I../../include/ -I./ 
-GRID_CKPT_FLAGS = -pie -fpie -I../../MVM/include
+GRID_CKPT_FLAGS = -pie -fpie -I../../MVM_GRID_CKPT/include
 GRID_CKPT_BS_FLAGS = -pie -fpie -I../../MVM_GRID_CKPT_BS/include
 TARGET = intermediate-phold.o 
 

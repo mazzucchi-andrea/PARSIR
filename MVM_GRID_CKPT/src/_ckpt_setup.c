@@ -30,7 +30,7 @@ void _restore_area(uint8_t *area) {
     uint16_t current_word;
     int target_offset;
 
-    for (int offset = 0; offset < BITMAP_SIZE - 1; offset += 8) {
+    for (int offset = 0; offset < BITMAP_SIZE; offset += 8) {
         if (*(uint64_t *)(bitmap + offset) == 0) {
             continue;
         }
@@ -41,25 +41,27 @@ void _restore_area(uint8_t *area) {
             }
             for (int k = 0; k < 16; k++) {
                 if (((current_word >> k) & 1) == 1) {
-                    target_offset = ((offset + i) * 8 + k) * MOD;
 #if MOD == 8
+                    target_offset = ((offset + i) * 8 + k) * 8;
                     *(uint64_t *)(dst + target_offset) =
                         *(uint64_t *)(src + target_offset);
 #elif MOD == 16
+                    target_offset = ((offset + i) * 8 + k) * 16;
                     *(__int128 *)(dst + target_offset) =
                         *(__int128 *)(src + target_offset);
 #elif MOD == 32
+                    target_offset = ((offset + i) * 8 + k) * 32;
                     __m256i ckpt_value =
                         _mm256_loadu_si256((__m256i *)(src + target_offset));
                     _mm256_storeu_si256((__m256i *)(dst + target_offset),
                                         ckpt_value);
-#elif MOD == 64
+#else
+                    target_offset = ((offset + i) * 8 + k) * 64;
                     __m512i ckpt_value =
                         _mm512_load_si512((void *)(src + target_offset));
                     _mm512_storeu_si512((void *)(dst + target_offset),
                                         ckpt_value);
-#else
-                    memcpy(dst + target_offset, src + target_offset, MOD);
+
 #endif
                 }
             }
@@ -69,6 +71,5 @@ void _restore_area(uint8_t *area) {
 }
 
 void _set_ckpt(uint8_t *area) {
-    memcpy(area + ALLOCATOR_AREA_SIZE, area, ALLOCATOR_AREA_SIZE);
     memset(area + 2 * ALLOCATOR_AREA_SIZE, 0, BITMAP_SIZE);
 }

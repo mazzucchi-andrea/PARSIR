@@ -1,14 +1,14 @@
 #ifndef _CKPT_SETUP_
 #define _CKPT_SETUP_
 
-#include <sys/types.h>
+#include <stdint.h>
 
 #ifndef MOD
 #define MOD 8
 #endif
 
 #ifndef ALLOCATOR_AREA_SIZE
-#define ALLOCATOR_AREA_SIZE 0x200000UL
+#define ALLOCATOR_AREA_SIZE 0x100000
 #endif
 
 #if MOD == 8 || MOD == 16 || MOD == 32 || MOD == 64
@@ -19,8 +19,8 @@
 
 void _tls_setup();
 
-void _restore_area(u_int8_t *);
+void _restore_area(uint8_t *);
 
-void _set_ckpt(void *);
+void _set_ckpt(uint8_t *);
 
 #endif

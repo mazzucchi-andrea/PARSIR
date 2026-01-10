@@ -13,7 +13,7 @@
 unsigned long MAX_MEMORY = (1 << 21); // maximum amount of memory manageable per object
 
 #if GRID_CKPT
-#define BITMAP_SIZE (MAX_MEMORY / MOD) / 8
+#define BITMAP_SIZE (MAX_MEMORY / MOD) / 8 + 1
 #endif
 
 unsigned long base_address;
