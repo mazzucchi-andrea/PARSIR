@@ -12,6 +12,8 @@
 #include "queue.h"
 #if GRID_CKPT
 #include "grid_ckpt.h"
+#elif CHUNK_BASED
+#include "chunk_ckpt.h"
 #endif
 
 #define MAX_EVENT_SIZE (512)
@@ -115,7 +117,7 @@ void *thread(void *me) {
         AUDIT printf("thread %ld - setting up object %d\n", aux, current);
         ProcessEvent(minID, STARTUP_TIME, INIT, NULL, 0, NULL);
         current = -1;
-#if GRID_CKPT
+#if GRID_CKPT || CHUNK_BASED
         set_ckpt(minID);
 #endif
     }

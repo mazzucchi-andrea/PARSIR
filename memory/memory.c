@@ -1,9 +1,11 @@
+#include <memory.h>
 #include <numaif.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/mman.h>
 
-#include "queue.h"
 #include "setup.h"
 
 #define MIN_CHUNK_SIZE (32)
@@ -12,7 +14,7 @@
 
 unsigned long MAX_MEMORY = (1 << 21); // maximum amount of memory manageable per object
 
-#if GRID_CKPT
+#ifdef GRID_CKPT
 #define BITMAP_SIZE (MAX_MEMORY / MOD) / 8 + 1
 #endif
 
@@ -24,6 +26,13 @@ unsigned long SEGMENT_PAGES;
 typedef struct _area {
     void **addresses;
     int top_elem;
+#ifdef SPECULATION
+    void **addresses_ckpt;
+    int top_elem_ckpt;
+#ifdef CHUNK_BASED
+    void *bitmap;
+#endif
+#endif
     int size;
 } area;
 
@@ -69,6 +78,8 @@ void object_allocator_setup(void) {
 
 #if GRID_CKPT
     target_address = base_address + current * (3 * MAX_MEMORY * MEM_NODES);
+#elif CHUNK_BASED
+    target_address = base_address + current * (2 * MAX_MEMORY * MEM_NODES);
 #else
     target_address = base_address + current * (MAX_MEMORY * MEM_NODES);
 #endif
@@ -82,6 +93,9 @@ void object_allocator_setup(void) {
 #if GRID_CKPT
         addr = mmap((void *)target_address, MAX_MEMORY * 2 + BITMAP_SIZE, PROT_READ | PROT_WRITE,
                     MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED, 0, 0);
+#elif CHUNK_BASED
+        addr = mmap((void *)target_address, MAX_MEMORY * 2, PROT_READ | PROT_WRITE,
+                    MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED, 0, 0);
 #else
         addr = mmap((void *)target_address, MAX_MEMORY, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED,
                     0, 0);
@@ -92,6 +106,8 @@ void object_allocator_setup(void) {
         };
 #if GRID_CKPT
         ret = mbind(addr, MAX_MEMORY * 2 + BITMAP_SIZE, MPOL_BIND, &mask, sizeof(unsigned long), 0);
+#elif CHUNK_BASED
+        ret = mbind(addr, MAX_MEMORY * 2, MPOL_BIND, &mask, sizeof(unsigned long), 0);
 #else
         ret = mbind(addr, MAX_MEMORY, MPOL_BIND, &mask, sizeof(unsigned long), 0);
 #endif
@@ -103,6 +119,8 @@ void object_allocator_setup(void) {
         AUDIT printf("mapped zone at address %p for object %d\n", (void *)target_address, current);
 #if GRID_CKPT
         target_address += MAX_MEMORY * 3;
+#elif CHUNK_BASED
+        target_address += MAX_MEMORY * 2;
 #else
         target_address += MAX_MEMORY;
 #endif
@@ -111,6 +129,8 @@ void object_allocator_setup(void) {
 
 #if GRID_CKPT
     target_address = base_address + current * (3 * MAX_MEMORY * MEM_NODES);
+#elif CHUNK_BASED
+    target_address = base_address + current * (2 * MAX_MEMORY * MEM_NODES);
 #else
     target_address = base_address + current * (MAX_MEMORY * MEM_NODES);
 #endif
@@ -129,22 +149,124 @@ void object_allocator_setup(void) {
 
         AUDIT printf("running the allocator setup for object %d\n", current);
 
-        (allocators[current])[i].addresses = malloc(sizeof(void *) * ((SEGMENT_PAGES << 12) / chunk_size));
+        (allocators[current])[i].size = ((SEGMENT_PAGES << 12) / chunk_size);
+        (allocators[current])[i].addresses = malloc(sizeof(void *) * ((allocators[current])[i].size));
         if (!(allocators[current])[i].addresses) {
             printf("area allocation error\n");
             exit(EXIT_FAILURE);
         }
         AUDIT printf("current is %d - allocated area with %ld elements (chunk size is %d)\n", current,
                      (SEGMENT_PAGES << 12) / chunk_size, chunk_size);
-        for (j = 0; j < ((SEGMENT_PAGES << 12) / chunk_size); j++) {
+        for (j = 0; j < ((allocators[current])[i].size); j++) {
             (allocators[current])[i].addresses[j] = limit;
             limit += chunk_size;
         }
         (allocators[current])[i].top_elem = 0;
-        (allocators[current])[i].size = ((SEGMENT_PAGES << 12) / chunk_size);
+#ifdef SPECULATION
+        (allocators[current])[i].addresses_ckpt = malloc(sizeof(void *) * ((allocators[current])[i].size));
+        if (!(allocators[current])[i].addresses_ckpt) {
+            printf("(ckpt) area allocation error\n");
+            exit(EXIT_FAILURE);
+        }
+        AUDIT printf("current is %d - allocated (ckpt) area with %ld elements (chunk size is %d)\n", current,
+                     (SEGMENT_PAGES << 12) / chunk_size, chunk_size);
+        (allocators[current])[i].top_elem_ckpt = 0;
+#ifdef CHUNK_BASED
+        (allocators[current])[i].bitmap = malloc((sizeof(void *) * ((allocators[current])[i].size)) >> 3);
+        if (!(allocators[current])[i].bitmap) {
+            printf("(ckpt) area-bitmap allocation error\n");
+            exit(EXIT_FAILURE);
+        }
+        AUDIT printf("current is %d - allocated (ckpt) area-nitmap with %ld elements\n", current,
+                     (sizeof(void *) * ((SEGMENT_PAGES << 12) / chunk_size)));
+#endif
+#endif
     }
 }
 
+#ifdef SPECULATION
+void set_allocator_ckpt(int current) {
+    AUDIT printf("Set Allocator Checkpoint - current is %d\n", current);
+    int chunk_size = MIN_CHUNK_SIZE;
+    for (int i = 0; chunk_size <= MAX_CHUNK_SIZE; i++) {
+        allocators[current][i].top_elem_ckpt = allocators[current][i].top_elem;
+        memset(allocators[current][i].addresses_ckpt, 0, sizeof(void *) * allocators[current][i].size);
+        for (int j = allocators[current][i].top_elem; j < allocators[current][i].size; j++) {
+            allocators[current][i].addresses_ckpt[j] = allocators[current][i].addresses[j];
+        }
+        chunk_size = chunk_size << 1;
+#ifdef CHUNK_BASED
+        memset(allocators[current][i].bitmap, 0, (sizeof(void *) * ((allocators[current])[i].size)) >> 3);
+#endif
+    }
+}
+
+void restore_allocator(int current) {
+    AUDIT printf("Restore Allocator - current is %d\n", current);
+    int chunk_size = MIN_CHUNK_SIZE;
+    for (int i = 0; chunk_size <= MAX_CHUNK_SIZE; i++) {
+        allocators[current][i].top_elem = allocators[current][i].top_elem_ckpt;
+        for (int j = allocators[current][i].top_elem_ckpt; j < allocators[current][i].size; j++) {
+            allocators[current][i].addresses[j] = allocators[current][i].addresses_ckpt[j];
+        }
+        chunk_size = chunk_size << 1;
+    }
+}
+
+#ifdef CHUNK_BASED
+void ckpt_chunk(void *ptr) {
+    int bitmap_offset, chunk, chunk_size, current, index;
+    uint8_t bitmask, bit_index;
+    current = get_current();
+    index = (int)((double)((ptr - base[current]) >> 12) / (double)(SEGMENT_PAGES));
+    chunk_size = MIN_CHUNK_SIZE << index;
+
+    for (int i = 0; i < allocators[current][index].size; i++) {
+        if (ptr < allocators[current][index].addresses[i] + chunk_size &&
+            ptr >= allocators[current][index].addresses[i]) {
+            chunk = i;
+            break;
+        }
+    }
+    bit_index = chunk % 8;
+    bitmap_offset = chunk >> 3;
+    bitmask = 1 << bit_index;
+    if (!(*(uint8_t *)(allocators[current][index].bitmap + bitmap_offset) & bitmask)) {
+        memcpy(allocators[current][index].addresses[chunk] + MAX_MEMORY, allocators[current][index].addresses[chunk],
+               chunk_size);
+        *(uint8_t *)(allocators[current][index].bitmap + bitmap_offset) |= bitmask;
+    }
+    AUDIT printf("Saving chunk - current is %d - address is %p - index is %d - chunk is %d - chunk size is %d - bit "
+                 "index is %d - "
+                 "bitmap offset is %d\n",
+                 current, ptr, index, chunk, chunk_size, bit_index, bitmap_offset);
+}
+
+void restore_chunks(int current) {
+    int chunk_size;
+    uint8_t current_byte;
+    size_t bitmap_size;
+    chunk_size = MIN_CHUNK_SIZE;
+    for (int i = 0; chunk_size <= MAX_CHUNK_SIZE; i++) {
+        bitmap_size = (sizeof(void *) * ((allocators[current])[i].size)) >> 3;
+        for (int j = 0; j < bitmap_size; j++) {
+            current_byte = *(uint8_t *)(allocators[current][i].bitmap + j);
+            if (current_byte == 0) {
+                continue;
+            }
+            for (int k = 0; k < 8; k++) {
+                if (((current_byte >> k) & 1) == 1) {
+                    memcpy(allocators[current][i].addresses[j * 8 + k],
+                           allocators[current][i].addresses[j * 8 + k] + MAX_MEMORY, chunk_size);
+                }
+            }
+        }
+        memset(allocators[current][i].bitmap, 0, bitmap_size);
+        chunk_size = chunk_size << 1;
+    }
+}
+#endif
+#endif
 void *__wrap_malloc(size_t size) {
     int current;
     int index;

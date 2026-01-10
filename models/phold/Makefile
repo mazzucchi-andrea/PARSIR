@@ -1,5 +1,6 @@
 CC = gcc 
 CFLAGS = -c -Wall -Wextra -Wpedantic -I../../include/ -I./ 
+CHUNK_CKPT_FLAGS = -pie -fpie -I../../MVM_CHUNK/include
 GRID_CKPT_FLAGS = -pie -fpie -I../../MVM_GRID_CKPT/include
 GRID_CKPT_BS_FLAGS = -pie -fpie -I../../MVM_GRID_CKPT_BS/include
 TARGET = intermediate-phold.o 
@@ -8,6 +9,10 @@ SRCS = application.c
 
 all: 
 	$(CC) $(SRCS) $(CFLAGS) -o $(TARGET)
+	ld -r $(TARGET) --wrap=malloc --wrap=free -o phold.o
+
+chunk_ckpt:
+	$(CC) $(SRCS) $(CFLAGS) $(CHUNK_CKPT_FLAGS) -o $(TARGET)
 	ld -r $(TARGET) --wrap=malloc --wrap=free -o phold.o
 
 grid_ckpt:

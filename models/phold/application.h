@@ -8,9 +8,6 @@
 
 typedef double simtime_t;
 
-#define false 0
-#define true 1
-
 #define SIZE1 32
 typedef union _datatye1 {
     void *p;

@@ -63,4 +63,6 @@ dkms.conf
 
 bin/*
 
+MVM_CHUNK/temp/*
 MVM_GRID_CKPT/temp/*
+MVM_GRID_CKPT_BS/temp/*
