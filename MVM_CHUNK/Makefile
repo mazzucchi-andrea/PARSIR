@@ -1,4 +1,3 @@
-
 #APPLICATION SPECIFIC STUFF
 #the below specify the directory where the user application is located, the name of the executable to be generated, the name of the object file of the program and the names of the target functions to instrument 
 #IMPORTANT: a Makefile in the APP dir is responsible for generating the .o file specified by APP_OBJ
@@ -6,9 +5,7 @@ APP = ../bin
 EXECUTABLE = $(APP)/PARSIR-simulator
 APP_OBJ = $(APP)/PARSIR-simulator.o
 #TARGET_MODULES= a.c  sub-dir/b.c this is an example usage
-TARGET_MODULES= ../models/phold/application.c
 #TARGET_FUNCTIONS="<a>:","<b>:" this is an example usage
-TARGET_FUNCTIONS="<add1>:","<dell1>:","<add2>:","<dell2>:","<read1>:","<read2>:","<ProcessEvent>:"
 LIBS = -lpthread -lnuma
 
 
@@ -44,7 +41,7 @@ ADDITIONAL_FLAGS = -O3 -DASM_PREAMBLE -DAPPLY_PATCHES -DVERBOSE
 #the APPLY_PATCHES macro actually leads to apply the patches thar are build by the instrumentation process
 #the VERBOSE macro simply leads to the massive production of output messages 
 
-THE_VM = -DVM_NAME=\"MVM\"
+THE_VM = -DVM_NAME=\"MVM_CHUNK\"
 
 all: checks backup-files file-rewriting compile-and-link restore-files
 

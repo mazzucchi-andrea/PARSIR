@@ -58,7 +58,6 @@ void audit_block(instruction_record *the_record) {
            the_record->indirect_jump, (void *)the_record->middle_buffer,
            the_record->op, the_record->source, the_record->dest,
            the_record->data_size, the_record->instrumentation_instructions);
-    fflush(stdout);
 }
 
 char intermediate[LINE_SIZE];

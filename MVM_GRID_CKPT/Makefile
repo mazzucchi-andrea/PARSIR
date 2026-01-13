@@ -5,9 +5,7 @@ APP = ../bin
 EXECUTABLE = $(APP)/PARSIR-simulator
 APP_OBJ = $(APP)/PARSIR-simulator.o
 #TARGET_MODULES= a.c  sub-dir/b.c this is an example usage
-TARGET_MODULES= ../models/phold/application.c
 #TARGET_FUNCTIONS="<a>:","<b>:" this is an example usage
-TARGET_FUNCTIONS="<add1>:","<dell1>:","<add2>:","<dell2>:","<read1>:","<read2>:","<ProcessEvent>:"
 LIBS = -lpthread -lnuma
 
 INCLUDE = $(PWD)/include
@@ -47,7 +45,7 @@ ADDITIONAL_FLAGS = -O3 -DCKPT -DAPPLY_PATCHES -DVERBOSE
 ALLOCATOR_AREA_SIZE=0x200000UL
 MOD=8
 
-THE_VM = -DVM_NAME=\"MVM\"
+THE_VM = -DVM_NAME=\"MVM_GRID_CKPT\"
 
 all: checks backup-files file-rewriting compile-and-link restore-files
 

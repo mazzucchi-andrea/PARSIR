@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
+#include <unistd.h>
 
 #include "setup.h"
 
@@ -191,7 +192,7 @@ void set_allocator_ckpt(int current) {
     for (int i = 0; chunk_size <= MAX_CHUNK_SIZE; i++) {
         allocators[current][i].top_elem_ckpt = allocators[current][i].top_elem;
         memset(allocators[current][i].addresses_ckpt, 0, sizeof(void *) * allocators[current][i].size);
-        for (int j = allocators[current][i].top_elem; j < allocators[current][i].size; j++) {
+        for (int j = 0; j < allocators[current][i].size; j++) {
             allocators[current][i].addresses_ckpt[j] = allocators[current][i].addresses[j];
         }
         chunk_size = chunk_size << 1;
@@ -217,29 +218,44 @@ void restore_allocator(int current) {
 void ckpt_chunk(void *ptr) {
     int bitmap_offset, chunk, chunk_size, current, index;
     uint8_t bitmask, bit_index;
+
     current = get_current();
+    if (ptr < base[current] || ptr >= (base[current] + MAX_MEMORY)) {
+        printf("bad address (%p) for ckpt_chunk by object %d\n", ptr, current);
+        exit(EXIT_FAILURE);
+    }
+
+    chunk = -1;
     index = (int)((double)((ptr - base[current]) >> 12) / (double)(SEGMENT_PAGES));
     chunk_size = MIN_CHUNK_SIZE << index;
 
     for (int i = 0; i < allocators[current][index].size; i++) {
-        if (ptr < allocators[current][index].addresses[i] + chunk_size &&
-            ptr >= allocators[current][index].addresses[i]) {
+        if (ptr >= allocators[current][index].addresses[i] &&
+            ptr < allocators[current][index].addresses[i] + chunk_size) {
             chunk = i;
             break;
         }
     }
+
+    if (chunk == -1) {
+        fprintf(stderr,
+                "Chunk not found! current is %d - address is %p - index is %d - chunk size is %d - chunks are %d\n",
+                current, ptr, index, chunk_size, allocators[current][index].size);
+        fflush(stderr);
+        exit(EXIT_FAILURE);
+    }
+
     bit_index = chunk % 8;
     bitmap_offset = chunk >> 3;
     bitmask = 1 << bit_index;
     if (!(*(uint8_t *)(allocators[current][index].bitmap + bitmap_offset) & bitmask)) {
-        memcpy(allocators[current][index].addresses[chunk] + MAX_MEMORY, allocators[current][index].addresses[chunk],
-               chunk_size);
+        AUDIT printf("Saving chunk - current is %d - address is %p - index is %d - chunk is %d - chunk size is %d - "
+                     "bit index is %d - bitmap offset is %d\n",
+                     current, ptr, index, chunk, chunk_size, bit_index, bitmap_offset);
+        memcpy((void *)(allocators[current][index].addresses[chunk] + MAX_MEMORY),
+               (void *)(allocators[current][index].addresses[chunk]), chunk_size);
         *(uint8_t *)(allocators[current][index].bitmap + bitmap_offset) |= bitmask;
     }
-    AUDIT printf("Saving chunk - current is %d - address is %p - index is %d - chunk is %d - chunk size is %d - bit "
-                 "index is %d - "
-                 "bitmap offset is %d\n",
-                 current, ptr, index, chunk, chunk_size, bit_index, bitmap_offset);
 }
 
 void restore_chunks(int current) {
@@ -306,8 +322,9 @@ redo:
 }
 
 void __wrap_free(void *ptr) {
-    int current;
-    int index;
+    int chunk, current, index;
+
+    chunk = -1;
     current = get_current();
     AUDIT printf("freeing address %p for object %d\n", ptr, current);
     if (ptr < base[current] || ptr >= (base[current] + MAX_MEMORY)) {
@@ -315,8 +332,20 @@ void __wrap_free(void *ptr) {
         exit(EXIT_FAILURE);
     }
     index = (int)((double)((ptr - base[current]) >> 12) / (double)(SEGMENT_PAGES));
+    for (int i = 0; i < allocators[current][index].size; i++) {
+        if (allocators[current][index].addresses[i] == ptr) {
+            chunk = i;
+            break;
+        }
+    }
+    if (chunk == -1) {
+        fprintf(stderr, "allocator corruption on free by object %d: chunk not found\n", current);
+        exit(EXIT_FAILURE);
+    }
     AUDIT printf("wrapping free for object %d - index is %d\n", current, index);
-    (allocators[current])[index].addresses[--(allocators[current])[index].top_elem] = ptr;
+    (allocators[current])[index].addresses[chunk] =
+        (allocators[current])[index].addresses[--(allocators[current])[index].top_elem];
+    (allocators[current])[index].addresses[(allocators[current])[index].top_elem] = ptr;
     if ((allocators[current])[index].top_elem < 0) {
         printf("allocator corruption on free by object %d\n", current);
         exit(EXIT_FAILURE);

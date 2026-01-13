@@ -139,8 +139,8 @@ void *thread(void *me) {
     }
 
     do {
-        ret = GetEvent(&(the_event->destination), &(the_event->timestamp), &(the_event->event_type), NULL,
-                       &(the_event->event_size));
+        ret = GetEvent(&(the_event->destination), &(the_event->timestamp), &(the_event->event_type),
+                       (char *)&(the_event->payload), &(the_event->event_size));
         if (!ret) {
             AUDIT printf("thread %ld got event: %e -  %d - %d\n", aux, the_event->timestamp, the_event->destination,
                          the_event->event_type);

@@ -33,6 +33,9 @@ uint64_t intermediate_flags[SIZE];
 int intermediate_zones_index = -1;
 
 void audit_block(instruction_record *the_record) {
+    if (the_record->type == 'l') { // avoid audit of load instruction in ckpt
+        return;
+    }
     printf("instruction record:\n \
 			belonging function is %s\n \
 			address is %p\n \
@@ -121,7 +124,6 @@ void build_patches(void) {
     patches = (patch *)address1;
 
     for (i = 0; i < target_instructions; i++) {
-
         if (instructions[i].type == 'l') {
             continue; // avoid patch of load instruction
         }
@@ -583,6 +585,7 @@ int elf_parse(char **function_names, char *parsable_elf) {
                             AUDIT
                             printf("move from memory (load)\n");
                             category = 'l';
+                            continue;
                         } else {
                             AUDIT
                             printf("move to memory (store)\n");

@@ -77,6 +77,7 @@ int GetEvent(int *destination, double *timestamp, int *event_type, char *body, i
     *event_type = e->event_type;
     ;
     *size = e->event_size;
+
     memcpy(body, e->payload, e->event_size);
 
     free(e);

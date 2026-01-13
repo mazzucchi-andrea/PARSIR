@@ -71,8 +71,7 @@ void ProcessEvent(unsigned int me, double now, int event_type, void *event_conte
     uint32_t *s1, *s2;
     unsigned int dest;
     event_content = event_content;
-    int res;
-    int i;
+    int res, i;
 
     // just bypassing compile time indications
     // on unused parameters
