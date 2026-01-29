@@ -27,7 +27,8 @@ double Expent(double, uint32_t *, uint32_t *);
 #define NUMA_BALANCING
 #define BENCHMARKING
 
-int get_current(void);
+//int get_current(void);
+//double get_current_time(void);
 int get_NUMAnode(void);
 int get_totNUMAnodes(void);
 int *getcounter(void);

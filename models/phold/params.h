@@ -1,4 +1,4 @@
-#define M 1000
+#define M 1
 #define CHUNKS_IN_LIST (8000)
 #define REALLOCATION (CHUNKS_IN_LIST / 1000)
 #define P (CHUNKS_IN_LIST >> 5)

@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 #include "setup.h"
+#include "engine.h"
 
 #define MIN_CHUNK_SIZE (32)
 #define MAX_CHUNK_SIZE (MIN_CHUNK_SIZE << 7) // 4KB is the currently set max chunk size

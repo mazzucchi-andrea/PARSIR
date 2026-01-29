@@ -11,6 +11,10 @@
 typedef struct _queue_elem {
     int destination;
     double timestamp;
+#ifdef SPECULATION
+    double send_time;//this is required to kep track of what to undo at sender side
+		     //if some straggler hits an object
+#endif
     struct _queue_elem *next;
     struct _queue_elem *prev;
 } queue_elem;
@@ -18,6 +22,9 @@ typedef struct _queue_elem {
 typedef struct _slot {
     queue_elem head;
     queue_elem tail;
+//#ifdef SPECULATION
+ //   queue_elem safe_head;
+//#endif
 } slot;
 
 typedef struct _fallbacks_lot {
@@ -30,11 +37,28 @@ typedef union _lock_buffer {
     char buff[64];
 } __attribute__((packed)) lock_buffer;
 
+typedef struct _log_element{
+        queue_elem* the_element;
+        double send_time;
+	struct _log_element* first;
+    	struct _log_element* last;
+        struct _log_element* next;
+        struct _log_element* prev;
+} log_element;
+
 int queue_init(void);
 void whoami(unsigned);
 int queue_insert(queue_elem *elem);
 queue_elem *queue_extract(void);
 int barrier(void);
+#ifdef SPECULATION
+int speculation_queue_insert(queue_elem *elem);
+int retractable_queue_insert(queue_elem *elem);
+void  rollback_retractable_queue(int, double);
+void  log_rollback(int, double);
+void restore_retractable_events(int);
+#endif
+
 
 #define offsetof(TYPE, MEMBER) ((size_t)&((TYPE *)0)->MEMBER)
 

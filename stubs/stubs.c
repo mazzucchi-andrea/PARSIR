@@ -4,25 +4,23 @@
 #include <unistd.h>
 
 #include "queue.h"
+#include "engine.h"
 
-#define MAX_EVENT_SIZE (512)
+#ifdef SPECULATION 
+extern double filter_message[OBJECTS];
+#endif
 
-typedef struct _event_buffer {
-    int destination;
-    double timestamp;
-    int event_type;
-    char payload[MAX_EVENT_SIZE];
-    int event_size;
-} event_buffer;
-
-typedef struct _event {
-    event_buffer e;
-    queue_elem q;
-} event;
 
 int ScheduleNewEvent(int destination, double timestamp, int event_type, char *body, int size) {
 
     event *p = NULL;
+
+ #ifdef SPECULATION
+    int flag;
+    int source;
+    source = get_current();
+
+#endif
 
     if (size > MAX_EVENT_SIZE) {
         printf("event size too large\n");
@@ -42,6 +40,18 @@ int ScheduleNewEvent(int destination, double timestamp, int event_type, char *bo
         return -1;
     }
 
+#ifdef SPECULATION
+	object_lock(source);
+	flag = 0;
+	printf("filter of object %d is %e - current time is %e\n",source, filter_message[source], get_current_time());
+	fflush(stdout);
+	if(filter_message[source] >= get_current_time()){//this is classical coasting forward event  
+		flag = 1;
+	}
+	object_unlock(source);
+	if (flag)  return 0;
+#endif
+
     p = malloc(sizeof(event)); // allocating the actual storage for the event
     if (!p) {
         printf("event allocation failure\n");
@@ -58,7 +68,17 @@ int ScheduleNewEvent(int destination, double timestamp, int event_type, char *bo
     p->q.destination = destination;
     p->q.timestamp = timestamp;
 
+#ifdef SPECULATION
+    if(get_current_time() == STARTUP_TIME) {
+		printf("really inserting an event as committed\n");
+		fflush(stdout);
+		 return queue_insert(&(p->q)); //we can only commit simulation init events 
+	}
+    printf("schedule event called after startup\n");
+    return speculation_queue_insert(&(p->q)); //all the others must pass through the speculation queue
+#else
     return queue_insert(&(p->q));
+#endif
 }
 
 int GetEvent(int *destination, double *timestamp, int *event_type, char *body, int *size) {
@@ -75,12 +95,18 @@ int GetEvent(int *destination, double *timestamp, int *event_type, char *body, i
     *destination = e->destination;
     *timestamp = e->timestamp;
     *event_type = e->event_type;
-    ;
     *size = e->event_size;
 
     memcpy(body, e->payload, e->event_size);
 
+//    free(e);
+ //   return 0;
+
+#ifdef SPECULATION
+    retractable_queue_insert(q);
+#else
     free(e);
+#endif
 
     return 0;
 }

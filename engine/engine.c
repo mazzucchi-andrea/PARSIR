@@ -10,26 +10,15 @@
 
 #include "memory.h"
 #include "queue.h"
+#include "engine.h"
+#include "speculation.h"
+
 #if GRID_CKPT
 #include "grid_ckpt.h"
 #elif CHUNK_BASED
 #include "chunk_ckpt.h"
 #endif
 
-#define MAX_EVENT_SIZE (512)
-
-typedef struct _event_buffer {
-    int destination;
-    double timestamp;
-    int event_type;
-    char payload[MAX_EVENT_SIZE];
-    int event_size;
-} event_buffer;
-
-typedef struct _event {
-    event_buffer e;
-    queue_elem q;
-} event;
 
 typedef struct _thread_startup {
     long vTID;
@@ -53,10 +42,16 @@ volatile int processed_events[THREADS];
 #define DURATION (60) // this is setup in seconds
 
 __thread int current = -1;
+#ifdef SPECULATION
+__thread double current_time = -1;
+#endif
 __thread int NUMAnode = -1;
 __thread int numaNodePerObjects = 0;
 
-inline int get_current(void) { return current; }
+int get_current(void) { return current; }
+#ifdef SPECULATION
+double get_current_time(void) { return current_time; }
+#endif
 
 inline int get_NUMAnode(void) {
     return numaNodePerObjects; // return NUMAnode;
@@ -113,6 +108,9 @@ void *thread(void *me) {
         AUDIT printf("thread %ld - starting up object %d\n", aux, minID);
         fflush(stdout);
         current = minID;
+#ifdef SPECULATION
+	current_time = STARTUP_TIME;
+#endif
         object_allocator_setup(); // you cannot init any object if its chunk allocator is not setup
         AUDIT printf("thread %ld - setting up object %d\n", aux, current);
         ProcessEvent(minID, STARTUP_TIME, INIT, NULL, 0, NULL);
@@ -145,6 +143,9 @@ void *thread(void *me) {
             AUDIT printf("thread %ld got event: %e -  %d - %d\n", aux, the_event->timestamp, the_event->destination,
                          the_event->event_type);
             current = the_event->destination;
+#ifdef SPECULATION
+            current_time = the_event->timestamp;
+#endif
             ProcessEvent(the_event->destination, the_event->timestamp, the_event->event_type, the_event->payload,
                          the_event->event_size, NULL);
             current = -1;
@@ -365,6 +366,10 @@ int main(int argc, char **argv) {
         }
     NUMAdone:;
     }
+
+#ifdef SPECULATION
+    speculation_init();
+#endif
 
     for (i = 0; i < THREADS; i++) {
         if (pthread_create(&tid, 0x0, thread, (void *)&(startup_info[i]))) {

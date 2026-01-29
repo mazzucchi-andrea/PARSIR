@@ -25,7 +25,12 @@ runtime:
 	gcc -c -O3 ../stubs/stubs.c -o ../lib/stubs.o -I../include 
 	gcc -c -O3 ../random/random.c -o ../lib/random.o -I../include 
 	gcc -c -O3 ../engine/engine.c -o ../lib/engine.o -I../include 
+ifeq ($(SPECULATION),1)
+	gcc -c -O3 ../speculation/speculation.c -o ../lib/speculation.o -I../include -pthread
+	ld  -r ../lib/queue.o ../lib/memory.o ../lib/barrier-synchronization.o ../lib/stubs.o ../lib/random.o ../lib/engine.o ./lib/speculation.o -I../include -o ../lib/PARSIR-runtime.o
+else
 	ld  -r ../lib/queue.o ../lib/memory.o ../lib/barrier-synchronization.o ../lib/stubs.o ../lib/random.o ../lib/engine.o -I../include -o ../lib/PARSIR-runtime.o
+endif
 
 runtime_grid_ckpt:
 	cd ../scripts ; make get-HW-info
@@ -37,7 +42,8 @@ runtime_grid_ckpt:
 	gcc -c -O3 ../memory/memory.c -o ../lib/memory.o -I../include  $(GRID_CKPT_FLAGS)
 	gcc -c -O3 ../engine/engine.c -o ../lib/engine.o -I../include $(GRID_CKPT_FLAGS)
 	gcc -c -O3 ../grid_ckpt/grid_ckpt.c -o ../lib/grid_ckpt.o -I../include -I../MVM_GRID_CKPT/include -DMAX_MEMORY=$(MAX_MEMORY) $(GRID_CKPT_FLAGS)
-	ld -r ../lib/queue.o ../lib/memory.o ../lib/barrier-synchronization.o ../lib/stubs.o ../lib/random.o ../lib/engine.o ../lib/grid_ckpt.o -I../include -o ../lib/PARSIR-runtime.o
+	gcc -c -O3 ../speculation/speculation.c -o ../lib/speculation.o -I../include -pthread
+	ld -r ../lib/queue.o ../lib/memory.o ../lib/barrier-synchronization.o ../lib/stubs.o ../lib/random.o ../lib/engine.o ../lib/grid_ckpt.o ../lib/speculation.o -I../include -o ../lib/PARSIR-runtime.o
 
 runtime_grid_ckpt_bs:
 	cd ../scripts ; make get-HW-info
@@ -61,7 +67,8 @@ runtime_chunk_ckpt:
 	gcc -c -O3 ../random/random.c -o ../lib/random.o -I../include $(CHUNK_CKPT_FLAGS)
 	gcc -c -O3 ../engine/engine.c -o ../lib/engine.o -I../include $(CHUNK_CKPT_FLAGS)
 	gcc -c -O3 ../chunk_ckpt/chunk_ckpt.c -o ../lib/chunk_ckpt.o -I../include $(CHUNK_CKPT_FLAGS)
-	ld  -r ../lib/queue.o ../lib/memory.o ../lib/barrier-synchronization.o ../lib/stubs.o ../lib/random.o ../lib/engine.o ../lib/chunk_ckpt.o -I../include -o ../lib/PARSIR-runtime.o
+	gcc -c -O3 ../speculation/speculation.c -o ../lib/speculation.o -I../include -pthread
+	ld  -r ../lib/queue.o ../lib/memory.o ../lib/barrier-synchronization.o ../lib/stubs.o ../lib/random.o ../lib/engine.o ../lib/chunk_ckpt.o ../lib/speculation.o -I../include -o ../lib/PARSIR-runtime.o
 
 phold: runtime
 	@if [ ! -d ../bin ]; then mkdir -p ../bin; fi
