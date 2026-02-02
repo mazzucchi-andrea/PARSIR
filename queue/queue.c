@@ -324,6 +324,7 @@ redo:
     if (target < OBJECTS) {
 #ifdef SPECULATION
         object_lock(target);
+	speculation[target].already_taken = 1;
         rollback_time = 0.0;
         if (speculation[target].standing_rollback) {
             rollback_time = speculation[target].causality_violation_time;
@@ -559,6 +560,14 @@ int speculation_queue_insert(queue_elem *elem) {
             fflush(stdout);
         }
         queue_insert(elem);
+        if ((speculation[destination].the_state == FREE) && (speculation[destination].already_taken == 1)) { // get the oject for processing
+            put_into_stack(destination);
+            speculation[destination].in_stack = 1;
+            if (!speculation[source].in_stack) {
+                put_head_into_stack(source);
+                speculation[source].in_stack = 1;
+            }
+	}
     }
     object_unlock(destination);
     /* if (destination < object_identifiers_vector[myNUMAindex]) {
@@ -588,6 +597,7 @@ flush_another:
         speculation[target_object].causality_violation_time = 0.0;
         speculation[target_object].standing_rollback = 0;
         speculation[target_object].the_state = FREE;
+        speculation[target_object].already_taken = 0;
         filter_message[target_object] = current_min_limit + LOOKAHEAD - epsilon;
 
         flush_log(target_object);

@@ -12,6 +12,7 @@ typedef struct _object_status{
         int the_state;//this is required in order to handle the rollback phase
                       //the two possible values are FREE (currently the object is not under control
                       //of any thread) and BUSY (it is under control by some thread)
+	int already_taken;
 } object_status;
 
 int speculation_init(void);
