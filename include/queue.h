@@ -22,9 +22,9 @@ typedef struct _queue_elem {
 typedef struct _slot {
     queue_elem head;
     queue_elem tail;
-//#ifdef SPECULATION
- //   queue_elem safe_head;
-//#endif
+    // #ifdef SPECULATION
+    //    queue_elem safe_head;
+    // #endif
 } slot;
 
 typedef struct _fallbacks_lot {
@@ -58,6 +58,7 @@ void rollback_retractable_queue(int, double);
 void rollback_speculation_queue(int, double);
 void log_rollback(int, double);
 void restore_retractable_events(int);
+void print_queues_status(int);
 #endif
 
 #define offsetof(TYPE, MEMBER) ((size_t)&((TYPE *)0)->MEMBER)

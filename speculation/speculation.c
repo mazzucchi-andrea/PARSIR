@@ -16,7 +16,7 @@
 #include "chunk_ckpt.h"
 #endif
 
-#define STACKABLE_OBJECTS (50)
+#define STACKABLE_OBJECTS (OBJECTS)
 
 object_status speculation[OBJECTS]; // an entry of this array needs to be managed in separation
                                     // via the corresponding speculation_lock[] acquisition
@@ -27,6 +27,10 @@ extern log_element log_queue[OBJECTS];
 
 __thread int object_stack[STACKABLE_OBJECTS];
 __thread int stack_index = -1;
+
+int get_stack_index(){
+    return stack_index;
+}
 
 int speculation_init(void) {
     int i;
@@ -107,6 +111,8 @@ int run_rollback(int object, double rollback_time) {
     log_rollback(object, rollback_time);
     restore_state(object);              // here we default to the initial state of the current epoch
                                         // but remember to reset the object_status structure
+    printf("Queue status before restore_retractable_events\n");
+    print_queues_status(object);
     restore_retractable_events(object); // we simply reput stuff in the input queue
     return 0;
 }
