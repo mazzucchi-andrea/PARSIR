@@ -1,8 +1,9 @@
 CC = gcc 
 CFLAGS = -c -Wall -Wextra -Wpedantic -I../../include/ -I./ -lm -Wimplicit-fallthrough
-CHUNK_CKPT_FLAGS = -pie -fpie -I../../MVM_CHUNK/include
-GRID_CKPT_FLAGS = -pie -fpie -I../../MVM_GRID_CKPT/include
-GRID_CKPT_BS_FLAGS = -pie -fpie -I../../MVM_GRID_CKPT_BS/include
+CHUNK_CKPT_FLAGS = -pie -fpie -I../../MVM_CHUNK/include -DSPECULATION
+CHUNK_FULL_CKPT_FLAGS = -DSPECULATION
+GRID_CKPT_FLAGS = -pie -fpie -I../../MVM_GRID_CKPT/include -DSPECULATION
+GRID_CKPT_BS_FLAGS = -pie -fpie -I../../MVM_GRID_CKPT_BS/include -DSPECULATION
 TARGET1 = intermediate-pcs1.o 
 TARGET2 =  
 TARGET3 = intermediate-pcs3.o 
@@ -20,6 +21,11 @@ all:
 chunk_ckpt:
 	$(CC) $(SRCS1) $(CFLAGS) $(CHUNK_CKPT_FLAGS) -o $(TARGET1)
 	$(CC) $(SRCS3) $(CFLAGS) $(CHUNK_CKPT_FLAGS) -o $(TARGET3)
+	ld -r $(TARGET1) $(TARGET2) $(TARGET3) --wrap=malloc --wrap=free -o pcs.o
+
+chunk_full_ckpt:
+	$(CC) $(SRCS1) $(CFLAGS) $(CHUNK_FULL_CKPT_FLAGS) -o $(TARGET1)
+	$(CC) $(SRCS3) $(CFLAGS) $(CHUNK_FULL_CKPT_FLAGS) -o $(TARGET3)
 	ld -r $(TARGET1) $(TARGET2) $(TARGET3) --wrap=malloc --wrap=free -o pcs.o
 
 grid_ckpt:

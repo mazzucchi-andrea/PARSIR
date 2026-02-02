@@ -1,7 +1,8 @@
 MAX_MEMORY = 0x200000UL
 MOD = 8
 GRID_CKPT_FLAGS = -pie -fPIE -fstack-protector-all -DGRID_CKPT -DMOD=$(MOD) -DSPECULATION
-CHUNK_CKPT_FLAGS = -pie -fPIE -fstack-protector-all -DSPECULATION -DCHUNK_BASED
+CHUNK_CKPT_FLAGS = -pie -fPIE -fstack-protector-all -DSPECULATION -DCHUNK_BASED -DCHUNK_BASED_SAVE
+CHUNK_CKPT_FULL_FLAGS = -DSPECULATION -DCHUNK_BASED -DCHUNK_FULL
 
 PHOLD_TARGET_FUNCTIONS = \""<add1>:","<dell1>:","<add2>:","<dell2>:","<read1>:","<read2>:","<ProcessEvent>:"\"
 PHOLD_TARGET_MODULES = ../models/phold/application.c
@@ -25,12 +26,7 @@ runtime:
 	gcc -c -O3 ../stubs/stubs.c -o ../lib/stubs.o -I../include 
 	gcc -c -O3 ../random/random.c -o ../lib/random.o -I../include 
 	gcc -c -O3 ../engine/engine.c -o ../lib/engine.o -I../include 
-ifeq ($(SPECULATION),1)
-	gcc -c -O3 ../speculation/speculation.c -o ../lib/speculation.o -I../include -pthread
-	ld  -r ../lib/queue.o ../lib/memory.o ../lib/barrier-synchronization.o ../lib/stubs.o ../lib/random.o ../lib/engine.o ./lib/speculation.o -I../include -o ../lib/PARSIR-runtime.o
-else
 	ld  -r ../lib/queue.o ../lib/memory.o ../lib/barrier-synchronization.o ../lib/stubs.o ../lib/random.o ../lib/engine.o -I../include -o ../lib/PARSIR-runtime.o
-endif
 
 runtime_grid_ckpt:
 	cd ../scripts ; make get-HW-info
@@ -42,7 +38,7 @@ runtime_grid_ckpt:
 	gcc -c -O3 ../memory/memory.c -o ../lib/memory.o -I../include  $(GRID_CKPT_FLAGS)
 	gcc -c -O3 ../engine/engine.c -o ../lib/engine.o -I../include $(GRID_CKPT_FLAGS)
 	gcc -c -O3 ../grid_ckpt/grid_ckpt.c -o ../lib/grid_ckpt.o -I../include -I../MVM_GRID_CKPT/include -DMAX_MEMORY=$(MAX_MEMORY) $(GRID_CKPT_FLAGS)
-	gcc -c -O3 ../speculation/speculation.c -o ../lib/speculation.o -I../include -pthread
+	gcc -c -O3 ../speculation/speculation.c -o ../lib/speculation.o -I../include -pthread $(GRID_CKPT_FLAGS)
 	ld -r ../lib/queue.o ../lib/memory.o ../lib/barrier-synchronization.o ../lib/stubs.o ../lib/random.o ../lib/engine.o ../lib/grid_ckpt.o ../lib/speculation.o -I../include -o ../lib/PARSIR-runtime.o
 
 runtime_grid_ckpt_bs:
@@ -55,7 +51,8 @@ runtime_grid_ckpt_bs:
 	gcc -c -O3 ../memory/memory.c -o ../lib/memory.o -I../include $(GRID_CKPT_FLAGS)
 	gcc -c -O3 ../engine/engine.c -o ../lib/engine.o -I../include $(GRID_CKPT_FLAGS)
 	gcc -c -O3 ../grid_ckpt/grid_ckpt.c -o ../lib/grid_ckpt.o -I../include -I../MVM_GRID_CKPT_BS/include -DMAX_MEMORY=$(MAX_MEMORY) $(GRID_CKPT_FLAGS)
-	ld -r ../lib/queue.o ../lib/memory.o ../lib/barrier-synchronization.o ../lib/stubs.o ../lib/random.o ../lib/engine.o ../lib/grid_ckpt.o -I../include -I../MVM_GRID_CKPT_BS/include -o ../lib/PARSIR-runtime.o
+	gcc -c -O3 ../speculation/speculation.c -o ../lib/speculation.o -I../include -pthread $(GRID_CKPT_FLAGS)
+	ld -r ../lib/queue.o ../lib/memory.o ../lib/barrier-synchronization.o ../lib/stubs.o ../lib/random.o ../lib/engine.o ../lib/grid_ckpt.o ../lib/speculation.o -I../include -I../MVM_GRID_CKPT_BS/include -o ../lib/PARSIR-runtime.o
 
 runtime_chunk_ckpt:
 	cd ../scripts ; make get-HW-info
@@ -67,7 +64,20 @@ runtime_chunk_ckpt:
 	gcc -c -O3 ../random/random.c -o ../lib/random.o -I../include $(CHUNK_CKPT_FLAGS)
 	gcc -c -O3 ../engine/engine.c -o ../lib/engine.o -I../include $(CHUNK_CKPT_FLAGS)
 	gcc -c -O3 ../chunk_ckpt/chunk_ckpt.c -o ../lib/chunk_ckpt.o -I../include $(CHUNK_CKPT_FLAGS)
-	gcc -c -O3 ../speculation/speculation.c -o ../lib/speculation.o -I../include -pthread
+	gcc -c -O3 ../speculation/speculation.c -o ../lib/speculation.o -I../include -pthread $(CHUNK_CKPT_FLAGS)
+	ld  -r ../lib/queue.o ../lib/memory.o ../lib/barrier-synchronization.o ../lib/stubs.o ../lib/random.o ../lib/engine.o ../lib/chunk_ckpt.o ../lib/speculation.o -I../include -o ../lib/PARSIR-runtime.o
+
+runtime_chunk_full_ckpt:
+	cd ../scripts ; make get-HW-info
+	@if [ ! -d ../lib ]; then mkdir -p ../lib; fi
+	gcc -c -O3 ../queue/queue.c -o ../lib/queue.o -I../include $(CHUNK_CKPT_FULL_FLAGS)
+	gcc -c ../queue/barrier-synchronization.c -o ../lib/barrier-synchronization.o -I../include $(CHUNK_CKPT_FULL_FLAGS)
+	gcc -c -O3 ../memory/memory.c -o ../lib/memory.o -I../include $(CHUNK_CKPT_FULL_FLAGS)
+	gcc -c -O3 ../stubs/stubs.c -o ../lib/stubs.o -I../include $(CHUNK_CKPT_FULL_FLAGS)
+	gcc -c -O3 ../random/random.c -o ../lib/random.o -I../include $(CHUNK_CKPT_FULL_FLAGS)
+	gcc -c -O3 ../engine/engine.c -o ../lib/engine.o -I../include $(CHUNK_CKPT_FULL_FLAGS)
+	gcc -c -O3 ../chunk_ckpt/chunk_ckpt.c -o ../lib/chunk_ckpt.o -I../include $(CHUNK_CKPT_FULL_FLAGS)
+	gcc -c -O3 ../speculation/speculation.c -o ../lib/speculation.o -I../include -pthread $(CHUNK_CKPT_FULL_FLAGS)
 	ld  -r ../lib/queue.o ../lib/memory.o ../lib/barrier-synchronization.o ../lib/stubs.o ../lib/random.o ../lib/engine.o ../lib/chunk_ckpt.o ../lib/speculation.o -I../include -o ../lib/PARSIR-runtime.o
 
 phold: runtime
@@ -79,7 +89,6 @@ pcs: runtime
 	@if [ ! -d ../bin ]; then mkdir -p ../bin; fi
 	cd ../models/pcs ; make
 	gcc -o ../bin/PARSIR-simulator ../lib/PARSIR-runtime.o -I../include -lpthread -lnuma ../models/pcs/pcs.o -lm
-
 
 highway: runtime
 	@if [ ! -d ../bin ]; then mkdir -p ../bin; fi
@@ -157,6 +166,16 @@ highway_chunk_ckpt: runtime_chunk_ckpt
 	ld -r ../models/highway/highway.o ../lib/PARSIR-runtime.o -I../include -I../MVM_CHUNK/include -o ../bin/PARSIR-simulator.o
 	cd ../MVM_CHUNK ; make compile-and-link restore-files TARGET_MODULES=$(HIGHWAY_TARGET_MODULES) TARGET_FUNCTIONS=$(HIGHWAY_TARGET_FUNCTIONS) ALLOCATOR_AREA_SIZE=$(MAX_MEMORY) MOD=$(MOD)
 	@echo MVM_CHUNK applied to PARSIR
+
+phold_chunk_full_ckpt: runtime_chunk_full_ckpt
+	@if [ ! -d ../bin ]; then mkdir -p ../bin; fi
+	cd ../models/phold ; make chunk_full_ckpt
+	gcc -o ../bin/PARSIR-simulator ../models/phold/phold.o ../lib/PARSIR-runtime.o -I../include -lpthread -lnuma
+
+pcs_chunk_full_ckpt: runtime_chunk_full_ckpt
+	@if [ ! -d ../bin ]; then mkdir -p ../bin; fi
+	cd ../models/pcs ; make chunk_full_ckpt
+	gcc -o ../bin/PARSIR-simulator ../lib/PARSIR-runtime.o -I../include -lpthread -lnuma ../models/pcs/pcs.o -lm
 
 clean:
 	find .. -name "*.o" -type f -delete ; rm -f ../bin/PARSIR-simulator ; cd ../MVM_GRID_CKPT ; make clean ; cd ../MVM_GRID_CKPT_BS ; make clean ; cd ../MVM_CHUNK ; make clean

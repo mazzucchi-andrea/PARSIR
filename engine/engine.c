@@ -8,17 +8,17 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#include "engine.h"
 #include "memory.h"
 #include "queue.h"
-#include "engine.h"
+#ifdef SPECULATION
 #include "speculation.h"
-
+#endif
 #if GRID_CKPT
 #include "grid_ckpt.h"
 #elif CHUNK_BASED
 #include "chunk_ckpt.h"
 #endif
-
 
 typedef struct _thread_startup {
     long vTID;
@@ -109,21 +109,25 @@ void *thread(void *me) {
         fflush(stdout);
         current = minID;
 #ifdef SPECULATION
-	current_time = STARTUP_TIME;
+        current_time = STARTUP_TIME;
 #endif
         object_allocator_setup(); // you cannot init any object if its chunk allocator is not setup
         AUDIT printf("thread %ld - setting up object %d\n", aux, current);
         ProcessEvent(minID, STARTUP_TIME, INIT, NULL, 0, NULL);
-        current = -1;
-#if GRID_CKPT || CHUNK_BASED
+#ifdef SPECULATION
         set_ckpt(minID);
 #endif
+        current = -1;
     }
 
     // the init phase is over
     // we need to wait each other for correct
     // management of the lookahead epoch in
     // the event queue
+    {
+        printf("\n---------- INIT EVENTS COMPLETED ----------\n\n");
+        fflush(stdout);
+    }
     barrier();
 
     // this is the buffer used to extract events from the queue

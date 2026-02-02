@@ -13,4 +13,6 @@ void restore_chunks(int);
 
 void ckpt_chunk(void *);
 
+void set_used_chunks_ckpt(int);
+
 #endif

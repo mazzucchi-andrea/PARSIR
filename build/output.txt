@@ -1,0 +1,719 @@
+PARSIR started with 1 threads
+HW level config file not available - running with default config
+engine - ratio is 128.000000
+engine - NUMA ratio is 128.000000
+objects assigned to NUMA node 0 are 128 min is 0 - max is 127
+PARSIR worker thread 0 started - CPU to pin on is 0 - NUMA node is 1
+object 0 - executing event at time 0.000000e+00
+object 1 - executing event at time 0.000000e+00
+object 2 - executing event at time 0.000000e+00
+object 3 - executing event at time 0.000000e+00
+object 4 - executing event at time 0.000000e+00
+object 5 - executing event at time 0.000000e+00
+object 6 - executing event at time 0.000000e+00
+object 7 - executing event at time 0.000000e+00
+object 8 - executing event at time 0.000000e+00
+object 9 - executing event at time 0.000000e+00
+object 10 - executing event at time 0.000000e+00
+object 11 - executing event at time 0.000000e+00
+object 12 - executing event at time 0.000000e+00
+object 13 - executing event at time 0.000000e+00
+object 14 - executing event at time 0.000000e+00
+object 15 - executing event at time 0.000000e+00
+object 16 - executing event at time 0.000000e+00
+object 17 - executing event at time 0.000000e+00
+object 18 - executing event at time 0.000000e+00
+object 19 - executing event at time 0.000000e+00
+object 20 - executing event at time 0.000000e+00
+object 21 - executing event at time 0.000000e+00
+object 22 - executing event at time 0.000000e+00
+object 23 - executing event at time 0.000000e+00
+object 24 - executing event at time 0.000000e+00
+object 25 - executing event at time 0.000000e+00
+object 26 - executing event at time 0.000000e+00
+object 27 - executing event at time 0.000000e+00
+object 28 - executing event at time 0.000000e+00
+object 29 - executing event at time 0.000000e+00
+object 30 - executing event at time 0.000000e+00
+object 31 - executing event at time 0.000000e+00
+object 32 - executing event at time 0.000000e+00
+object 33 - executing event at time 0.000000e+00
+object 34 - executing event at time 0.000000e+00
+object 35 - executing event at time 0.000000e+00
+object 36 - executing event at time 0.000000e+00
+object 37 - executing event at time 0.000000e+00
+object 38 - executing event at time 0.000000e+00
+object 39 - executing event at time 0.000000e+00
+object 40 - executing event at time 0.000000e+00
+object 41 - executing event at time 0.000000e+00
+object 42 - executing event at time 0.000000e+00
+object 43 - executing event at time 0.000000e+00
+object 44 - executing event at time 0.000000e+00
+object 45 - executing event at time 0.000000e+00
+object 46 - executing event at time 0.000000e+00
+object 47 - executing event at time 0.000000e+00
+object 48 - executing event at time 0.000000e+00
+object 49 - executing event at time 0.000000e+00
+object 50 - executing event at time 0.000000e+00
+object 51 - executing event at time 0.000000e+00
+object 52 - executing event at time 0.000000e+00
+object 53 - executing event at time 0.000000e+00
+object 54 - executing event at time 0.000000e+00
+object 55 - executing event at time 0.000000e+00
+object 56 - executing event at time 0.000000e+00
+object 57 - executing event at time 0.000000e+00
+object 58 - executing event at time 0.000000e+00
+object 59 - executing event at time 0.000000e+00
+object 60 - executing event at time 0.000000e+00
+object 61 - executing event at time 0.000000e+00
+object 62 - executing event at time 0.000000e+00
+object 63 - executing event at time 0.000000e+00
+object 64 - executing event at time 0.000000e+00
+object 65 - executing event at time 0.000000e+00
+object 66 - executing event at time 0.000000e+00
+object 67 - executing event at time 0.000000e+00
+object 68 - executing event at time 0.000000e+00
+object 69 - executing event at time 0.000000e+00
+object 70 - executing event at time 0.000000e+00
+object 71 - executing event at time 0.000000e+00
+object 72 - executing event at time 0.000000e+00
+object 73 - executing event at time 0.000000e+00
+object 74 - executing event at time 0.000000e+00
+object 75 - executing event at time 0.000000e+00
+object 76 - executing event at time 0.000000e+00
+object 77 - executing event at time 0.000000e+00
+object 78 - executing event at time 0.000000e+00
+object 79 - executing event at time 0.000000e+00
+object 80 - executing event at time 0.000000e+00
+object 81 - executing event at time 0.000000e+00
+object 82 - executing event at time 0.000000e+00
+object 83 - executing event at time 0.000000e+00
+object 84 - executing event at time 0.000000e+00
+object 85 - executing event at time 0.000000e+00
+object 86 - executing event at time 0.000000e+00
+object 87 - executing event at time 0.000000e+00
+object 88 - executing event at time 0.000000e+00
+object 89 - executing event at time 0.000000e+00
+object 90 - executing event at time 0.000000e+00
+object 91 - executing event at time 0.000000e+00
+object 92 - executing event at time 0.000000e+00
+object 93 - executing event at time 0.000000e+00
+object 94 - executing event at time 0.000000e+00
+object 95 - executing event at time 0.000000e+00
+object 96 - executing event at time 0.000000e+00
+object 97 - executing event at time 0.000000e+00
+object 98 - executing event at time 0.000000e+00
+object 99 - executing event at time 0.000000e+00
+object 100 - executing event at time 0.000000e+00
+object 101 - executing event at time 0.000000e+00
+object 102 - executing event at time 0.000000e+00
+object 103 - executing event at time 0.000000e+00
+object 104 - executing event at time 0.000000e+00
+object 105 - executing event at time 0.000000e+00
+object 106 - executing event at time 0.000000e+00
+object 107 - executing event at time 0.000000e+00
+object 108 - executing event at time 0.000000e+00
+object 109 - executing event at time 0.000000e+00
+object 110 - executing event at time 0.000000e+00
+object 111 - executing event at time 0.000000e+00
+object 112 - executing event at time 0.000000e+00
+object 113 - executing event at time 0.000000e+00
+object 114 - executing event at time 0.000000e+00
+object 115 - executing event at time 0.000000e+00
+object 116 - executing event at time 0.000000e+00
+object 117 - executing event at time 0.000000e+00
+object 118 - executing event at time 0.000000e+00
+object 119 - executing event at time 0.000000e+00
+object 120 - executing event at time 0.000000e+00
+object 121 - executing event at time 0.000000e+00
+object 122 - executing event at time 0.000000e+00
+object 123 - executing event at time 0.000000e+00
+object 124 - executing event at time 0.000000e+00
+object 125 - executing event at time 0.000000e+00
+object 126 - executing event at time 0.000000e+00
+object 127 - executing event at time 0.000000e+00
+
+---------- INIT EVENTS COMPLETED ----------
+
+object 0 - executing event at time 7.475554e-03
+object 0 - count of events is 1
+object 0 - scheduled event - timestamp is 4.725267e-01 - destination is 85
+object 1 - executing event at time 3.780165e-03
+object 1 - count of events is 1
+object 1 - scheduled event - timestamp is 7.908211e-01 - destination is 43
+object 2 - executing event at time 1.049229e-02
+object 2 - count of events is 1
+inserting in speculation queue an event with timestamp 2.568803e+00 for object 1
+object 2 - scheduled event - timestamp is 2.568803e+00 - destination is 1
+object 3 - executing event at time 4.423264e-03
+object 3 - count of events is 1
+object 3 - scheduled event - timestamp is 4.026450e-01 - destination is 86
+object 4 - executing event at time 1.759116e-02
+object 4 - count of events is 1
+object 4 - scheduled event - timestamp is 6.305372e-01 - destination is 44
+object 5 - executing event at time 5.330033e-03
+object 5 - count of events is 1
+inserting in speculation queue an event with timestamp 1.335566e+00 for object 2
+object 5 - scheduled event - timestamp is 1.335566e+00 - destination is 2
+object 6 - executing event at time 5.439088e-02
+object 6 - count of events is 1
+object 6 - scheduled event - timestamp is 4.025746e-01 - destination is 88
+object 7 - executing event at time 6.704445e-03
+object 7 - count of events is 1
+object 7 - scheduled event - timestamp is 5.086298e-01 - destination is 45
+object 8 - executing event at time 3.572397e-03
+object 8 - count of events is 1
+object 8 - scheduled event - timestamp is 9.023607e-01 - destination is 3
+object 9 - executing event at time 9.033956e-03
+object 9 - count of events is 1
+inserting in speculation queue an event with timestamp 4.302536e+00 for object 89
+object 9 - scheduled event - timestamp is 4.302536e+00 - destination is 89
+object 10 - executing event at time 4.141424e-03
+object 10 - count of events is 1
+object 10 - scheduled event - timestamp is 4.290963e-01 - destination is 46
+object 11 - executing event at time 1.384425e-02
+object 11 - count of events is 1
+object 11 - scheduled event - timestamp is 6.925041e-01 - destination is 4
+object 12 - executing event at time 4.926071e-03
+object 12 - count of events is 1
+inserting in speculation queue an event with timestamp 1.689071e+00 for object 90
+object 12 - scheduled event - timestamp is 1.689071e+00 - destination is 90
+object 13 - executing event at time 2.961132e-02
+object 13 - count of events is 1
+object 13 - scheduled event - timestamp is 3.980611e-01 - destination is 48
+object 14 - executing event at time 6.077541e-03
+object 14 - count of events is 1
+object 14 - scheduled event - timestamp is 5.512282e-01 - destination is 5
+object 15 - executing event at time 3.386277e-03
+object 15 - count of events is 1
+inserting in speculation queue an event with timestamp 1.050906e+00 for object 91
+object 15 - scheduled event - timestamp is 1.050906e+00 - destination is 91
+object 16 - executing event at time 7.931540e-03
+object 16 - count of events is 1
+inserting in speculation queue an event with timestamp 1.335244e+01 for object 49
+object 16 - scheduled event - timestamp is 1.335244e+01 - destination is 49
+object 17 - executing event at time 3.893349e-03
+object 17 - count of events is 1
+object 17 - scheduled event - timestamp is 4.594289e-01 - destination is 6
+object 18 - executing event at time 1.141323e-02
+object 18 - count of events is 1
+object 18 - scheduled event - timestamp is 7.715694e-01 - destination is 92
+object 19 - executing event at time 4.579028e-03
+object 19 - count of events is 1
+inserting in speculation queue an event with timestamp 2.299208e+00 for object 50
+object 19 - scheduled event - timestamp is 2.299208e+00 - destination is 50
+object 20 - executing event at time 2.034327e-02
+object 20 - count of events is 1
+object 20 - scheduled event - timestamp is 4.115641e-01 - destination is 8
+object 21 - executing event at time 5.557851e-03
+object 21 - count of events is 1
+object 21 - scheduled event - timestamp is 6.020805e-01 - destination is 93
+object 22 - executing event at time 9.350158e-02
+object 22 - count of events is 1
+inserting in speculation queue an event with timestamp 1.348706e+00 for object 51
+object 22 - scheduled event - timestamp is 1.348706e+00 - destination is 51
+object 23 - executing event at time 7.068919e-03
+object 23 - count of events is 1
+object 23 - scheduled event - timestamp is 3.498911e-01 - destination is 9
+object 24 - executing event at time 3.673314e-03
+object 24 - count of events is 1
+object 24 - scheduled event - timestamp is 4.945322e-01 - destination is 94
+object 25 - executing event at time 9.708450e-03
+object 25 - count of events is 1
+object 25 - scheduled event - timestamp is 8.736048e-01 - destination is 52
+object 26 - executing event at time 4.277665e-03
+object 26 - count of events is 1
+inserting in speculation queue an event with timestamp 3.603636e+00 for object 10
+object 26 - scheduled event - timestamp is 3.603636e+00 - destination is 10
+object 27 - executing event at time 1.549385e-02
+object 27 - count of events is 1
+object 27 - scheduled event - timestamp is 4.324857e-01 - destination is 96
+object 28 - executing event at time 5.120037e-03
+object 28 - count of events is 1
+object 28 - scheduled event - timestamp is 6.637040e-01 - destination is 53
+object 29 - executing event at time 3.834291e-02
+object 29 - count of events is 1
+inserting in speculation queue an event with timestamp 1.603998e+00 for object 11
+object 29 - scheduled event - timestamp is 1.603998e+00 - destination is 11
+object 30 - executing event at time 6.375526e-03
+object 30 - count of events is 1
+object 30 - scheduled event - timestamp is 3.688268e-01 - destination is 97
+object 31 - executing event at time 3.476820e-03
+object 31 - count of events is 1
+object 31 - scheduled event - timestamp is 5.355977e-01 - destination is 54
+object 32 - executing event at time 8.446767e-03
+object 32 - count of events is 1
+inserting in speculation queue an event with timestamp 1.008874e+00 for object 12
+object 32 - scheduled event - timestamp is 1.008874e+00 - destination is 12
+object 33 - executing event at time 4.013520e-03
+object 33 - count of events is 1
+inserting in speculation queue an event with timestamp 8.347472e+00 for object 98
+object 33 - scheduled event - timestamp is 8.347472e+00 - destination is 98
+object 34 - executing event at time 1.251139e-02
+object 34 - count of events is 1
+object 34 - scheduled event - timestamp is 4.589090e-01 - destination is 56
+object 35 - executing event at time 4.746163e-03
+object 35 - count of events is 1
+object 35 - scheduled event - timestamp is 7.398044e-01 - destination is 13
+object 36 - executing event at time 2.411621e-02
+object 36 - count of events is 1
+inserting in speculation queue an event with timestamp 2.104254e+00 for object 99
+object 36 - scheduled event - timestamp is 2.104254e+00 - destination is 99
+object 37 - executing event at time 5.806013e-03
+object 37 - count of events is 1
+object 37 - scheduled event - timestamp is 3.902708e-01 - destination is 57
+object 38 - executing event at time 3.328256e-01
+object 38 - count of events is 1
+object 38 - scheduled event - timestamp is 9.137753e-01 - destination is 14
+object 39 - executing event at time 7.475298e-03
+object 39 - count of events is 1
+inserting in speculation queue an event with timestamp 1.195688e+00 for object 100
+object 39 - scheduled event - timestamp is 1.195688e+00 - destination is 100
+object 40 - executing event at time 3.780100e-03
+object 40 - count of events is 1
+object 40 - scheduled event - timestamp is 3.414033e-01 - destination is 58
+object 41 - executing event at time 1.049179e-02
+object 41 - count of events is 1
+object 41 - scheduled event - timestamp is 4.907571e-01 - destination is 16
+object 42 - executing event at time 4.423175e-03
+object 42 - count of events is 1
+object 42 - scheduled event - timestamp is 8.360493e-01 - destination is 101
+object 43 - executing event at time 1.758974e-02
+object 43 - count of events is 1
+inserting in speculation queue an event with timestamp 3.115824e+00 for object 59
+object 43 - scheduled event - timestamp is 3.115824e+00 - destination is 59
+object 43 - executing event at time 7.908211e-01
+inserting in speculation queue an event with timestamp 1.310774e+00 for object 71
+object 43 - scheduled event - timestamp is 1.310774e+00 - destination is 71
+object 44 - executing event at time 5.329903e-03
+object 44 - count of events is 1
+object 44 - scheduled event - timestamp is 4.146551e-01 - destination is 17
+object 44 - executing event at time 6.305372e-01
+inserting in speculation queue an event with timestamp 1.091193e+00 for object 90
+object 44 - scheduled event - timestamp is 1.091193e+00 - destination is 90
+object 45 - executing event at time 5.437734e-02
+object 45 - count of events is 1
+object 45 - scheduled event - timestamp is 6.940308e-01 - destination is 102
+object 45 - executing event at time 5.086298e-01
+object 45 - scheduled event - timestamp is 9.221252e-01 - destination is 109
+object 46 - executing event at time 6.704239e-03
+object 46 - count of events is 1
+inserting in speculation queue an event with timestamp 1.469489e+00 for object 60
+object 46 - scheduled event - timestamp is 1.469489e+00 - destination is 60
+object 46 - executing event at time 4.290963e-01
+object 46 - scheduled event - timestamp is 8.041937e-01 - destination is 1
+object 47 - executing event at time 3.572338e-03
+object 47 - count of events is 1
+object 47 - scheduled event - timestamp is 3.602174e-01 - destination is 18
+object 48 - executing event at time 9.033582e-03
+object 48 - count of events is 1
+object 48 - scheduled event - timestamp is 5.287275e-01 - destination is 104
+object 48 - executing event at time 3.980611e-01
+inserting in speculation queue an event with timestamp 6.604296e+00 for object 39
+object 48 - scheduled event - timestamp is 6.604296e+00 - destination is 39
+object 49 - executing event at time 4.141346e-03
+object 49 - count of events is 1
+object 49 - scheduled event - timestamp is 9.615459e-01 - destination is 61
+object 50 - executing event at time 1.384337e-02
+object 50 - count of events is 1
+inserting in speculation queue an event with timestamp 6.082116e+00 for object 19
+object 50 - scheduled event - timestamp is 6.082116e+00 - destination is 19
+object 51 - executing event at time 4.925960e-03
+object 51 - count of events is 1
+object 51 - scheduled event - timestamp is 4.425488e-01 - destination is 105
+object 52 - executing event at time 2.960730e-02
+object 52 - count of events is 1
+object 52 - scheduled event - timestamp is 7.411619e-01 - destination is 63
+object 52 - executing event at time 8.736048e-01
+inserting in speculation queue an event with timestamp 1.742100e+00 for object 115
+object 52 - scheduled event - timestamp is 1.742100e+00 - destination is 115
+object 53 - executing event at time 6.077372e-03
+object 53 - count of events is 1
+inserting in speculation queue an event with timestamp 1.908467e+00 for object 20
+object 53 - scheduled event - timestamp is 1.908467e+00 - destination is 20
+object 53 - executing event at time 6.637040e-01
+inserting in speculation queue an event with timestamp 1.378509e+00 for object 6
+object 53 - scheduled event - timestamp is 1.378509e+00 - destination is 6
+object 54 - executing event at time 3.386225e-03
+object 54 - count of events is 1
+object 54 - scheduled event - timestamp is 3.813244e-01 - destination is 106
+object 54 - executing event at time 5.355977e-01
+inserting in speculation queue an event with timestamp 1.142920e+00 for object 25
+object 54 - scheduled event - timestamp is 1.142920e+00 - destination is 25
+object 55 - executing event at time 7.931252e-03
+object 55 - count of events is 1
+object 55 - scheduled event - timestamp is 5.741068e-01 - destination is 64
+object 56 - executing event at time 3.893280e-03
+object 56 - count of events is 1
+inserting in speculation queue an event with timestamp 1.131902e+00 for object 21
+object 56 - scheduled event - timestamp is 1.131902e+00 - destination is 21
+object 56 - executing event at time 4.589090e-01
+object 56 - scheduled event - timestamp is 9.258267e-01 - destination is 63
+object 57 - executing event at time 1.141263e-02
+object 57 - count of events is 1
+object 57 - scheduled event - timestamp is 3.439901e-01 - destination is 107
+object 57 - executing event at time 3.902708e-01
+object 57 - scheduled event - timestamp is 8.088048e-01 - destination is 82
+object 58 - executing event at time 4.578932e-03
+object 58 - count of events is 1
+object 58 - scheduled event - timestamp is 4.747027e-01 - destination is 65
+object 58 - executing event at time 3.414033e-01
+object 58 - scheduled event - timestamp is 7.206424e-01 - destination is 102
+object 59 - executing event at time 2.034137e-02
+object 59 - count of events is 1
+object 59 - scheduled event - timestamp is 8.220084e-01 - destination is 23
+object 60 - executing event at time 5.557710e-03
+object 60 - count of events is 1
+inserting in speculation queue an event with timestamp 2.725302e+00 for object 108
+object 60 - scheduled event - timestamp is 2.725302e+00 - destination is 108
+object 61 - executing event at time 9.346159e-02
+object 61 - count of events is 1
+object 61 - scheduled event - timestamp is 4.953937e-01 - destination is 66
+object 61 - executing event at time 9.615459e-01
+inserting in speculation queue an event with timestamp 3.596032e+00 for object 31
+object 61 - scheduled event - timestamp is 3.596032e+00 - destination is 31
+object 62 - executing event at time 7.068690e-03
+object 62 - count of events is 1
+object 62 - scheduled event - timestamp is 6.288573e-01 - destination is 24
+object 63 - executing event at time 3.673253e-03
+object 63 - count of events is 1
+inserting in speculation queue an event with timestamp 1.376273e+00 for object 109
+object 63 - scheduled event - timestamp is 1.376273e+00 - destination is 109
+object 63 - executing event at time 7.411619e-01
+inserting in speculation queue an event with timestamp 1.884365e+00 for object 69
+object 63 - scheduled event - timestamp is 1.884365e+00 - destination is 69
+object 63 - executing event at time 9.258267e-01
+inserting in speculation queue an event with timestamp 1.266787e+00 for object 98
+object 63 - scheduled event - timestamp is 1.266787e+00 - destination is 98
+object 64 - executing event at time 9.708019e-03
+object 64 - count of events is 1
+object 64 - scheduled event - timestamp is 3.607274e-01 - destination is 67
+object 64 - executing event at time 5.741068e-01
+inserting in speculation queue an event with timestamp 1.465133e+00 for object 88
+object 64 - scheduled event - timestamp is 1.465133e+00 - destination is 88
+object 65 - executing event at time 4.277581e-03
+object 65 - count of events is 1
+object 65 - scheduled event - timestamp is 5.121169e-01 - destination is 25
+object 65 - executing event at time 4.747027e-01
+inserting in speculation queue an event with timestamp 1.204699e+00 for object 107
+object 65 - scheduled event - timestamp is 1.204699e+00 - destination is 107
+object 66 - executing event at time 1.549275e-02
+object 66 - count of events is 1
+object 66 - scheduled event - timestamp is 9.334059e-01 - destination is 111
+object 66 - executing event at time 4.953937e-01
+inserting in speculation queue an event with timestamp 1.113648e+00 for object 126
+object 66 - scheduled event - timestamp is 1.113648e+00 - destination is 126
+object 67 - executing event at time 5.119917e-03
+object 67 - count of events is 1
+inserting in speculation queue an event with timestamp 4.773638e+00 for object 68
+object 67 - scheduled event - timestamp is 4.773638e+00 - destination is 68
+object 67 - executing event at time 3.607274e-01
+object 67 - scheduled event - timestamp is 8.969137e-01 - destination is 17
+object 68 - executing event at time 3.833618e-02
+object 68 - count of events is 1
+object 68 - scheduled event - timestamp is 4.675189e-01 - destination is 26
+object 69 - executing event at time 6.375340e-03
+object 69 - count of events is 1
+object 69 - scheduled event - timestamp is 6.958922e-01 - destination is 112
+object 70 - executing event at time 3.476765e-03
+object 70 - count of events is 1
+inserting in speculation queue an event with timestamp 1.756105e+00 for object 69
+object 70 - scheduled event - timestamp is 1.756105e+00 - destination is 69
+object 71 - executing event at time 8.446441e-03
+object 71 - count of events is 1
+object 71 - scheduled event - timestamp is 3.800731e-01 - destination is 27
+object 72 - executing event at time 4.013446e-03
+object 72 - count of events is 1
+object 72 - scheduled event - timestamp is 5.561477e-01 - destination is 113
+object 73 - executing event at time 1.251067e-02
+object 73 - count of events is 1
+inserting in speculation queue an event with timestamp 1.086100e+00 for object 71
+object 73 - scheduled event - timestamp is 1.086100e+00 - destination is 71
+object 74 - executing event at time 4.746060e-03
+object 74 - count of events is 1
+inserting in speculation queue an event with timestamp 1.933371e+01 for object 28
+object 74 - scheduled event - timestamp is 1.933371e+01 - destination is 28
+object 75 - executing event at time 2.411355e-02
+object 75 - count of events is 1
+object 75 - scheduled event - timestamp is 4.845109e-01 - destination is 114
+object 76 - executing event at time 5.805859e-03
+object 76 - count of events is 1
+object 76 - scheduled event - timestamp is 7.796093e-01 - destination is 72
+object 77 - executing event at time 3.323195e-01
+object 77 - count of events is 1
+inserting in speculation queue an event with timestamp 2.755864e+00 for object 29
+object 77 - scheduled event - timestamp is 2.755864e+00 - destination is 29
+object 78 - executing event at time 7.475043e-03
+object 78 - count of events is 1
+object 78 - scheduled event - timestamp is 4.022794e-01 - destination is 115
+object 79 - executing event at time 3.780035e-03
+object 79 - count of events is 1
+object 79 - scheduled event - timestamp is 6.086745e-01 - destination is 73
+object 80 - executing event at time 1.049129e-02
+object 80 - count of events is 1
+inserting in speculation queue an event with timestamp 1.303346e+00 for object 31
+object 80 - scheduled event - timestamp is 1.303346e+00 - destination is 31
+object 81 - executing event at time 4.423085e-03
+object 81 - count of events is 1
+object 81 - scheduled event - timestamp is 3.499939e-01 - destination is 116
+object 82 - executing event at time 1.758833e-02
+object 82 - count of events is 1
+object 82 - scheduled event - timestamp is 5.140969e-01 - destination is 74
+object 82 - executing event at time 8.088048e-01
+inserting in speculation queue an event with timestamp 1.196608e+00 for object 48
+object 82 - scheduled event - timestamp is 1.196608e+00 - destination is 48
+object 83 - executing event at time 5.329773e-03
+object 83 - count of events is 1
+object 83 - scheduled event - timestamp is 8.868958e-01 - destination is 32
+object 84 - executing event at time 5.436381e-02
+object 84 - count of events is 1
+inserting in speculation queue an event with timestamp 3.981385e+00 for object 117
+object 84 - scheduled event - timestamp is 3.981385e+00 - destination is 117
+object 85 - executing event at time 6.704033e-03
+object 85 - count of events is 1
+object 85 - scheduled event - timestamp is 4.277696e-01 - destination is 75
+object 85 - executing event at time 4.725267e-01
+inserting in speculation queue an event with timestamp 3.584386e+00 for object 105
+object 85 - scheduled event - timestamp is 3.584386e+00 - destination is 105
+object 86 - executing event at time 3.572280e-03
+object 86 - count of events is 1
+object 86 - scheduled event - timestamp is 6.723756e-01 - destination is 33
+object 86 - executing event at time 4.026450e-01
+inserting in speculation queue an event with timestamp 2.160366e+00 for object 124
+object 86 - scheduled event - timestamp is 2.160366e+00 - destination is 124
+object 87 - executing event at time 9.033209e-03
+object 87 - count of events is 1
+inserting in speculation queue an event with timestamp 1.633705e+00 for object 119
+object 87 - scheduled event - timestamp is 1.633705e+00 - destination is 119
+object 88 - executing event at time 4.141267e-03
+object 88 - count of events is 1
+object 88 - scheduled event - timestamp is 3.696664e-01 - destination is 76
+object 88 - executing event at time 4.025746e-01
+inserting in speculation queue an event with timestamp 1.342360e+00 for object 34
+object 88 - scheduled event - timestamp is 1.342360e+00 - destination is 34
+object 89 - executing event at time 1.384249e-02
+object 89 - count of events is 1
+object 89 - scheduled event - timestamp is 5.526092e-01 - destination is 34
+object 90 - executing event at time 4.925849e-03
+object 90 - count of events is 1
+inserting in speculation queue an event with timestamp 1.029126e+00 for object 120
+object 90 - scheduled event - timestamp is 1.029126e+00 - destination is 120
+object 91 - executing event at time 2.960329e-02
+object 91 - count of events is 1
+inserting in speculation queue an event with timestamp 1.037375e+01 for object 77
+object 91 - scheduled event - timestamp is 1.037375e+01 - destination is 77
+object 92 - executing event at time 6.077203e-03
+object 92 - count of events is 1
+object 92 - scheduled event - timestamp is 4.571465e-01 - destination is 35
+object 92 - executing event at time 7.715694e-01
+inserting in speculation queue an event with timestamp 1.258339e+00 for object 110
+object 92 - scheduled event - timestamp is 1.258339e+00 - destination is 110
+object 93 - executing event at time 3.386172e-03
+object 93 - count of events is 1
+object 93 - scheduled event - timestamp is 7.511979e-01 - destination is 121
+object 93 - executing event at time 6.020805e-01
+inserting in speculation queue an event with timestamp 1.036495e+00 for object 2
+object 93 - scheduled event - timestamp is 1.036495e+00 - destination is 2
+object 94 - executing event at time 7.930964e-03
+object 94 - count of events is 1
+inserting in speculation queue an event with timestamp 2.193551e+00 for object 79
+object 94 - scheduled event - timestamp is 2.193551e+00 - destination is 79
+object 94 - executing event at time 4.945322e-01
+object 94 - scheduled event - timestamp is 8.867636e-01 - destination is 21
+object 95 - executing event at time 3.893211e-03
+object 95 - count of events is 1
+object 95 - scheduled event - timestamp is 3.918183e-01 - destination is 36
+object 96 - executing event at time 1.141204e-02
+object 96 - count of events is 1
+object 96 - scheduled event - timestamp is 6.002992e-01 - destination is 122
+object 96 - executing event at time 4.324857e-01
+inserting in speculation queue an event with timestamp 2.281913e+01 for object 59
+object 96 - scheduled event - timestamp is 2.281913e+01 - destination is 59
+object 97 - executing event at time 4.578836e-03
+object 97 - count of events is 1
+inserting in speculation queue an event with timestamp 1.226477e+00 for object 80
+object 97 - scheduled event - timestamp is 1.226477e+00 - destination is 80
+object 97 - executing event at time 3.688268e-01
+inserting in speculation queue an event with timestamp 3.790712e+00 for object 78
+object 97 - scheduled event - timestamp is 3.790712e+00 - destination is 78
+object 98 - executing event at time 2.033948e-02
+object 98 - count of events is 1
+object 98 - scheduled event - timestamp is 3.606260e-01 - destination is 38
+object 99 - executing event at time 5.557568e-03
+object 99 - count of events is 1
+object 99 - scheduled event - timestamp is 4.912347e-01 - destination is 123
+object 100 - executing event at time 9.342163e-02
+object 100 - count of events is 1
+object 100 - scheduled event - timestamp is 9.413952e-01 - destination is 81
+object 101 - executing event at time 7.068461e-03
+object 101 - count of events is 1
+inserting in speculation queue an event with timestamp 3.345263e+00 for object 39
+object 101 - scheduled event - timestamp is 3.345263e+00 - destination is 39
+object 101 - executing event at time 8.360493e-01
+inserting in speculation queue an event with timestamp 1.615761e+00 for object 26
+object 101 - scheduled event - timestamp is 1.615761e+00 - destination is 26
+object 102 - executing event at time 3.673191e-03
+object 102 - count of events is 1
+object 102 - scheduled event - timestamp is 4.169229e-01 - destination is 124
+object 102 - executing event at time 6.940308e-01
+inserting in speculation queue an event with timestamp 1.347578e+00 for object 45
+object 102 - scheduled event - timestamp is 1.347578e+00 - destination is 45
+object 102 - executing event at time 7.206424e-01
+inserting in speculation queue an event with timestamp 1.074395e+00 for object 87
+object 102 - scheduled event - timestamp is 1.074395e+00 - destination is 87
+object 103 - executing event at time 9.707588e-03
+object 103 - count of events is 1
+Rollback needed for object 82 (current_time 8.088048e-01) with rollback_time 6.589970e-01
+object 103 - scheduled event - timestamp is 6.589970e-01 - destination is 82
+object 82 - rollback with rollback_time 6.589970e-01
+object 82 - log_rollback called with rollback_time 6.589970e-01
+object 82 - executing event at time 6.589970e-01
+object 82 - count of events is 1
+inserting in speculation queue an event with timestamp 1.155506e+00 for object 74
+object 82 - scheduled event - timestamp is 1.155506e+00 - destination is 74
+object 104 - executing event at time 4.277497e-03
+object 104 - count of events is 1
+inserting in speculation queue an event with timestamp 1.518451e+00 for object 40
+object 104 - scheduled event - timestamp is 1.518451e+00 - destination is 40
+object 104 - executing event at time 5.287275e-01
+inserting in speculation queue an event with timestamp 1.022495e+00 for object 84
+object 104 - scheduled event - timestamp is 1.022495e+00 - destination is 84
+object 105 - executing event at time 1.549165e-02
+object 105 - count of events is 1
+object 105 - scheduled event - timestamp is 3.751098e-01 - destination is 126
+object 105 - executing event at time 4.425488e-01
+object 105 - scheduled event - timestamp is 8.825283e-01 - destination is 103
+object 106 - executing event at time 5.119797e-03
+object 106 - count of events is 1
+object 106 - scheduled event - timestamp is 5.311565e-01 - destination is 83
+object 106 - executing event at time 3.813244e-01
+object 106 - scheduled event - timestamp is 7.780867e-01 - destination is 122
+object 107 - executing event at time 3.832946e-02
+object 107 - count of events is 1
+inserting in speculation queue an event with timestamp 1.017465e+00 for object 41
+object 107 - scheduled event - timestamp is 1.017465e+00 - destination is 41
+object 107 - executing event at time 3.439901e-01
+object 107 - scheduled event - timestamp is 7.052660e-01 - destination is 13
+object 108 - executing event at time 6.375155e-03
+object 108 - count of events is 1
+inserting in speculation queue an event with timestamp 7.069011e+00 for object 127
+object 108 - scheduled event - timestamp is 7.069011e+00 - destination is 127
+object 109 - executing event at time 3.476709e-03
+object 109 - count of events is 1
+object 109 - scheduled event - timestamp is 4.455885e-01 - destination is 84
+object 109 - executing event at time 9.221252e-01
+inserting in speculation queue an event with timestamp 4.722645e+00 for object 51
+object 109 - scheduled event - timestamp is 4.722645e+00 - destination is 51
+object 110 - executing event at time 8.446114e-03
+object 110 - count of events is 1
+object 110 - scheduled event - timestamp is 7.319450e-01 - destination is 42
+object 111 - executing event at time 4.013373e-03
+object 111 - count of events is 1
+inserting in speculation queue an event with timestamp 1.994248e+00 for object 0
+object 111 - scheduled event - timestamp is 1.994248e+00 - destination is 0
+object 111 - executing event at time 9.334059e-01
+inserting in speculation queue an event with timestamp 2.252221e+00 for object 89
+object 111 - scheduled event - timestamp is 2.252221e+00 - destination is 89
+object 112 - executing event at time 1.250996e-02
+object 112 - count of events is 1
+Rollback needed for object 86 (current_time 4.026450e-01) with rollback_time 3.937885e-01
+object 112 - scheduled event - timestamp is 3.937885e-01 - destination is 86
+object 86 - rollback with rollback_time 3.937885e-01
+object 86 - log_rollback called with rollback_time 3.937885e-01
+object 86 - executing event at time 3.937885e-01
+object 86 - count of events is 1
+inserting in speculation queue an event with timestamp 1.062592e+00 for object 33
+object 86 - scheduled event - timestamp is 1.062592e+00 - destination is 33
+object 112 - executing event at time 6.958922e-01
+inserting in speculation queue an event with timestamp 1.690083e+00 for object 108
+object 112 - scheduled event - timestamp is 1.690083e+00 - destination is 108
+object 113 - executing event at time 4.745956e-03
+object 113 - count of events is 1
+Rollback needed for object 43 (current_time 7.908211e-01) with rollback_time 5.784578e-01
+object 113 - scheduled event - timestamp is 5.784578e-01 - destination is 43
+object 43 - rollback with rollback_time 5.784578e-01
+object 43 - log_rollback called with rollback_time 5.784578e-01
+object 43 - executing event at time 5.784578e-01
+object 43 - count of events is 1
+inserting in speculation queue an event with timestamp 3.676692e+00 for object 59
+object 43 - scheduled event - timestamp is 3.676692e+00 - destination is 59
+object 113 - executing event at time 5.561477e-01
+inserting in speculation queue an event with timestamp 1.353971e+00 for object 127
+object 113 - scheduled event - timestamp is 1.353971e+00 - destination is 127
+object 114 - executing event at time 2.411089e-02
+object 114 - count of events is 1
+inserting in speculation queue an event with timestamp 1.182408e+00 for object 1
+object 114 - scheduled event - timestamp is 1.182408e+00 - destination is 1
+object 114 - executing event at time 4.845109e-01
+inserting in speculation queue an event with timestamp 1.150743e+00 for object 18
+object 114 - scheduled event - timestamp is 1.150743e+00 - destination is 18
+object 115 - executing event at time 5.805705e-03
+object 115 - count of events is 1
+object 115 - scheduled event - timestamp is 3.409693e-01 - destination is 87
+object 115 - executing event at time 4.022794e-01
+object 115 - scheduled event - timestamp is 9.741771e-01 - destination is 37
+object 116 - executing event at time 3.318149e-01
+object 116 - count of events is 1
+object 116 - scheduled event - timestamp is 8.071185e-01 - destination is 44
+object 116 - executing event at time 3.499939e-01
+object 116 - scheduled event - timestamp is 8.509629e-01 - destination is 57
+object 117 - executing event at time 7.474787e-03
+object 117 - count of events is 1
+object 117 - scheduled event - timestamp is 8.243352e-01 - destination is 2
+object 118 - executing event at time 3.779969e-03
+object 118 - count of events is 1
+inserting in speculation queue an event with timestamp 2.906703e+00 for object 88
+object 118 - scheduled event - timestamp is 2.906703e+00 - destination is 88
+object 119 - executing event at time 1.049078e-02
+object 119 - count of events is 1
+Rollback needed for object 46 (current_time 4.290963e-01) with rollback_time 4.162063e-01
+object 119 - scheduled event - timestamp is 4.162063e-01 - destination is 46
+object 46 - rollback with rollback_time 4.162063e-01
+object 46 - log_rollback called with rollback_time 4.162063e-01
+queue_elem_annihilation for object 1 with cancellation_time 8.041937e-01
+object 46 - executing event at time 4.162063e-01
+object 46 - count of events is 1
+inserting in speculation queue an event with timestamp 1.878991e+00 for object 60
+object 46 - scheduled event - timestamp is 1.878991e+00 - destination is 60
+object 120 - executing event at time 4.422995e-03
+object 120 - count of events is 1
+object 120 - scheduled event - timestamp is 6.353130e-01 - destination is 3
+object 121 - executing event at time 1.758691e-02
+object 121 - count of events is 1
+inserting in speculation queue an event with timestamp 1.435296e+00 for object 89
+object 121 - scheduled event - timestamp is 1.435296e+00 - destination is 89
+object 122 - executing event at time 5.329643e-03
+object 122 - count of events is 1
+object 122 - scheduled event - timestamp is 3.592312e-01 - destination is 47
+object 122 - executing event at time 6.002992e-01
+inserting in speculation queue an event with timestamp 2.676822e+00 for object 43
+object 122 - scheduled event - timestamp is 2.676822e+00 - destination is 43
+object 122 - executing event at time 7.780867e-01
+inserting in speculation queue an event with timestamp 1.225717e+00 for object 46
+object 122 - scheduled event - timestamp is 1.225717e+00 - destination is 46
+object 123 - executing event at time 5.435029e-02
+object 123 - count of events is 1
+object 123 - scheduled event - timestamp is 5.682393e-01 - destination is 4
+object 123 - executing event at time 4.912347e-01
+inserting in speculation queue an event with timestamp 1.862711e+00 for object 62
+object 123 - scheduled event - timestamp is 1.862711e+00 - destination is 62
+object 124 - executing event at time 6.703828e-03
+object 124 - count of events is 1
+object 124 - scheduled event - timestamp is 9.445910e-01 - destination is 90
+object 124 - executing event at time 4.169229e-01
+inserting in speculation queue an event with timestamp 1.440749e+00 for object 81
+object 124 - scheduled event - timestamp is 1.440749e+00 - destination is 81
+object 125 - executing event at time 3.572221e-03
+object 125 - count of events is 1
+inserting in speculation queue an event with timestamp 5.365289e+00 for object 48
+object 125 - scheduled event - timestamp is 5.365289e+00 - destination is 48
+object 126 - executing event at time 9.032835e-03
+object 126 - count of events is 1
+object 126 - scheduled event - timestamp is 4.425322e-01 - destination is 6
+object 126 - executing event at time 3.751098e-01
+inserting in speculation queue an event with timestamp 1.054521e+00 for object 119
+object 126 - scheduled event - timestamp is 1.054521e+00 - destination is 119
+object 127 - executing event at time 4.141189e-03
+object 127 - count of events is 1
+object 127 - scheduled event - timestamp is 7.048681e-01 - destination is 91
+object 2 - queue not empty first object timestamp is 8.243352e-01

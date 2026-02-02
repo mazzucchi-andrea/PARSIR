@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "application.h"
@@ -39,7 +40,7 @@ void alloc_lp_state_memory(unsigned int me) {
         printf("out of memory at startup\n");
         exit(EXIT_FAILURE);
     }
-    bzero(state, sizeof(lp_state_type));
+    memset(state, 0, sizeof(lp_state_type));
 }
 
 // callback function for processing an event at an object
@@ -226,10 +227,11 @@ void ProcessEvent(unsigned int me, double now, int event_type, void *the_event_c
             default:
                 timestamp = now + INITIAL_CALLS * (simtime_t)(5 * Random(s1, s2));
             }
-
+#ifndef SPECULATION
             if (timestamp < (now + LOOKAHEAD)) {
                 timestamp = now + LOOKAHEAD;
             }
+#endif
 
             ScheduleNewEvent(me, timestamp, START_CALL, NULL, 0);
         }

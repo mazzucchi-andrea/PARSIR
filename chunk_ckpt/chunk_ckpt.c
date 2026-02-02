@@ -4,14 +4,17 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "setup.h"
 #include "memory.h"
+#include "setup.h"
 
-void set_ckpt(int obj_index) {
-    set_allocator_ckpt(obj_index);
+void set_ckpt(int object) {
+    set_allocator_ckpt(object);
+#ifdef CHUNK_FULL
+    set_used_chunks_ckpt(object);
+#endif
 }
 
-void restore_obj(int obj_index) {
-    restore_chunks(obj_index);
-    restore_allocator(obj_index);
+void restore_object(int object) {
+    restore_chunks(object);
+    restore_allocator(object);
 }

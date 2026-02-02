@@ -1,26 +1,3 @@
-#include "mvm.h"
-#include "mvm.h"
-#include "mvm.h"
-#include "mvm.h"
-#include "mvm.h"
-#include "mvm.h"
-#include "mvm.h"
-#include "mvm.h"
-#include "mvm.h"
-#include "mvm.h"
-#include "mvm.h"
-#include "mvm.h"
-#include "mvm.h"
-#include "mvm.h"
-#include "mvm.h"
-#include "mvm.h"
-#include "mvm.h"
-#include "mvm.h"
-#include "mvm.h"
-#include "mvm.h"
-#include "mvm.h"
-#include "mvm.h"
-#include "mvm.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -41,55 +18,9 @@ void add1(datatype1 **head, datatype1 *buff) {
 void dell1(datatype1 **head) {
     datatype1 *aux;
     if (*head == NULL) {
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
         return;
     }
     aux = *head;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
     *head = (*head)->p;
     free((void *)aux);
 }
@@ -100,55 +31,9 @@ void add2(datatype2 **head, datatype2 *buff) {
 void dell2(datatype2 **head) {
     datatype2 *aux;
     if (*head == NULL) {
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
         return;
     }
     aux = *head;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
     *head = (*head)->p;
     free((void *)aux);
 }
@@ -157,76 +42,8 @@ void read1(datatype1 **p) {
     char buff[SIZE1];
     int count = 0;
     while (*p && count < P) {
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
         memcpy((void *)buff, (void *)p, SIZE1);
         count++;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
         p = (*p)->p;
     }
 }
@@ -234,152 +51,16 @@ void read2(datatype2 **p) {
     char buff[SIZE2];
     int count = 0;
     while (*p && count < P) {
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
         memcpy((void *)buff, (void *)p, SIZE2);
         count++;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
         p = (*p)->p;
     }
 }
 void alloc_lp_state_memory(unsigned int me) {
     // Initialize the LP's state
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
     state = (lp_state_type *)malloc(sizeof(lp_state_type));
 
     if (state == NULL) {
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
         printf("out of memory at startup\n");
         exit(EXIT_FAILURE);
     }
@@ -392,86 +73,18 @@ void ProcessEvent(unsigned int me, double now, int event_type, void *event_conte
     event_content = event_content;
     int res, i;
 
-    // just bypassing compile time indications
-    // on unused parameters
+    // just bypassing compile time indications on unused parameters
     ptr = ptr;
     size = size;
 
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    INSTRUMENT;
-    printf("object %d - executing event %d at time %f\n", me, event_type, now);
+    printf("object %d - executing event at time %e\n", me, now);
 
     switch (event_type) {
 
     case INIT:
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
         alloc_lp_state_memory(me);
         state->event_count = 0;
 
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
         s1 = &(state->seed1);
         s2 = &(state->seed2);
         *s1 = (0x01 * me) + 1;
@@ -481,422 +94,60 @@ void ProcessEvent(unsigned int me, double now, int event_type, void *event_conte
         state->p2 = NULL;
 
         for (i = 0; i < M; i++) {
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
 
             // setup of the initial events
-            // timestamp = now +  0.1 * Expent(TA,s1,s2);
             timestamp = 0.01 * Expent(TA, s1, s2);
             dest = me;
             ScheduleNewEvent(dest, timestamp, NORMAL, NULL, 0);
-            // printf("object %d - scheduled event %d - timestamp is %e - destination is %d\n", me, NORMAL, timestamp,
-            // dest);
+            /* AUDIT {
+                printf("object %d - scheduled event - timestamp is %e - destination is %d\n", me, timestamp, dest);
+                fflush(stdout);
+            } */
         }
 
-        // setup of dynamic memory lists
-        // in the object state
+        // setup of dynamic memory lists in the object state
         for (i = 0; i < CHUNKS_IN_LIST; i++) {
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
             add1(&(state->p1), (datatype1 *)malloc(SIZE1));
         }
         for (i = 0; i < CHUNKS_IN_LIST; i++) {
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
             add2(&(state->p2), (datatype2 *)malloc(SIZE2));
         }
 
         break;
 
     case NORMAL:
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
 
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
         res = (state->event_count++) % 1000;
         if (!res) {
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
             printf("object %d - count of events is %d\n", me, state->event_count);
         }
 
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
         s1 = &(state->seed1);
         s2 = &(state->seed2);
 
         // schedule a new event in the model
-        // timestamp = now + LOOKAHEAD + Expent(TA,s1,s2);
         timestamp = now + Expent(TA, s1, s2);
-        // if(timestamp <= now + LOOKAHEAD) timestamp = now + LOOKAHEAD + FLT_EPSILON;
+#ifndef SPECULATION
         if (timestamp <= now + LOOKAHEAD) {
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
             timestamp = now + LOOKAHEAD + Expent(TA, s1, s2);
         }
+#endif
         dest = (int)((double)(OBJECTS)*Random(s1, s2));
-        // printf("destination is %d\n",dest);
 
         ScheduleNewEvent(dest, timestamp, NORMAL, NULL, 0);
-        // printf("object %d - scheduled event %d - timestamp is %e - destination is %d\n ", me, NORMAL, timestamp,
-        // dest);
+        {
+            printf("object %d - scheduled event - timestamp is %e - destination is %d\n", me, timestamp, dest);
+            fflush(stdout);
+        }
 
         for (i = 0; i < REALLOCATION; i++) {
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
             dell1(&(state)->p1);
             dell2(&(state)->p2);
         }
         for (i = 0; i < REALLOCATION; i++) {
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
             add1(&(state->p1), (datatype1 *)malloc(SIZE1));
         }
         for (i = 0; i < REALLOCATION; i++) {
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
-            INSTRUMENT;
             add2(&(state->p2), (datatype2 *)malloc(SIZE2));
         }
 
@@ -906,53 +157,7 @@ void ProcessEvent(unsigned int me, double now, int event_type, void *event_conte
         break;
 
     default:
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
-        INSTRUMENT;
         printf("phold: unknown event type! (me = %d - event type = %d)\n", me, event_type);
         exit(EXIT_FAILURE);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

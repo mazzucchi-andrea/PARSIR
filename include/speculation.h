@@ -18,6 +18,7 @@ int speculation_init(void);
 void object_lock(int);
 void object_unlock(int);
 void put_into_stack(int);
+void put_head_into_stack(int);
 int get_from_stack(int*);
 int run_rollback(int, double);
 

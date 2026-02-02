@@ -3,7 +3,7 @@
 
 void tls_setup();
 
-void restore_obj(int);
+void restore_object(int);
 
 void set_ckpt(int);
 

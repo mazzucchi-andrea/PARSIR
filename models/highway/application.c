@@ -225,9 +225,11 @@ void ProcessEvent(unsigned int me, double now, int event_type, void *event_conte
         }
 
         timestamp = now + (1 / scaling) * Expent(TA, s1, s2);
+#ifndef SPECULATION
         if (timestamp < now + LOOKAHEAD) {
             timestamp = now + LOOKAHEAD;
         }
+#endif
 
         SET_MEMORY(&(car->residence), timestamp, me);
         add_car(me, &(state->right_head), &(state->right_tail), car, now);
@@ -297,9 +299,11 @@ void ProcessEvent(unsigned int me, double now, int event_type, void *event_conte
         }
 
         timestamp = now + (1 / scaling) * Expent(TA, s1, s2);
+#ifndef SPECULATION
         if (timestamp < now + LOOKAHEAD) {
             timestamp = now + LOOKAHEAD;
         }
+#endif
         SET_MEMORY(&(car->residence), timestamp, me);
         add_car(me, &(state->left_head), &(state->left_tail), car, now);
         traversal(me, &(state->left_head), &(state->left_tail));

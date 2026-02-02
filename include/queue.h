@@ -5,15 +5,15 @@
 
 #include "setup.h"
 
-#define NUM_SLOTS (2000)
+#define NUM_SLOTS (10)
 #define SLOT_LEN (LOOKAHEAD)
 #define QUEUE_TIME_INTERVAL (SLOT_LEN * NUM_SLOTS)
 typedef struct _queue_elem {
     int destination;
     double timestamp;
 #ifdef SPECULATION
-    double send_time;//this is required to kep track of what to undo at sender side
-		     //if some straggler hits an object
+    double send_time; // this is required to kep track of what to undo at sender side
+                      // if some straggler hits an object
 #endif
     struct _queue_elem *next;
     struct _queue_elem *prev;
@@ -37,28 +37,28 @@ typedef union _lock_buffer {
     char buff[64];
 } __attribute__((packed)) lock_buffer;
 
-typedef struct _log_element{
-        queue_elem* the_element;
-        double send_time;
-	struct _log_element* first;
-    	struct _log_element* last;
-        struct _log_element* next;
-        struct _log_element* prev;
+typedef struct _log_element {
+    queue_elem *the_element;
+    double send_time;
+    struct _log_element *first;
+    struct _log_element *last;
+    struct _log_element *next;
+    struct _log_element *prev;
 } log_element;
 
-int queue_init(void);
+void queue_init(void);
 void whoami(unsigned);
 int queue_insert(queue_elem *elem);
 queue_elem *queue_extract(void);
 int barrier(void);
 #ifdef SPECULATION
 int speculation_queue_insert(queue_elem *elem);
-int retractable_queue_insert(queue_elem *elem);
-void  rollback_retractable_queue(int, double);
-void  log_rollback(int, double);
+void retractable_queue_insert(queue_elem *elem);
+void rollback_retractable_queue(int, double);
+void rollback_speculation_queue(int, double);
+void log_rollback(int, double);
 void restore_retractable_events(int);
 #endif
-
 
 #define offsetof(TYPE, MEMBER) ((size_t)&((TYPE *)0)->MEMBER)
 

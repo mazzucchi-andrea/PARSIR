@@ -1,4 +1,3 @@
-#include <memory.h>
 #include <numaif.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -7,8 +6,8 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
-#include "setup.h"
 #include "engine.h"
+#include "setup.h"
 
 #define MIN_CHUNK_SIZE (32)
 #define MAX_CHUNK_SIZE (MIN_CHUNK_SIZE << 7) // 4KB is the currently set max chunk size
@@ -28,14 +27,20 @@ unsigned long SEGMENT_PAGES;
 typedef struct _area {
     void **addresses;
     int top_elem;
+    int size;
 #ifdef SPECULATION
-    void **addresses_ckpt;
-    int top_elem_ckpt;
 #ifdef CHUNK_BASED
+    void *base;
+#endif
+#if CHUNK_BASED_SAVE || CHUNK_FULL
     void *bitmap;
 #endif
+#ifdef CHUNK_FULL
+    void *bitmap_ckpt;
 #endif
-    int size;
+    void **addresses_ckpt;
+    int top_elem_ckpt;
+#endif
 } area;
 
 area *allocators[OBJECTS];
@@ -142,10 +147,9 @@ void object_allocator_setup(void) {
     // now we initialize the free stacks of the per-object allocator
     // the minimal chunk size managed is 32 bytes
 
-    AUDIT printf("running the allocator setup before iteration for object %d - "
-                 "cycles are %d\n",
-                 current, (int)((double)(MAX_MEMORY >> 12) / (double)(SEGMENT_PAGES)));
-    limit = base[current]; //(void*)target_address;
+    AUDIT printf("running the allocator setup before iteration for object %d - cycles are %d\n", current,
+                 (int)((double)(MAX_MEMORY >> 12) / (double)(SEGMENT_PAGES)));
+    limit = base[current];
     for (i = 0, chunk_size = MIN_CHUNK_SIZE; i < (int)((double)(MAX_MEMORY >> 12) / (double)(SEGMENT_PAGES));
          chunk_size *= 2, i++) {
 
@@ -159,6 +163,9 @@ void object_allocator_setup(void) {
         }
         AUDIT printf("current is %d - allocated area with %ld elements (chunk size is %d)\n", current,
                      (SEGMENT_PAGES << 12) / chunk_size, chunk_size);
+#ifdef CHUNK_BASED
+        (allocators[current])[i].base = limit;
+#endif
         for (j = 0; j < ((allocators[current])[i].size); j++) {
             (allocators[current])[i].addresses[j] = limit;
             limit += chunk_size;
@@ -174,12 +181,25 @@ void object_allocator_setup(void) {
                      (SEGMENT_PAGES << 12) / chunk_size, chunk_size);
         (allocators[current])[i].top_elem_ckpt = 0;
 #ifdef CHUNK_BASED
-        (allocators[current])[i].bitmap = malloc((sizeof(void *) * ((allocators[current])[i].size)) >> 3);
+        size_t bitmap_size = (sizeof(void *) * ((allocators[current])[i].size)) >> 3;
+#endif
+#if CHUNK_BASED_SAVE || CHUNK_FULL
+        (allocators[current])[i].bitmap = malloc(bitmap_size);
         if (!(allocators[current])[i].bitmap) {
             printf("(ckpt) area-bitmap allocation error\n");
             exit(EXIT_FAILURE);
         }
-        AUDIT printf("current is %d - allocated (ckpt) area-nitmap with %ld elements\n", current,
+        AUDIT printf("current is %d - allocated (ckpt) area-bitmap with %ld elements\n", current,
+                     (sizeof(void *) * ((SEGMENT_PAGES << 12) / chunk_size)));
+        memset((allocators[current])[i].bitmap, 0, bitmap_size);
+#endif
+#ifdef CHUNK_FULL
+        (allocators[current])[i].bitmap_ckpt = malloc(bitmap_size);
+        if (!(allocators[current])[i].bitmap_ckpt) {
+            printf("(ckpt) usage bitmap allocation error\n");
+            exit(EXIT_FAILURE);
+        }
+        AUDIT printf("current is %d - index is %d - allocated ckot bitmap with %ld elements\n", current, i,
                      (sizeof(void *) * ((SEGMENT_PAGES << 12) / chunk_size)));
 #endif
 #endif
@@ -188,17 +208,16 @@ void object_allocator_setup(void) {
 
 #ifdef SPECULATION
 void set_allocator_ckpt(int current) {
-    AUDIT printf("Set Allocator Checkpoint - current is %d\n", current);
     int chunk_size = MIN_CHUNK_SIZE;
     for (int i = 0; chunk_size <= MAX_CHUNK_SIZE; i++) {
-        allocators[current][i].top_elem_ckpt = allocators[current][i].top_elem;
-        memset(allocators[current][i].addresses_ckpt, 0, sizeof(void *) * allocators[current][i].size);
-        for (int j = 0; j < allocators[current][i].size; j++) {
-            allocators[current][i].addresses_ckpt[j] = allocators[current][i].addresses[j];
+        AUDIT printf("Set Allocator Checkpoint - current %d - index %d\n", current, i);
+        (allocators[current])[i].top_elem_ckpt = (allocators[current])[i].top_elem;
+        for (int j = (allocators[current])[i].top_elem_ckpt; j < (allocators[current])[i].size; j++) {
+            (allocators[current])[i].addresses_ckpt[j] = (allocators[current])[i].addresses[j];
         }
         chunk_size = chunk_size << 1;
-#ifdef CHUNK_BASED
-        memset(allocators[current][i].bitmap, 0, (sizeof(void *) * ((allocators[current])[i].size)) >> 3);
+#ifdef CHUNK_BASED_SAVE
+        memset((allocators[current])[i].bitmap, 0, (sizeof(void *) * ((allocators[current])[i].size)) >> 3);
 #endif
     }
 }
@@ -207,15 +226,15 @@ void restore_allocator(int current) {
     AUDIT printf("Restore Allocator - current is %d\n", current);
     int chunk_size = MIN_CHUNK_SIZE;
     for (int i = 0; chunk_size <= MAX_CHUNK_SIZE; i++) {
-        allocators[current][i].top_elem = allocators[current][i].top_elem_ckpt;
-        for (int j = allocators[current][i].top_elem_ckpt; j < allocators[current][i].size; j++) {
-            allocators[current][i].addresses[j] = allocators[current][i].addresses_ckpt[j];
+        (allocators[current])[i].top_elem = (allocators[current])[i].top_elem_ckpt;
+        for (int j = (allocators[current])[i].top_elem_ckpt; j < (allocators[current])[i].size; j++) {
+            (allocators[current])[i].addresses[j] = (allocators[current])[i].addresses_ckpt[j];
         }
         chunk_size = chunk_size << 1;
     }
 }
 
-#ifdef CHUNK_BASED
+#ifdef CHUNK_BASED_SAVE
 void ckpt_chunk(void *ptr) {
     int bitmap_offset, chunk, chunk_size, current, index;
     uint8_t bitmask, bit_index;
@@ -226,36 +245,23 @@ void ckpt_chunk(void *ptr) {
         exit(EXIT_FAILURE);
     }
 
-    chunk = -1;
     index = (int)((double)((ptr - base[current]) >> 12) / (double)(SEGMENT_PAGES));
     chunk_size = MIN_CHUNK_SIZE << index;
 
-    for (int i = 0; i < allocators[current][index].size; i++) {
-        if (ptr >= allocators[current][index].addresses[i] &&
-            ptr < allocators[current][index].addresses[i] + chunk_size) {
-            chunk = i;
-            break;
-        }
-    }
+    uintptr_t chunk_offset = ((uintptr_t)ptr - (uintptr_t)(allocators[current])[index].base);
+    chunk = chunk_offset / chunk_size;
 
-    if (chunk == -1) {
-        fprintf(stderr,
-                "Chunk not found! current is %d - address is %p - index is %d - chunk size is %d - chunks are %d\n",
-                current, ptr, index, chunk_size, allocators[current][index].size);
-        fflush(stderr);
-        exit(EXIT_FAILURE);
-    }
-
-    bit_index = chunk % 8;
+    bit_index = chunk & 7;
     bitmap_offset = chunk >> 3;
     bitmask = 1 << bit_index;
-    if (!(*(uint8_t *)(allocators[current][index].bitmap + bitmap_offset) & bitmask)) {
-        AUDIT printf("Saving chunk - current is %d - address is %p - index is %d - chunk is %d - chunk size is %d - "
+    if (!(*(uint8_t *)((allocators[current])[index].bitmap + bitmap_offset) & bitmask)) {
+        AUDIT printf("Saving chunk - current is %d - address is %p - index is "
+                     "%d - chunk is %d - chunk size is %d - "
                      "bit index is %d - bitmap offset is %d\n",
                      current, ptr, index, chunk, chunk_size, bit_index, bitmap_offset);
-        memcpy((void *)(allocators[current][index].addresses[chunk] + MAX_MEMORY),
-               (void *)(allocators[current][index].addresses[chunk]), chunk_size);
-        *(uint8_t *)(allocators[current][index].bitmap + bitmap_offset) |= bitmask;
+        memcpy((void *)((allocators[current])[index].base + chunk * chunk_size + MAX_MEMORY),
+               (void *)((allocators[current])[index].base + chunk * chunk_size), chunk_size);
+        *(uint8_t *)((allocators[current])[index].bitmap + bitmap_offset) |= bitmask;
     }
 }
 
@@ -263,45 +269,107 @@ void restore_chunks(int current) {
     int chunk_size;
     uint8_t current_byte;
     size_t bitmap_size;
+
     chunk_size = MIN_CHUNK_SIZE;
     for (int i = 0; chunk_size <= MAX_CHUNK_SIZE; i++) {
         bitmap_size = (sizeof(void *) * ((allocators[current])[i].size)) >> 3;
         for (int j = 0; j < bitmap_size; j++) {
-            current_byte = *(uint8_t *)(allocators[current][i].bitmap + j);
+            current_byte = *(uint8_t *)((allocators[current])[i].bitmap + j);
             if (current_byte == 0) {
                 continue;
             }
             for (int k = 0; k < 8; k++) {
                 if (((current_byte >> k) & 1) == 1) {
-                    memcpy(allocators[current][i].addresses[j * 8 + k],
-                           allocators[current][i].addresses[j * 8 + k] + MAX_MEMORY, chunk_size);
+                    AUDIT printf("Restoring chunk - current is %d - address is %p - index is "
+                                 "%d - chunk size is %d - "
+                                 "bit index is %d - bitmap offset is %d\n",
+                                 current, (void *)((allocators[current])[i].base + (j * 8 + k) * chunk_size), i,
+                                 chunk_size, k, j);
+                    memcpy((void *)((allocators[current])[i].base + (j * 8 + k) * chunk_size),
+                           (void *)((allocators[current])[i].base + (j * 8 + k) * chunk_size + MAX_MEMORY), chunk_size);
                 }
             }
         }
-        memset(allocators[current][i].bitmap, 0, bitmap_size);
+        memset((allocators[current])[i].bitmap, 0, bitmap_size);
+        chunk_size = chunk_size << 1;
+    }
+}
+#endif
+
+#ifdef CHUNK_FULL
+void set_used_chunks_ckpt(int current) {
+    int bitmap_size, chunk_size;
+    uint8_t current_byte;
+
+    chunk_size = MIN_CHUNK_SIZE;
+    for (int i = 0; chunk_size <= MAX_CHUNK_SIZE; i++) {
+        bitmap_size = (sizeof(void *) * ((allocators[current])[i].size)) >> 3;
+        memcpy((allocators[current])[i].bitmap_ckpt, (allocators[current])[i].bitmap, bitmap_size);
+        for (int j = 0; j < bitmap_size; j++) {
+            current_byte = *((uint8_t *)(allocators[current])[i].bitmap + j);
+            if (current_byte == 0) {
+                continue;
+            }
+            for (int k = 0; k < 8; k++) {
+                if ((current_byte >> k) & 1) {
+                    memcpy((uint8_t *)(allocators[current])[i].base + ((j * 8) + k) * chunk_size + MAX_MEMORY,
+                           (uint8_t *)(allocators[current])[i].base + ((j * 8) + k) * chunk_size, chunk_size);
+                }
+            }
+        }
+        chunk_size = chunk_size << 1;
+    }
+}
+
+void restore_chunks(int current) {
+    int bitmap_size, chunk_size;
+    uint8_t current_byte;
+
+    chunk_size = MIN_CHUNK_SIZE;
+    for (int i = 0; chunk_size <= MAX_CHUNK_SIZE; i++) {
+        bitmap_size = (sizeof(void *) * ((allocators[current])[i].size)) >> 3;
+        for (int j = 0; j < bitmap_size; j++) {
+            current_byte = *((uint8_t *)(allocators[current])[i].bitmap_ckpt + j);
+            if (current_byte == 0) {
+                continue;
+            }
+            for (int k = 0; k < 8; k++) {
+                if (((current_byte >> k) & 1) == 1) {
+                    AUDIT printf("Restoring chunk - current is %d - address is %p - index is "
+                                 "%d - chunk size is %d - "
+                                 "bit index is %d - bitmap offset is %d\n",
+                                 current, (uint8_t *)(allocators[current])[i].base + (j * 8 + k) * chunk_size, i,
+                                 chunk_size, k, j);
+                    memcpy((uint8_t *)(allocators[current])[i].base + (j * 8 + k) * chunk_size,
+                           (uint8_t *)(allocators[current])[i].base + (j * 8 + k) * chunk_size + MAX_MEMORY,
+                           chunk_size);
+                }
+            }
+        }
+        memcpy((allocators[current])[i].bitmap, (allocators[current])[i].bitmap_ckpt, bitmap_size);
         chunk_size = chunk_size << 1;
     }
 }
 #endif
 #endif
+
 void *__wrap_malloc(size_t size) {
     int current;
     int index;
     void *chunk_address;
-    int min_chunk_size = MIN_CHUNK_SIZE;
-    int max_chunk_size = MAX_CHUNK_SIZE;
+    int chunk_size = MIN_CHUNK_SIZE;
     int i;
 
     current = get_current();
     if (size == 0) {
         return NULL;
     }
-    for (i = 0; min_chunk_size <= max_chunk_size; i++) {
-        if (size <= min_chunk_size) {
+    for (i = 0; chunk_size <= MAX_CHUNK_SIZE; i++) {
+        if (size <= chunk_size) {
             index = i;
             break;
         }
-        min_chunk_size = min_chunk_size << 1;
+        chunk_size = chunk_size << 1;
         index = i;
     }
     // index = (int)( ((double)size / (double)MIN_CHUNK_SIZE) - EPSILON);
@@ -318,37 +386,43 @@ redo:
     }
     chunk_address = (allocators[current])[index].addresses[(allocators[current])[index].top_elem];
     (allocators[current])[index].top_elem++;
+#ifdef CHUNK_FULL
+    uint64_t chunk_offset = (uintptr_t)chunk_address - (uintptr_t)((allocators[current])[index].base);
+    uint32_t chunk = chunk_offset >> (index + 5);
+    uint8_t bit_index = chunk & 7;
+    uint32_t bitmap_offset = chunk >> 3;
+    uint8_t bitmask = 1 << bit_index;
+    AUDIT printf("Setting chunk usage - current %d - index %d - allocator base %p - chunk address %p - chunk index %d "
+                 "- chunk offset 0x%lx - bit index %d - bitmap offset %d\n",
+                 current, index, (allocators[current])[index].base, chunk_address, chunk, chunk_offset, bit_index,
+                 bitmap_offset);
+    *((uint8_t *)(allocators[current])[index].bitmap + bitmap_offset) |= bitmask;
+#endif
     AUDIT printf("returning address %p to object %d\n", chunk_address, current);
     return chunk_address;
 }
 
 void __wrap_free(void *ptr) {
-    int chunk, current, index;
-
-    chunk = -1;
+    int current, index;
     current = get_current();
     AUDIT printf("freeing address %p for object %d\n", ptr, current);
-    if (ptr < base[current] || ptr >= (base[current] + MAX_MEMORY)) {
+    if ((uintptr_t)ptr < (uintptr_t)base[current] || (uintptr_t)ptr >= ((uintptr_t)base[current] + MAX_MEMORY)) {
         printf("bad address for free by object %d\n", current);
         exit(EXIT_FAILURE);
     }
-    index = (int)((double)((ptr - base[current]) >> 12) / (double)(SEGMENT_PAGES));
-    for (int i = 0; i < allocators[current][index].size; i++) {
-        if (allocators[current][index].addresses[i] == ptr) {
-            chunk = i;
-            break;
-        }
-    }
-    if (chunk == -1) {
-        fprintf(stderr, "allocator corruption on free by object %d: chunk not found\n", current);
-        exit(EXIT_FAILURE);
-    }
+    index = (int)((double)(((uintptr_t)ptr - (uintptr_t)base[current]) >> 12) / (double)(SEGMENT_PAGES));
     AUDIT printf("wrapping free for object %d - index is %d\n", current, index);
-    (allocators[current])[index].addresses[chunk] =
-        (allocators[current])[index].addresses[--(allocators[current])[index].top_elem];
-    (allocators[current])[index].addresses[(allocators[current])[index].top_elem] = ptr;
+    (allocators[current])[index].addresses[--(allocators[current])[index].top_elem] = ptr;
     if ((allocators[current])[index].top_elem < 0) {
         printf("allocator corruption on free by object %d\n", current);
         exit(EXIT_FAILURE);
     }
+#ifdef CHUNK_FULL
+    uint64_t chunk_offset = (uintptr_t)ptr - (uintptr_t)((allocators[current])[index].base);
+    uint32_t chunk = chunk_offset >> (index + 5);
+    uint8_t bit_index = chunk & 7;
+    uint32_t bitmap_offset = chunk >> 3;
+    uint8_t bitmask = 1 << bit_index;
+    *((uint8_t *)(allocators[current])[index].bitmap + bitmap_offset) &= ~bitmask;
+#endif
 }

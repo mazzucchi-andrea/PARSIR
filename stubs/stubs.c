@@ -3,23 +3,22 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "queue.h"
 #include "engine.h"
+#include "queue.h"
 
-#ifdef SPECULATION 
+#ifdef SPECULATION
+#include "speculation.h"
 extern double filter_message[OBJECTS];
 #endif
-
 
 int ScheduleNewEvent(int destination, double timestamp, int event_type, char *body, int size) {
 
     event *p = NULL;
 
- #ifdef SPECULATION
+#ifdef SPECULATION
     int flag;
     int source;
     source = get_current();
-
 #endif
 
     if (size > MAX_EVENT_SIZE) {
@@ -41,15 +40,19 @@ int ScheduleNewEvent(int destination, double timestamp, int event_type, char *bo
     }
 
 #ifdef SPECULATION
-	object_lock(source);
-	flag = 0;
-	printf("filter of object %d is %e - current time is %e\n",source, filter_message[source], get_current_time());
-	fflush(stdout);
-	if(filter_message[source] >= get_current_time()){//this is classical coasting forward event  
-		flag = 1;
-	}
-	object_unlock(source);
-	if (flag)  return 0;
+    object_lock(source);
+    flag = 0;
+    AUDIT {
+        printf("object %d - filter is %e - current time is %e\n", source, filter_message[source], get_current_time());
+        fflush(stdout);
+    }
+    if (filter_message[source] >= get_current_time()) { // this is classical coasting forward event
+        flag = 1;
+    }
+    object_unlock(source);
+    if (flag) {
+        return 0;
+    }
 #endif
 
     p = malloc(sizeof(event)); // allocating the actual storage for the event
@@ -69,13 +72,15 @@ int ScheduleNewEvent(int destination, double timestamp, int event_type, char *bo
     p->q.timestamp = timestamp;
 
 #ifdef SPECULATION
-    if(get_current_time() == STARTUP_TIME) {
-		printf("really inserting an event as committed\n");
-		fflush(stdout);
-		 return queue_insert(&(p->q)); //we can only commit simulation init events 
-	}
-    printf("schedule event called after startup\n");
-    return speculation_queue_insert(&(p->q)); //all the others must pass through the speculation queue
+    if (get_current_time() == STARTUP_TIME) {
+        AUDIT {
+            printf("object %d - inserting an event at startup as committed\n", p->e.destination);
+            fflush(stdout);
+        }
+        return queue_insert(&(p->q)); // we can only commit simulation init events
+    }
+    AUDIT printf("schedule event called after startup\n");
+    return speculation_queue_insert(&(p->q)); // all the others must pass through the speculation queue
 #else
     return queue_insert(&(p->q));
 #endif
@@ -98,9 +103,6 @@ int GetEvent(int *destination, double *timestamp, int *event_type, char *body, i
     *size = e->event_size;
 
     memcpy(body, e->payload, e->event_size);
-
-//    free(e);
- //   return 0;
 
 #ifdef SPECULATION
     retractable_queue_insert(q);

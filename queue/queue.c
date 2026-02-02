@@ -1,29 +1,37 @@
 #include <pthread.h>
-#include <stdio.h>
-#include <unistd.h>
 #include <stdalign.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
-#include "queue.h"
-#include "setup.h"
 #include "engine.h"
-#include "speculation.h"
+#include "queue.h"
 #include "random.h"
+#include "setup.h"
 
+#ifdef SPECULATION
+#include "speculation.h"
+#endif
+#if GRID_CKPT
+#include "grid_ckpt.h"
+#elif CHUNK_BASED
+#include "chunk_ckpt.h"
+#endif
 
 void speculation_queue_flush(void);
+void retractable_queue_flush(void);
 
 slot queue[OBJECTS][NUM_SLOTS];
 alignas(64) lock_buffer locks[OBJECTS][NUM_SLOTS];
-//lock_buffer locks[OBJECTS][NUM_SLOTS];
+// lock_buffer locks[OBJECTS][NUM_SLOTS];
 
 #ifdef SPECULATION
 fallback_slot retractable_queue[OBJECTS];
-log_element log_queue[OBJECTS];//this queue will just recort <send_time,buffer_address> entries
+log_element log_queue[OBJECTS]; // this queue will just record <send_time,buffer_address> entries
 #endif
 
 double volatile current_min_limit = 0.0;
-double volatile current_max_limit = NUM_SLOTS * LOOKAHEAD;
+double volatile current_max_limit = 0.0 + LOOKAHEAD;
 int volatile current_index = 0;
 
 long pending_events __attribute__((aligned(64))) = 0;
@@ -35,11 +43,11 @@ long retractable_object_identifiers __attribute__((aligned(64))) = 0;
 long object_identifiers_vector[MAX_NUMA_NODES] __attribute__((aligned(64))) = {[0 ... MAX_NUMA_NODES - 1] = 0};
 int end = 0;
 
-#ifdef SPECULATION 
+#ifdef SPECULATION
 long speculation_events __attribute__((aligned(64))) = 0;
 long retractable_events __attribute__((aligned(64))) = 0;
-double filter_message[OBJECTS] = { (0.0 - epsilon) }; //this just initializes the 0-th entry to show 
-						      //the value that should be written across all
+double filter_message[OBJECTS] = {(0.0 - epsilon)}; // this just initializes the 0-th entry to show
+                                                    // the value that should be written across all
 extern object_status speculation[OBJECTS];
 #endif
 
@@ -48,8 +56,9 @@ __thread int my_index = 0;
 __thread fallback_slot fallback_queue; // WE INITIALIZE VIA EMPTY ZERO MEMORY = { .head = NULL , .tail = NULL };
 
 #ifdef SPECULATION
-fallback_slot speculation_queue[OBJECTS] = { 0 }; // WE INITIALIZE VIA EMPTY ZERO MEMORY = { .head = NULL , .tail = NULL };
-#endif 
+fallback_slot speculation_queue[OBJECTS] = {
+    0}; // WE INITIALIZE VIA EMPTY ZERO MEMORY = { .head = NULL , .tail = NULL };
+#endif
 
 __thread unsigned me;
 __thread unsigned target = -1;
@@ -76,8 +85,25 @@ void whoami(unsigned my_id) {
     TOT_NUMA_NODES = get_totNUMAnodes();
 }
 
-int queue_init(void) {
+void verify_queues(void) {
+    for (int i = 0; i < OBJECTS; i++) {
+        if (queue[i][my_index].head.next != &queue[i][my_index].tail) {
+            printf("object %d - queue not empty first object timestamp is %e\n", i,
+                   queue[i][my_index].head.next->timestamp);
+            exit(EXIT_FAILURE);
+        }
+    }
+}
 
+void verify_queue(int object) {
+    if (queue[object][my_index].head.next != &queue[object][my_index].tail) {
+        printf("object %d - queue not empty first object timestamp is %e\n", object,
+               queue[object][my_index].head.next->timestamp);
+        exit(EXIT_FAILURE);
+    }
+}
+
+void queue_init(void) {
     int i;
     int j;
     queue_elem *head;
@@ -91,11 +117,12 @@ int queue_init(void) {
             tail->prev = head;
             head->timestamp = -1; // setup initial timestamp value
             tail->timestamp = -1;
-            pthread_spin_init(&locks[j][i].lock, PTHREAD_PROCESS_PRIVATE);
+            if (pthread_spin_init(&locks[j][i].lock, PTHREAD_PROCESS_PRIVATE)) {
+                printf("Object %d - Failing pthread_spin_init for slot %d\n", j, i);
+                exit(EXIT_FAILURE);
+            }
         }
     }
-
-    return 1;
 }
 
 void update_timing(void) {
@@ -131,7 +158,6 @@ void update_timing(void) {
 }
 
 int queue_insert(queue_elem *elem) {
-
     queue_elem *current;
     queue_elem *tail;
     int index;
@@ -140,7 +166,8 @@ int queue_insert(queue_elem *elem) {
     AUDIT printf("just audit who I am: %u\n", me);
 
     if (elem->timestamp < current_min_limit) {
-        printf("illegal queue insert - timestamp is %e - min limit is %e\n", elem->timestamp, current_min_limit);
+        printf("object %d - illegal queue insert - timestamp is %e - min limit is %e\n", elem->destination,
+               elem->timestamp, current_min_limit);
         return -1;
     }
 
@@ -164,7 +191,7 @@ int queue_insert(queue_elem *elem) {
     index = index % NUM_SLOTS;
 
     AUDIT {
-        printf("inserting event with timestamp %e in slot %d\n", elem->timestamp, index);
+        printf("object %d - inserting event with timestamp %e in slot %d\n", elem->destination, elem->timestamp, index);
         fflush(stdout);
     }
 
@@ -172,11 +199,6 @@ int queue_insert(queue_elem *elem) {
 
     current = &queue[dest][index].head;
     tail = &queue[dest][index].tail;
-
-    AUDIT {
-        printf("queue_insert for an element with timestamp %e\n", elem->timestamp);
-        fflush(stdout);
-    }
 
     pthread_spin_lock(&locks[dest][index].lock);
 
@@ -228,12 +250,13 @@ void fallback_check(void) {
             index = (int)((temp->timestamp) / (double)SLOT_LEN);
             index = index % NUM_SLOTS;
             dest = temp->destination;
-            current = &queue[dest][index].head; // here current is not the object but
-                                                // the target queue head
+            current = queue[dest][index].head.next; // here current is not the object but
+                                                    // the target queue head
             tail = &queue[dest][index].tail;
 
-            AUDIT {
-                printf("queue_insert (from fallback) for an element with timestamp %e\n", temp->timestamp);
+            {
+                printf("object %d - queue_insert (from fallback) for an element with timestamp %e\n", temp->destination,
+                       temp->timestamp);
                 fflush(stdout);
             }
 
@@ -255,7 +278,6 @@ void fallback_check(void) {
 }
 
 queue_elem *queue_extract() {
-
     int index;
     queue_elem *head;
     queue_elem *tail;
@@ -264,9 +286,9 @@ queue_elem *queue_extract() {
 #ifdef SPECULATION
     double rollback_time;
     get_from_stack(&target);
-    if(target != -1){ 
-    	speculation[target].in_stack = 0;
-    }	
+    if (target != -1) {
+        speculation[target].in_stack = 0;
+    }
 #endif
 
     AUDIT printf("thread %d - extraction with target %d\n", me, target);
@@ -300,23 +322,22 @@ redo:
         return NULL;
     }
     if (target < OBJECTS) {
-
 #ifdef SPECULATION
-	object_lock(target);
-	rollback_time = 0.0;
-	if(speculation[target].standing_rollback){
-		rollback_time = speculation[target].causality_violation_time;
-		speculation[target].standing_rollback = 0;
-		speculation[target].current_time = current_min_limit;
-		filter_message[target] = rollback_time - epsilon;
-	}
-	object_unlock(target);
-	if(rollback_time > 0.0){
-		run_rollback(target,rollback_time);//we restore the current epoch initial sate of the object
-				     //after we need to run this object as a normal execution 
-				     //but we need to avoid new events production up to the rollback_time
-				     //that has been flushed to the filter_message[] entry of the object
-	}
+        object_lock(target);
+        rollback_time = 0.0;
+        if (speculation[target].standing_rollback) {
+            rollback_time = speculation[target].causality_violation_time;
+            speculation[target].standing_rollback = 0;
+            speculation[target].current_time = current_min_limit;
+            filter_message[target] = rollback_time - epsilon;
+        }
+        object_unlock(target);
+        if (rollback_time > 0.0) {
+            run_rollback(target, rollback_time); // we restore the current epoch initial state of the object
+                                                 // after we need to run this object as a normal execution
+                                                 // but we need to avoid new events production up to the rollback_time
+                                                 // that has been flushed to the filter_message[] entry of the object
+        }
 #endif
 
         index = my_index;
@@ -334,7 +355,6 @@ redo:
                 target += _min[myNUMAindex];
             }
 #endif
-
             goto redo;
         }
     } else {
@@ -344,7 +364,9 @@ redo:
         }
 #ifdef SPECULATION
         barrier();
-	speculation_queue_flush();
+        verify_queues();
+        speculation_queue_flush();
+        retractable_queue_flush();
 #endif
         if (barrier()) {
             update_timing(); // this call updates the queue layout and releases the objects taken by threads in the last
@@ -361,26 +383,28 @@ redo:
         goto start;
     }
 
+#ifdef SPECULATION
+    object_lock(target);
+#endif
     pthread_spin_lock(&locks[target][index].lock);
 
     if (head->next == tail) { // the current slot is empty
         pthread_spin_unlock(&locks[target][index].lock);
-
-	object_lock(target);
-	if(speculation[target].in_stack == 1){
-		printf("ERROR: stack management violation\n");
-		fflush(stdout);
-		exit(EXIT_FAILURE);
-	};
-	if(speculation[target].standing_rollback){
-                put_into_stack(target);
-                speculation[target].in_stack = 1;
-	}
-	else{
-		speculation[target].the_state = FREE;
-	}
-	object_unlock(target);
-
+#ifdef SPECULATION
+        if (speculation[target].in_stack == 1) {
+            printf("ERROR: stack management violation\n");
+            fflush(stdout);
+            exit(EXIT_FAILURE);
+        }
+        if (speculation[target].standing_rollback) {
+            put_into_stack(target);
+            speculation[target].the_state = BUSY;
+            speculation[target].in_stack = 1;
+        } else {
+            speculation[target].the_state = FREE;
+        }
+        object_unlock(target);
+#endif
         if (end) {
             return NULL;
         } else {
@@ -395,16 +419,23 @@ redo:
     head->next = elem->next;
     elem->next->prev = head;
 
+    elem->next = NULL;
+    elem->prev = NULL;
+
     __sync_fetch_and_add(&pending_events, -1);
 
     pthread_spin_unlock(&locks[target][index].lock);
 
+#ifdef SPECULATION
+    speculation[target].current_time = elem->timestamp;
+    object_unlock(target);
+#endif
     return elem;
 }
 
 #ifdef SPECULATION
 
-void log_the_send(queue_elem *the_elem, int current_object, double current_time){
+void log_the_send(queue_elem *the_elem, int current_object, double current_time) {
     log_element *queue = &log_queue[current_object];
     log_element *node;
 
@@ -414,11 +445,11 @@ void log_the_send(queue_elem *the_elem, int current_object, double current_time)
     }
 
     node->the_element = the_elem;
-    node->send_time   = current_time;
-    node->next        = NULL;
-    node->prev        = queue->last;
-    node->first       = NULL;   /* unused in nodes */
-    node->last        = NULL;   /* unused in nodes */
+    node->send_time = current_time;
+    node->next = NULL;
+    node->prev = queue->last;
+    node->first = NULL; /* unused in nodes */
+    node->last = NULL;  /* unused in nodes */
 
     if (queue->last) {
         /* queue not empty */
@@ -431,9 +462,7 @@ void log_the_send(queue_elem *the_elem, int current_object, double current_time)
     queue->last = node;
 }
 
-
-void flush_log(int object)
-{
+void flush_log(int object) {
     log_element *queue = &log_queue[object];
     log_element *cur;
     log_element *next;
@@ -447,12 +476,10 @@ void flush_log(int object)
     }
 
     queue->first = NULL;
-    queue->last  = NULL;
+    queue->last = NULL;
 }
 
-
 int speculation_queue_insert(queue_elem *elem) {
-
     queue_elem *current;
     queue_elem *tail;
     int index;
@@ -465,16 +492,21 @@ int speculation_queue_insert(queue_elem *elem) {
 
     AUDIT printf("just audit who I am: %u\n", me);
 
-    if (elem->timestamp < (current_min_limit)) {//with speculaton we have a LOOKAHEAD wide time window for straggler acceptance
-        printf("illegal speculation queue insert - timestamp is %e - min speculation limit is %e\n", elem->timestamp, current_min_limit - LOOKAHEAD);
+    if (elem->timestamp <
+        (current_min_limit)) { // with speculaton we have a LOOKAHEAD wide time window for straggler acceptance
+        printf("object %d - illegal speculation queue insert - timestamp is %e - min speculation limit is %e\n",
+               current, elem->timestamp, current_min_limit - LOOKAHEAD);
         return -1;
     }
 
-    if (elem->timestamp >= current_min_limit) { //this insertion into the speculation queue will be flushed
-					  	//to the actual input queue of the destination object if 
-						//the source will not rollback the event generation
-	printf("I'm inserting into the speculation queue an event with timestamp %e\n",elem->timestamp);
-	fflush(stdout);
+    if (elem->timestamp >= current_min_limit + LOOKAHEAD) { // this insertion into the speculation queue will be flushed
+                                                            // to the actual input queue of the destination object if
+                                                            // the source will not rollback the event generation
+        {
+            printf("inserting in speculation queue an event with timestamp %e for object %d\n", elem->timestamp,
+                   elem->destination);
+            fflush(stdout);
+        }
         // here we make a tail insert - there will be no next
         elem->next = NULL;
         if (speculation_queue[source].head == NULL) {
@@ -490,73 +522,85 @@ int speculation_queue_insert(queue_elem *elem) {
         return 0;
     }
 
-
     // insert into the current epoch - can give rise to rollback
-    //in this case we need to log the address of elem into a log
-    //so that we can use the address for retracting the elem insertion
+    // in this case we need to log the address of elem into a log
+    // so that we can use the address for retracting the elem insertion
 
     log_the_send(elem, source, get_current_time());
 
     destination = elem->destination;
     object_lock(destination);
-	if(speculation[destination].current_time >= elem->timestamp){
-		if (speculation[destination].standing_rollback && speculation[destination].causality_violation_time > elem->timestamp){
-			speculation[destination].causality_violation_time = elem->timestamp;
-		}
-		if(!speculation[destination].standing_rollback){
-			speculation[destination].standing_rollback = 1;
-			speculation[destination].causality_violation_time = elem->timestamp;
-
-		}
-
-		queue_insert(elem);
-		if(speculation[destination].standing_rollback && (speculation[destination].the_state == FREE)){//get the oject for processing
-			speculation[destination].the_state = BUSY;
-			put_into_stack(destination);
-			speculation[destination].in_stack = 1;
-			if(!speculation[source].in_stack){
-				put_head_into_stack(source);
-				speculation[source].in_stack = 1;
-			}
-			
-		}
-	} 
+    if (speculation[destination].current_time >= elem->timestamp) {
+        printf("Rollback needed for object %d (current_time %e) with rollback_time %e\n", elem->destination,
+               speculation[destination].current_time, elem->timestamp);
+        if (speculation[destination].standing_rollback &&
+            speculation[destination].causality_violation_time > elem->timestamp) {
+            speculation[destination].causality_violation_time = elem->timestamp;
+        }
+        if (!speculation[destination].standing_rollback) {
+            speculation[destination].standing_rollback = 1;
+            speculation[destination].causality_violation_time = elem->timestamp;
+        }
+        queue_insert(elem);
+        if (speculation[destination].standing_rollback &&
+            (speculation[destination].the_state == FREE)) { // get the oject for processing
+            speculation[destination].the_state = BUSY;
+            put_into_stack(destination);
+            speculation[destination].in_stack = 1;
+            if (!speculation[source].in_stack) {
+                put_head_into_stack(source);
+                speculation[source].in_stack = 1;
+            }
+        }
+    } else {
+        AUDIT {
+            printf("object %d - inserting event in the current epoch with timestamp %e\n", destination,
+                   elem->timestamp);
+            fflush(stdout);
+        }
+        queue_insert(elem);
+    }
     object_unlock(destination);
+    /* if (destination < object_identifiers_vector[myNUMAindex]) {
+        __atomic_store_n(&object_identifiers_vector[myNUMAindex], destination, __ATOMIC_RELAXED);
+    } */
 
     return 0;
 }
 
 void speculation_queue_flush(void) {
-
     queue_elem *temp; // the fallback_queue is __thread hence
-                                            // we already run isolated on this queue
+                      // we already run isolated on this queue
     queue_elem *aux;
     queue_elem *current;
     queue_elem *tail;
     unsigned target_object;
 
-    printf("flush of the speculation queue called\n");
-    fflush(stdout);
+    AUDIT {
+        printf("flush of the speculation queue called\n");
+        fflush(stdout);
+    }
 
 flush_another:
     target_object = __sync_fetch_and_add(&shadow_object_identifiers, 1);
-    printf("flushing for object %d\n",target_object);
-    if(target_object < OBJECTS){
-	
-         speculation[target_object].causality_violation_time = 0.0;
-         speculation[target_object].standing_rollback = 0;
-         speculation[target_object].the_state = FREE;
-         filter_message[target_object] = current_min_limit + LOOKAHEAD - epsilon;
+    AUDIT printf("flushing for object %d\n", target_object);
+    if (target_object < OBJECTS) {
+        speculation[target_object].causality_violation_time = 0.0;
+        speculation[target_object].standing_rollback = 0;
+        speculation[target_object].the_state = FREE;
+        filter_message[target_object] = current_min_limit + LOOKAHEAD - epsilon;
 
-	flush_log(target_object);
+        flush_log(target_object);
 
-   	 queue_elem *temp = speculation_queue[target_object].head; 
-	 if(!temp) {
-		printf("speculation queue of object %d is empty\n",target_object);
-		fflush(stdout);
-	 }
+        queue_elem *temp = speculation_queue[target_object].head;
+        if (!temp) {
+            AUDIT {
+                printf("speculation queue of object %d is empty\n", target_object);
+                fflush(stdout);
+            }
+        }
 
-	 while (temp) {
+        while (temp) {
             aux = temp->next;
             if (speculation_queue[target_object].head == temp) {
                 speculation_queue[target_object].head = temp->next;
@@ -570,63 +614,54 @@ flush_another:
             if (temp->prev) {
                 temp->prev->next = temp->next;
             }
-	    queue_insert(temp);
-	    temp = aux;
+
+            queue_insert(temp);
+            AUDIT printf("object %d - inserting in the queue an event with timestamp %e for object %d\n", target_object,
+                         temp->destination, temp->timestamp);
+            temp = aux;
             __sync_fetch_and_add(&speculation_events, -1);
-	}
+        }
+    } else {
+        return;
     }
-    else{
-	return;
+    {
+        printf("object %d - set checkpoint at %e\n", target_object, current_min_limit + LOOKAHEAD);
+        fflush(stdout);
     }
+    set_ckpt(target_object);
     goto flush_another;
 }
 
 void retractable_queue_flush(void) {
-
-    queue_elem *temp; // the fallback_queue is __thread hence
-                                            // we already run isolated on this queue
-    queue_elem *aux;
-    queue_elem *current;
-    queue_elem *tail;
     unsigned target_object;
 
-    printf("flush of the speculation queue called\n");
-    fflush(stdout);
+    AUDIT {
+        printf("retractable_queue_flush called\n");
+        fflush(stdout);
+    }
 
 flush_another:
     target_object = __sync_fetch_and_add(&retractable_object_identifiers, 1);
-    if(target_object < OBJECTS){
-
-   	 queue_elem *temp = retractable_queue[target_object].head; 
-
-	 while (temp) {
-            aux = temp->next;
-            if (retractable_queue[target_object].head == temp) {
-                retractable_queue[target_object].head = temp->next;
-            }
-            if (retractable_queue[target_object].tail == temp) {
-                retractable_queue[target_object].tail = temp->prev;
-            }
-            if (temp->next) {
-                temp->next->prev = temp->prev;
-            }
-            if (temp->prev) {
-                temp->prev->next = temp->next;
-            }
-	    free(container_of(temp,event,q));
-	    temp = aux;
+    if (target_object < OBJECTS) {
+        queue_elem *curr = retractable_queue[target_object].head;
+        queue_elem *next;
+        while (curr != NULL) {
+            next = curr->next;
+            free(container_of(curr, event, q));
             __sync_fetch_and_add(&retractable_events, -1);
-	}
-    }
-    else{
-	return;
+            curr = next;
+        }
+        retractable_queue[target_object].head = NULL;
+        retractable_queue[target_object].tail = NULL;
+    } else {
+        return;
     }
     goto flush_another;
 }
 
-//this function is used to put into the per-object retractable queue an event that has been processed in the current epoch
-int retractable_queue_insert(queue_elem *elem) {
-
+// this function is used to put into the per-object retractable queue an event that has been processed in the current
+// epoch
+void retractable_queue_insert(queue_elem *elem) {
     queue_elem *current;
     queue_elem *tail;
     int index;
@@ -637,52 +672,60 @@ int retractable_queue_insert(queue_elem *elem) {
 
     AUDIT printf("just audit who I am: %u\n", me);
 
-    if (elem->timestamp < (current_min_limit)) {//with speculaton we have a LOOKAHEAD wide time window for straggler acceptance
-        printf("illegal retractable queue insert - timestamp is %e - min speculation limit is %e\n", elem->timestamp, current_min_limit - LOOKAHEAD);
-        return -1;
+    if (elem->timestamp <
+        current_min_limit) { // with speculation we have a LOOKAHEAD wide time window for straggler acceptance
+        printf("illegal retractable queue insert - object is %d - timestamp is %e - min speculation limit is %e\n",
+               dest, elem->timestamp, current_min_limit);
+        fflush(stdout);
+        exit(EXIT_FAILURE);
     }
-
 
     if (elem->timestamp >= (current_min_limit + LOOKAHEAD)) {
-		printf("illegal retractable queue insert - timestamp is %e - it oversteps the epoch limit plus lookahead (%e)\n",elem->timestamp,current_min_limit+LOOKAHEAD);
-		fflush(stdout);
-    		return -1;
+        printf(
+            "illegal retractable queue insert - timestamp is %e - it oversteps the epoch limit plus lookahead (%e)\n",
+            elem->timestamp, current_min_limit + LOOKAHEAD);
+        fflush(stdout);
+        exit(EXIT_FAILURE);
     }
 
-    printf("I'm inserting into the retractable queue an event with timestamp %e\n",elem->timestamp);
-    fflush(stdout);
-        // here we make a tail insert - there will be no next
-    elem->next = NULL;
-    if (retractable_queue[dest].head == NULL) {
-            elem->prev = NULL;
-            retractable_queue[dest].head = elem;
-            retractable_queue[dest].tail = elem;
+    AUDIT {
+        printf("object %d - inserting in retractable queue an event with timestamp %e\n", elem->destination,
+               elem->timestamp);
+        fflush(stdout);
+    }
+    // here we make a tail insert
+    if (retractable_queue[dest].tail == NULL) {
+        // List is empty
+        retractable_queue[dest].head = elem;
+        retractable_queue[dest].tail = elem;
     } else {
-            elem->prev = retractable_queue[dest].tail;
-            retractable_queue[dest].tail->next = elem;
-            retractable_queue[dest].tail = elem;
+        // List has at least one element
+        retractable_queue[dest].tail->next = elem;
+        retractable_queue[dest].tail = elem;
     }
-    
-
     __sync_fetch_and_add(&retractable_events, 1);
-    return 0;
-
 }
 
-void rollback_speculation_queue(int object, double rollback_time){
+void rollback_speculation_queue(int object, double rollback_time) {
     fallback_slot *q = &speculation_queue[object];
     queue_elem *cur;
     queue_elem *prev;
 
-    if (q->head == NULL)
+    AUDIT {
+        printf("object %d - rollback_speculation_queue called with rollback_time %e\n", object, rollback_time);
+        fflush(stdout);
+    }
+
+    if (q->head == NULL) {
         return;
+    }
 
     cur = q->tail;
 
     /* walk backwards removing elements >= rollback_time */
     while (cur && cur->send_time >= rollback_time) {
         prev = cur->prev;
-        free(cur);
+        free(container_of(cur, event, q));
         cur = prev;
         __sync_fetch_and_add(&speculation_events, -1);
     }
@@ -698,70 +741,75 @@ void rollback_speculation_queue(int object, double rollback_time){
     }
 }
 
-
-void queue_elem_annihilation(queue_elem * the_elem){
-	int object = the_elem->destination;
-	int source;
-	double cancellation_time = the_elem->timestamp;
-	source = get_current();
-	object_lock(object);
-	if(speculation[object].current_time >= cancellation_time && !speculation[object].standing_rollback){
-		speculation[object].causality_violation_time = cancellation_time;
-		speculation[object].standing_rollback = 1;
-		goto try_get_object;
-	}	
-	if(speculation[object].current_time >= cancellation_time && speculation[object].standing_rollback){
-		if(speculation[object].causality_violation_time > cancellation_time){
-			speculation[object].causality_violation_time = cancellation_time;
-			goto try_get_object;
-		} 
-	}
+void queue_elem_annihilation(queue_elem *the_elem) {
+    int object = the_elem->destination;
+    int source;
+    double cancellation_time = the_elem->timestamp;
+    source = get_current();
+    printf("queue_elem_annihilation for object %d with cancellation_time %e\n", object, cancellation_time);
+    object_lock(object);
+    if (speculation[object].current_time >= cancellation_time && !speculation[object].standing_rollback) {
+        speculation[object].causality_violation_time = cancellation_time;
+        speculation[object].standing_rollback = 1;
+        goto try_get_object;
+    }
+    if (speculation[object].current_time >= cancellation_time && speculation[object].standing_rollback) {
+        if (speculation[object].causality_violation_time > cancellation_time) {
+            speculation[object].causality_violation_time = cancellation_time;
+            goto try_get_object;
+        }
+    }
 try_get_object:
-	if(speculation[object].the_state == FREE){
-		speculation[object].the_state = BUSY;
-		if(speculation[object].in_stack == 0){
-			put_into_stack(object);
-                        speculation[object].in_stack = 1;
-                        if(!speculation[source].in_stack){
-                                put_head_into_stack(source);
-                                speculation[source].in_stack = 1;
-                        }
-		}
-		else{
-			printf("ERROR: object FREE but present in stack\n");
-			fflush(stdout);
-			exit(EXIT_FAILURE);	
-		}
-	}
+    if (speculation[object].the_state == FREE) {
+        speculation[object].the_state = BUSY;
+        if (speculation[object].in_stack == 0) {
+            put_into_stack(object);
+            speculation[object].in_stack = 1;
+            if (!speculation[source].in_stack) {
+                put_head_into_stack(source);
+                speculation[source].in_stack = 1;
+            }
+        } else {
+            printf("ERROR: object %d FREE but present in stack\n", object);
+            fflush(stdout);
+            exit(EXIT_FAILURE);
+        }
+    }
 
-	//now really remove the event ot be annihilated
-    	pthread_spin_lock(&locks[object][my_index].lock);
-	the_elem->prev->next = the_elem->next;
-	the_elem->next->prev = the_elem->prev;	
-    	pthread_spin_unlock(&locks[object][my_index].lock);
-	free(the_elem);
-	object_unlock(object);
-
-
+    // now really remove the event to be annihilated
+    pthread_spin_lock(&locks[object][my_index].lock);
+    the_elem->prev->next = the_elem->next;
+    the_elem->next->prev = the_elem->prev;
+    pthread_spin_unlock(&locks[object][my_index].lock);
+    free(container_of(the_elem, event, q));
+    object_unlock(object);
 }
-void log_rollback(int object, double rollback_time){
+
+void log_rollback(int object, double rollback_time) {
     log_element *queue = &log_queue[object];
     log_element *curr = queue->last;
     log_element *prev;
+
+    {
+        printf("object %d - log_rollback called with rollback_time %e\n", object, rollback_time);
+        fflush(stdout);
+    }
 
     while (curr != NULL && curr->send_time >= rollback_time) {
         prev = curr->prev;
 
         /* unlink curr from the queue */
-        if (curr->prev)
+        if (curr->prev) {
             curr->prev->next = curr->next;
-        else
+        } else {
             queue->first = curr->next;
+        }
 
-        if (curr->next)
+        if (curr->next) {
             curr->next->prev = curr->prev;
-        else
+        } else {
             queue->last = curr->prev;
+        }
 
         queue_elem_annihilation(curr->the_element);
 
@@ -770,27 +818,21 @@ void log_rollback(int object, double rollback_time){
     }
 }
 
-void restore_retractable_events(int object){
-    fallback_slot *q = &retractable_queue[object];
-    queue_elem *cur;
+void restore_retractable_events(int object) {
+    queue_elem *cur = retractable_queue[object].head;
+    queue_elem *elem;
 
-    while ((cur = q->head) != NULL) {
+    while (cur != NULL) {
+        elem = cur;
+        cur = cur->next;
 
-        /* detach from queue */
-        q->head = cur->next;
-
-        if (q->head)
-            q->head->prev = NULL;
-        else
-            q->tail = NULL;   /* queue became empty */
-
-        cur->next = NULL;
-        cur->prev = NULL;
+        elem->next = NULL;
+        elem->prev = NULL;
 
         __sync_fetch_and_sub(&retractable_events, 1);
 
         /* hand element to user logic */
-       queue_insert(cur);
+        queue_insert(elem);
     }
 }
 
