@@ -116,7 +116,9 @@ void queue_init(void) {
         head = &retractable_queue[j].head;
         tail = &retractable_queue[j].tail;
         head->next = tail; // setup initial double linked list
+        head->prev = NULL; 
         tail->prev = head;
+        tail->next = NULL;
         head->timestamp = -1; // setup initial timestamp value
         tail->timestamp = -1;
         for (i = 0; i < NUM_SLOTS; i++) {
@@ -182,6 +184,8 @@ int queue_insert(queue_elem *elem) {
 
     if (elem->timestamp >= current_max_limit) {
         // here we make a tail insert - there will be no next
+	printf("inserting avent with timestamp %e in the fallback queue\n",elem->timestamp);
+	fflush(stdout);
         elem->next = NULL;
         if (fallback_queue.head == NULL) {
             elem->prev = NULL;
@@ -237,12 +241,16 @@ int queue_insert(queue_elem *elem) {
 
 void print_queues_status(int object) {
     queue_elem *curr = queue[object][my_index].head.next;
+    printf("printing the queue of object %d\n",object);
+    fflush(stdout);
     while (curr != &queue[object][my_index].tail) {
         printf("object %d - event in queue with timestamp %e\n", object, curr->timestamp);
         fflush(stdout);
         curr = curr->next;
     }
     curr = retractable_queue[object].head.next;
+    printf("printing the retractble queue of object %d\n",object);
+    fflush(stdout);
     while (curr != &retractable_queue[object].tail) {
         printf("object %d - event in retractable_queue with timestamp %e\n", object, curr->timestamp);
         fflush(stdout);
@@ -278,10 +286,13 @@ void fallback_check(void) {
             if (temp->prev) {
                 temp->prev->next = temp->next;
             }
+
             index = (int)((temp->timestamp) / (double)SLOT_LEN);
             index = index % NUM_SLOTS;
             dest = temp->destination;
-            current = queue[dest][index].head.next; // here current is not the object but
+
+ //           current = queue[dest][index].head.next; // here current is not the object but
+            current = &queue[dest][index].head; // here current is not the object but
                                                     // the target queue head
             tail = &queue[dest][index].tail;
 
@@ -296,10 +307,33 @@ void fallback_check(void) {
             while (current->timestamp <= temp->timestamp && current->next != tail) {
                 current = current->next;
             }
-            temp->next = current->next; // link to the subsequent element
-            current->next = temp;
-            temp->next->prev = temp; // relink the previous elements
-            temp->prev = current;
+	    if (current->timestamp <= temp->timestamp) {
+       		 temp->next = current->next; // link to the subsequent element
+       		 current->next = temp;
+	
+       		 temp->next->prev = temp; // relink the previoous elements
+       		 temp->prev = current;
+    		} else {
+       		 temp->next = current; // link to the subsequent element
+       		 temp->prev = current->prev;
+       		 current->prev->next = temp;
+       		 current->prev = temp;
+    	}
+
+//	    printf("after while\n");
+//	    fflush(stdout);
+ //           temp->next = current->next; // link to the subsequent element
+//	    printf("after 1st\n");
+//	    fflush(stdout);
+ //           current->next = temp;
+//	    printf("after 2nd\n");
+//	    fflush(stdout);
+ //           temp->next->prev = temp; // relink the previous elements
+//	    printf("after 3rd\n");
+//	    fflush(stdout);
+ //           temp->prev = current;
+//	    printf("after 4rt\n");
+//	    fflush(stdout);
 
             pthread_spin_unlock(&locks[dest][index].lock);
 
@@ -543,11 +577,11 @@ int speculation_queue_insert(queue_elem *elem) {
     if (elem->timestamp >= current_min_limit + LOOKAHEAD) { // this insertion into the speculation queue will be flushed
                                                             // to the actual input queue of the destination object if
                                                             // the source will not rollback the event generation
-        AUDIT {
+//        AUDIT {
             printf("inserting in speculation queue an event with timestamp %e for object %d\n", elem->timestamp,
                    elem->destination);
             fflush(stdout);
-        }
+ //       }
         // here we make a tail insert - there will be no next
         elem->next = NULL;
         if (speculation_queue[source].head == NULL) {
@@ -585,6 +619,8 @@ int speculation_queue_insert(queue_elem *elem) {
         queue_insert(elem);
         if (speculation[destination].standing_rollback &&
             (speculation[destination].the_state == FREE)) { // get the oject for processing
+		printf("entered here\n");
+		fflush(stdout);
             speculation[destination].the_state = BUSY;
             put_into_stack(destination);
             speculation[destination].in_stack = 1;
@@ -597,18 +633,22 @@ int speculation_queue_insert(queue_elem *elem) {
     } else {
         queue_insert(elem);
         {
-            printf("object %d - inserted event in the current epoch with timestamp %e\n", destination, elem->timestamp);
+            printf("object %d - inserted event for object %d in the current epoch with timestamp %e\n", source, destination, elem->timestamp);
             fflush(stdout);
         }
         if ((speculation[destination].the_state == FREE) &&
             (speculation[destination].already_taken == 1)) { // get the object for processing
+		printf("well I'm running here\n");
+		fflush(stdout);
             speculation[destination].the_state = BUSY;
-            put_into_stack(destination);
-            speculation[destination].in_stack = 1;
-            if (!speculation[source].in_stack) {
-                put_head_into_stack(source);
-                speculation[source].in_stack = 1;
-            }
+	    if( speculation[destination].in_stack == 0){
+            	put_into_stack(destination);
+            	speculation[destination].in_stack = 1;
+            	if (speculation[source].in_stack == 0) {
+              	  put_head_into_stack(source);
+               	 speculation[source].in_stack = 1;
+           	 }
+	    }
             target = -1;
         }
     }

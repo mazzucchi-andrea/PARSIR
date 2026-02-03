@@ -2,7 +2,7 @@
 #define RUN_H
 
 #define THREADS (1)
-#define OBJECTS (128)
+#define OBJECTS (2)
 #define LOOKAHEAD (1.0)
 
 #define AUDIT if (0)

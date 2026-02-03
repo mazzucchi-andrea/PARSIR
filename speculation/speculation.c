@@ -61,6 +61,8 @@ void object_unlock(int object) {
 
 void put_into_stack(int object) {
     stack_index++;
+    printf("putting %d into the stack\n", object);
+    fflush(stdout);
     if (stack_index >= STACKABLE_OBJECTS) { // no more room in the stack
         printf("no more room into the object stack\n");
         fflush(stdout);
@@ -72,6 +74,8 @@ void put_into_stack(int object) {
 void put_head_into_stack(int object) {
     int i;
     stack_index++;
+    printf("putting %d head into the stack\n", object);
+    fflush(stdout);
     if (stack_index >= STACKABLE_OBJECTS) { // no more room in the stack
         printf("no more room into the object stack\n");
         fflush(stdout);
@@ -87,7 +91,9 @@ void put_head_into_stack(int object) {
 int get_from_stack(int *object) {
     if (stack_index == -1) {
         return 0;
-    }
+    } 
+    printf("getting %d from the stack\n", object_stack[stack_index]);
+    fflush(stdout);
     *object = object_stack[stack_index];
     stack_index--;
     return 1;

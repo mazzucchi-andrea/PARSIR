@@ -1,0 +1,720 @@
+PARSIR started with 1 threads
+HW level config file not available - running with default config
+engine - ratio is 2.000000
+engine - NUMA ratio is 2.000000
+objects assigned to NUMA node 0 are 2 min is 0 - max is 1
+PARSIR worker thread 0 started - CPU to pin on is 0 - NUMA node is 1
+object 0 - executing event (type 0) at time 0.000000e+00
+entered in ScheduleNewEvent
+still here (1)
+object 1 - executing event (type 0) at time 0.000000e+00
+entered in ScheduleNewEvent
+still here (1)
+
+---------- INIT EVENTS COMPLETED ----------
+
+object 0 - inserting in retractable queue an event with timestamp 7.475554e-03
+object 0 - executing event (type 1) at time 7.475554e-03
+object 0 - count of events is 1
+entered in ScheduleNewEvent
+still here (1)
+object 0 - inserted event for object 1 in the current epoch with timestamp 4.725267e-01
+object 1 - inserting in retractable queue an event with timestamp 3.780165e-03
+object 1 - executing event (type 1) at time 3.780165e-03
+object 1 - count of events is 1
+entered in ScheduleNewEvent
+still here (1)
+object 1 - inserted event for object 0 in the current epoch with timestamp 7.908211e-01
+well I'm running here
+putting 0 into the stack
+putting 1 head into the stack
+getting 0 from the stack
+object 0 - inserting in retractable queue an event with timestamp 7.908211e-01
+object 0 - executing event (type 1) at time 7.908211e-01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 4.393294e+00 for object 0
+getting 1 from the stack
+object 1 - inserting in retractable queue an event with timestamp 4.725267e-01
+object 1 - executing event (type 1) at time 4.725267e-01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 2.376729e+00 for object 0
+inserting avent with timestamp 4.393294e+00 in the fallback queue
+object 0 - set checkpoint at 1.000000e+00
+inserting avent with timestamp 2.376729e+00 in the fallback queue
+object 1 - set checkpoint at 1.000000e+00
+object 0 - set checkpoint at 2.000000e+00
+object 1 - set checkpoint at 2.000000e+00
+object 0 - queue_insert (from fallback) for an element with timestamp 2.376729e+00
+object 0 - inserting in retractable queue an event with timestamp 2.376729e+00
+object 0 - executing event (type 1) at time 2.376729e+00
+entered in ScheduleNewEvent
+still here (1)
+object 0 - inserted event for object 0 in the current epoch with timestamp 2.889455e+00
+well I'm running here
+putting 0 into the stack
+getting 0 from the stack
+object 0 - inserting in retractable queue an event with timestamp 2.889455e+00
+object 0 - executing event (type 1) at time 2.889455e+00
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 3.372608e+00 for object 0
+inserting avent with timestamp 3.372608e+00 in the fallback queue
+object 0 - set checkpoint at 3.000000e+00
+object 1 - set checkpoint at 3.000000e+00
+object 0 - queue_insert (from fallback) for an element with timestamp 3.372608e+00
+object 0 - inserting in retractable queue an event with timestamp 3.372608e+00
+object 0 - executing event (type 1) at time 3.372608e+00
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 5.627930e+00 for object 1
+inserting avent with timestamp 5.627930e+00 in the fallback queue
+object 0 - set checkpoint at 4.000000e+00
+object 1 - set checkpoint at 4.000000e+00
+object 0 - queue_insert (from fallback) for an element with timestamp 4.393294e+00
+object 0 - inserting in retractable queue an event with timestamp 4.393294e+00
+object 0 - executing event (type 1) at time 4.393294e+00
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 5.374450e+00 for object 0
+inserting avent with timestamp 5.374450e+00 in the fallback queue
+object 0 - set checkpoint at 5.000000e+00
+object 1 - set checkpoint at 5.000000e+00
+object 1 - queue_insert (from fallback) for an element with timestamp 5.627930e+00
+object 0 - queue_insert (from fallback) for an element with timestamp 5.374450e+00
+object 0 - inserting in retractable queue an event with timestamp 5.374450e+00
+object 0 - executing event (type 1) at time 5.374450e+00
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 6.692480e+00 for object 0
+object 1 - inserting in retractable queue an event with timestamp 5.627930e+00
+object 1 - executing event (type 1) at time 5.627930e+00
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 6.776404e+00 for object 1
+inserting avent with timestamp 6.692480e+00 in the fallback queue
+object 0 - set checkpoint at 6.000000e+00
+inserting avent with timestamp 6.776404e+00 in the fallback queue
+object 1 - set checkpoint at 6.000000e+00
+object 0 - queue_insert (from fallback) for an element with timestamp 6.692480e+00
+object 1 - queue_insert (from fallback) for an element with timestamp 6.776404e+00
+object 0 - inserting in retractable queue an event with timestamp 6.692480e+00
+object 0 - executing event (type 1) at time 6.692480e+00
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 7.099812e+00 for object 1
+object 1 - inserting in retractable queue an event with timestamp 6.776404e+00
+object 1 - executing event (type 1) at time 6.776404e+00
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 7.677730e+00 for object 1
+inserting avent with timestamp 7.099812e+00 in the fallback queue
+object 0 - set checkpoint at 7.000000e+00
+inserting avent with timestamp 7.677730e+00 in the fallback queue
+object 1 - set checkpoint at 7.000000e+00
+object 1 - queue_insert (from fallback) for an element with timestamp 7.099812e+00
+object 1 - queue_insert (from fallback) for an element with timestamp 7.677730e+00
+object 1 - inserting in retractable queue an event with timestamp 7.099812e+00
+object 1 - executing event (type 1) at time 7.099812e+00
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 8.266957e+00 for object 1
+object 1 - inserting in retractable queue an event with timestamp 7.677730e+00
+object 1 - executing event (type 1) at time 7.677730e+00
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 8.175641e+00 for object 0
+object 0 - set checkpoint at 8.000000e+00
+inserting avent with timestamp 8.266957e+00 in the fallback queue
+inserting avent with timestamp 8.175641e+00 in the fallback queue
+object 1 - set checkpoint at 8.000000e+00
+object 1 - queue_insert (from fallback) for an element with timestamp 8.266957e+00
+object 0 - queue_insert (from fallback) for an element with timestamp 8.175641e+00
+object 0 - inserting in retractable queue an event with timestamp 8.175641e+00
+object 0 - executing event (type 1) at time 8.175641e+00
+entered in ScheduleNewEvent
+still here (1)
+object 0 - inserted event for object 1 in the current epoch with timestamp 8.509290e+00
+object 1 - inserting in retractable queue an event with timestamp 8.266957e+00
+object 1 - executing event (type 1) at time 8.266957e+00
+entered in ScheduleNewEvent
+still here (1)
+object 1 - inserted event for object 0 in the current epoch with timestamp 8.939264e+00
+well I'm running here
+putting 0 into the stack
+putting 1 head into the stack
+getting 0 from the stack
+object 0 - inserting in retractable queue an event with timestamp 8.939264e+00
+object 0 - executing event (type 1) at time 8.939264e+00
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 1.078169e+01 for object 0
+getting 1 from the stack
+object 1 - inserting in retractable queue an event with timestamp 8.509290e+00
+object 1 - executing event (type 1) at time 8.509290e+00
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 9.041206e+00 for object 1
+inserting avent with timestamp 1.078169e+01 in the fallback queue
+object 0 - set checkpoint at 9.000000e+00
+inserting avent with timestamp 9.041206e+00 in the fallback queue
+object 1 - set checkpoint at 9.000000e+00
+object 1 - queue_insert (from fallback) for an element with timestamp 9.041206e+00
+object 1 - inserting in retractable queue an event with timestamp 9.041206e+00
+object 1 - executing event (type 1) at time 9.041206e+00
+entered in ScheduleNewEvent
+still here (1)
+object 1 - inserted event for object 1 in the current epoch with timestamp 9.378554e+00
+well I'm running here
+putting 1 into the stack
+getting 1 from the stack
+object 1 - inserting in retractable queue an event with timestamp 9.378554e+00
+object 1 - executing event (type 1) at time 9.378554e+00
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 1.032597e+01 for object 1
+object 0 - set checkpoint at 1.000000e+01
+inserting avent with timestamp 1.032597e+01 in the fallback queue
+object 1 - set checkpoint at 1.000000e+01
+object 0 - queue_insert (from fallback) for an element with timestamp 1.078169e+01
+object 1 - queue_insert (from fallback) for an element with timestamp 1.032597e+01
+object 0 - inserting in retractable queue an event with timestamp 1.078169e+01
+object 0 - executing event (type 1) at time 1.078169e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 1.200936e+01 for object 0
+object 1 - inserting in retractable queue an event with timestamp 1.032597e+01
+object 1 - executing event (type 1) at time 1.032597e+01
+entered in ScheduleNewEvent
+still here (1)
+object 1 - inserted event for object 0 in the current epoch with timestamp 1.095132e+01
+well I'm running here
+putting 0 into the stack
+putting 1 head into the stack
+getting 0 from the stack
+object 0 - inserting in retractable queue an event with timestamp 1.095132e+01
+object 0 - executing event (type 1) at time 1.095132e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 1.144667e+01 for object 1
+getting 1 from the stack
+inserting avent with timestamp 1.200936e+01 in the fallback queue
+inserting avent with timestamp 1.144667e+01 in the fallback queue
+object 0 - set checkpoint at 1.100000e+01
+object 1 - set checkpoint at 1.100000e+01
+object 1 - queue_insert (from fallback) for an element with timestamp 1.144667e+01
+object 1 - inserting in retractable queue an event with timestamp 1.144667e+01
+object 1 - executing event (type 1) at time 1.144667e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 1.243923e+01 for object 0
+object 0 - set checkpoint at 1.200000e+01
+inserting avent with timestamp 1.243923e+01 in the fallback queue
+object 1 - set checkpoint at 1.200000e+01
+object 0 - queue_insert (from fallback) for an element with timestamp 1.200936e+01
+object 0 - queue_insert (from fallback) for an element with timestamp 1.243923e+01
+object 0 - inserting in retractable queue an event with timestamp 1.200936e+01
+object 0 - executing event (type 1) at time 1.200936e+01
+entered in ScheduleNewEvent
+still here (1)
+object 0 - inserted event for object 0 in the current epoch with timestamp 1.255992e+01
+well I'm running here
+putting 0 into the stack
+getting 0 from the stack
+object 0 - inserting in retractable queue an event with timestamp 1.243923e+01
+object 0 - executing event (type 1) at time 1.243923e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 1.300715e+01 for object 1
+object 0 - inserting in retractable queue an event with timestamp 1.255992e+01
+object 0 - executing event (type 1) at time 1.255992e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 1.391333e+01 for object 1
+inserting avent with timestamp 1.300715e+01 in the fallback queue
+inserting avent with timestamp 1.391333e+01 in the fallback queue
+object 0 - set checkpoint at 1.300000e+01
+object 1 - set checkpoint at 1.300000e+01
+object 1 - queue_insert (from fallback) for an element with timestamp 1.300715e+01
+object 1 - queue_insert (from fallback) for an element with timestamp 1.391333e+01
+object 1 - inserting in retractable queue an event with timestamp 1.300715e+01
+object 1 - executing event (type 1) at time 1.300715e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 1.466660e+01 for object 1
+object 1 - inserting in retractable queue an event with timestamp 1.391333e+01
+object 1 - executing event (type 1) at time 1.391333e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 1.594755e+01 for object 0
+object 0 - set checkpoint at 1.400000e+01
+inserting avent with timestamp 1.466660e+01 in the fallback queue
+inserting avent with timestamp 1.594755e+01 in the fallback queue
+object 1 - set checkpoint at 1.400000e+01
+object 1 - queue_insert (from fallback) for an element with timestamp 1.466660e+01
+object 1 - inserting in retractable queue an event with timestamp 1.466660e+01
+object 1 - executing event (type 1) at time 1.466660e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 1.535733e+01 for object 0
+object 0 - set checkpoint at 1.500000e+01
+inserting avent with timestamp 1.535733e+01 in the fallback queue
+object 1 - set checkpoint at 1.500000e+01
+object 0 - queue_insert (from fallback) for an element with timestamp 1.594755e+01
+object 0 - queue_insert (from fallback) for an element with timestamp 1.535733e+01
+object 0 - inserting in retractable queue an event with timestamp 1.535733e+01
+object 0 - executing event (type 1) at time 1.535733e+01
+entered in ScheduleNewEvent
+still here (1)
+object 0 - inserted event for object 1 in the current epoch with timestamp 1.569767e+01
+object 0 - inserting in retractable queue an event with timestamp 1.594755e+01
+object 0 - executing event (type 1) at time 1.594755e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 1.684278e+01 for object 1
+object 1 - inserting in retractable queue an event with timestamp 1.569767e+01
+object 1 - executing event (type 1) at time 1.569767e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 1.604898e+01 for object 1
+inserting avent with timestamp 1.684278e+01 in the fallback queue
+object 0 - set checkpoint at 1.600000e+01
+inserting avent with timestamp 1.604898e+01 in the fallback queue
+object 1 - set checkpoint at 1.600000e+01
+object 1 - queue_insert (from fallback) for an element with timestamp 1.684278e+01
+object 1 - queue_insert (from fallback) for an element with timestamp 1.604898e+01
+object 1 - inserting in retractable queue an event with timestamp 1.604898e+01
+object 1 - executing event (type 1) at time 1.604898e+01
+entered in ScheduleNewEvent
+still here (1)
+object 1 - inserted event for object 0 in the current epoch with timestamp 1.650270e+01
+well I'm running here
+putting 0 into the stack
+putting 1 head into the stack
+getting 0 from the stack
+object 0 - inserting in retractable queue an event with timestamp 1.650270e+01
+object 0 - executing event (type 1) at time 1.650270e+01
+entered in ScheduleNewEvent
+still here (1)
+object 0 - inserted event for object 1 in the current epoch with timestamp 1.688414e+01
+well I'm running here
+getting 1 from the stack
+object 1 - inserting in retractable queue an event with timestamp 1.684278e+01
+object 1 - executing event (type 1) at time 1.684278e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 1.729461e+01 for object 1
+object 1 - inserting in retractable queue an event with timestamp 1.688414e+01
+object 1 - executing event (type 1) at time 1.688414e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 1.726737e+01 for object 1
+object 0 - set checkpoint at 1.700000e+01
+inserting avent with timestamp 1.729461e+01 in the fallback queue
+inserting avent with timestamp 1.726737e+01 in the fallback queue
+object 1 - set checkpoint at 1.700000e+01
+object 1 - queue_insert (from fallback) for an element with timestamp 1.729461e+01
+object 1 - queue_insert (from fallback) for an element with timestamp 1.726737e+01
+object 1 - inserting in retractable queue an event with timestamp 1.726737e+01
+object 1 - executing event (type 1) at time 1.726737e+01
+entered in ScheduleNewEvent
+still here (1)
+object 1 - inserted event for object 0 in the current epoch with timestamp 1.766122e+01
+well I'm running here
+putting 0 into the stack
+putting 1 head into the stack
+getting 0 from the stack
+object 0 - inserting in retractable queue an event with timestamp 1.766122e+01
+object 0 - executing event (type 1) at time 1.766122e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 1.841895e+01 for object 1
+getting 1 from the stack
+object 1 - inserting in retractable queue an event with timestamp 1.729461e+01
+object 1 - executing event (type 1) at time 1.729461e+01
+entered in ScheduleNewEvent
+still here (1)
+object 1 - inserted event for object 1 in the current epoch with timestamp 1.767494e+01
+well I'm running here
+putting 1 into the stack
+getting 1 from the stack
+object 1 - inserting in retractable queue an event with timestamp 1.767494e+01
+object 1 - executing event (type 1) at time 1.767494e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 1.821083e+01 for object 0
+inserting avent with timestamp 1.841895e+01 in the fallback queue
+object 0 - set checkpoint at 1.800000e+01
+inserting avent with timestamp 1.821083e+01 in the fallback queue
+object 1 - set checkpoint at 1.800000e+01
+object 1 - queue_insert (from fallback) for an element with timestamp 1.841895e+01
+object 0 - queue_insert (from fallback) for an element with timestamp 1.821083e+01
+object 0 - inserting in retractable queue an event with timestamp 1.821083e+01
+object 0 - executing event (type 1) at time 1.821083e+01
+entered in ScheduleNewEvent
+still here (1)
+object 0 - inserted event for object 1 in the current epoch with timestamp 1.898933e+01
+object 1 - inserting in retractable queue an event with timestamp 1.841895e+01
+object 1 - executing event (type 1) at time 1.841895e+01
+entered in ScheduleNewEvent
+still here (1)
+object 1 - inserted event for object 1 in the current epoch with timestamp 1.877835e+01
+well I'm running here
+putting 1 into the stack
+getting 1 from the stack
+object 1 - inserting in retractable queue an event with timestamp 1.877835e+01
+object 1 - executing event (type 1) at time 1.877835e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 2.258158e+01 for object 1
+object 1 - inserting in retractable queue an event with timestamp 1.898933e+01
+object 1 - executing event (type 1) at time 1.898933e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 1.971729e+01 for object 1
+object 0 - set checkpoint at 1.900000e+01
+inserting avent with timestamp 2.258158e+01 in the fallback queue
+inserting avent with timestamp 1.971729e+01 in the fallback queue
+object 1 - set checkpoint at 1.900000e+01
+object 1 - queue_insert (from fallback) for an element with timestamp 1.971729e+01
+object 1 - inserting in retractable queue an event with timestamp 1.971729e+01
+object 1 - executing event (type 1) at time 1.971729e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 2.040087e+01 for object 1
+object 0 - set checkpoint at 2.000000e+01
+inserting avent with timestamp 2.040087e+01 in the fallback queue
+object 1 - set checkpoint at 2.000000e+01
+object 1 - queue_insert (from fallback) for an element with timestamp 2.040087e+01
+object 1 - inserting in retractable queue an event with timestamp 2.040087e+01
+object 1 - executing event (type 1) at time 2.040087e+01
+entered in ScheduleNewEvent
+still here (1)
+object 1 - inserted event for object 1 in the current epoch with timestamp 2.074472e+01
+well I'm running here
+putting 1 into the stack
+getting 1 from the stack
+object 1 - inserting in retractable queue an event with timestamp 2.074472e+01
+object 1 - executing event (type 1) at time 2.074472e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 2.164783e+01 for object 1
+object 0 - set checkpoint at 2.100000e+01
+inserting avent with timestamp 2.164783e+01 in the fallback queue
+object 1 - set checkpoint at 2.100000e+01
+object 1 - queue_insert (from fallback) for an element with timestamp 2.164783e+01
+object 1 - inserting in retractable queue an event with timestamp 2.164783e+01
+object 1 - executing event (type 1) at time 2.164783e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 2.244953e+01 for object 1
+object 0 - set checkpoint at 2.200000e+01
+inserting avent with timestamp 2.244953e+01 in the fallback queue
+object 1 - set checkpoint at 2.200000e+01
+object 1 - queue_insert (from fallback) for an element with timestamp 2.258158e+01
+object 1 - queue_insert (from fallback) for an element with timestamp 2.244953e+01
+object 1 - inserting in retractable queue an event with timestamp 2.244953e+01
+object 1 - executing event (type 1) at time 2.244953e+01
+entered in ScheduleNewEvent
+still here (1)
+object 1 - inserted event for object 0 in the current epoch with timestamp 2.291206e+01
+well I'm running here
+putting 0 into the stack
+putting 1 head into the stack
+getting 0 from the stack
+object 0 - inserting in retractable queue an event with timestamp 2.291206e+01
+object 0 - executing event (type 1) at time 2.291206e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 2.366413e+01 for object 0
+getting 1 from the stack
+object 1 - inserting in retractable queue an event with timestamp 2.258158e+01
+object 1 - executing event (type 1) at time 2.258158e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 3.179458e+01 for object 0
+inserting avent with timestamp 2.366413e+01 in the fallback queue
+object 0 - set checkpoint at 2.300000e+01
+inserting avent with timestamp 3.179458e+01 in the fallback queue
+object 1 - set checkpoint at 2.300000e+01
+object 0 - queue_insert (from fallback) for an element with timestamp 2.366413e+01
+object 0 - inserting in retractable queue an event with timestamp 2.366413e+01
+object 0 - executing event (type 1) at time 2.366413e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 2.471894e+01 for object 0
+inserting avent with timestamp 2.471894e+01 in the fallback queue
+object 0 - set checkpoint at 2.400000e+01
+object 1 - set checkpoint at 2.400000e+01
+object 0 - queue_insert (from fallback) for an element with timestamp 2.471894e+01
+object 0 - inserting in retractable queue an event with timestamp 2.471894e+01
+object 0 - executing event (type 1) at time 2.471894e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 2.543007e+01 for object 1
+inserting avent with timestamp 2.543007e+01 in the fallback queue
+object 0 - set checkpoint at 2.500000e+01
+object 1 - set checkpoint at 2.500000e+01
+object 1 - queue_insert (from fallback) for an element with timestamp 2.543007e+01
+object 1 - inserting in retractable queue an event with timestamp 2.543007e+01
+object 1 - executing event (type 1) at time 2.543007e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 2.670651e+01 for object 1
+object 0 - set checkpoint at 2.600000e+01
+inserting avent with timestamp 2.670651e+01 in the fallback queue
+object 1 - set checkpoint at 2.600000e+01
+object 1 - queue_insert (from fallback) for an element with timestamp 2.670651e+01
+object 1 - inserting in retractable queue an event with timestamp 2.670651e+01
+object 1 - executing event (type 1) at time 2.670651e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 2.708353e+01 for object 1
+object 0 - set checkpoint at 2.700000e+01
+inserting avent with timestamp 2.708353e+01 in the fallback queue
+object 1 - set checkpoint at 2.700000e+01
+object 1 - queue_insert (from fallback) for an element with timestamp 2.708353e+01
+object 1 - inserting in retractable queue an event with timestamp 2.708353e+01
+object 1 - executing event (type 1) at time 2.708353e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 2.917399e+01 for object 1
+object 0 - set checkpoint at 2.800000e+01
+inserting avent with timestamp 2.917399e+01 in the fallback queue
+object 1 - set checkpoint at 2.800000e+01
+object 0 - set checkpoint at 2.900000e+01
+object 1 - set checkpoint at 2.900000e+01
+object 1 - queue_insert (from fallback) for an element with timestamp 2.917399e+01
+object 1 - inserting in retractable queue an event with timestamp 2.917399e+01
+object 1 - executing event (type 1) at time 2.917399e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 3.012745e+01 for object 0
+object 0 - set checkpoint at 3.000000e+01
+inserting avent with timestamp 3.012745e+01 in the fallback queue
+object 1 - set checkpoint at 3.000000e+01
+object 0 - queue_insert (from fallback) for an element with timestamp 3.012745e+01
+object 0 - inserting in retractable queue an event with timestamp 3.012745e+01
+object 0 - executing event (type 1) at time 3.012745e+01
+entered in ScheduleNewEvent
+still here (1)
+object 0 - inserted event for object 0 in the current epoch with timestamp 3.073480e+01
+well I'm running here
+putting 0 into the stack
+getting 0 from the stack
+object 0 - inserting in retractable queue an event with timestamp 3.073480e+01
+object 0 - executing event (type 1) at time 3.073480e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 3.118897e+01 for object 0
+inserting avent with timestamp 3.118897e+01 in the fallback queue
+object 0 - set checkpoint at 3.100000e+01
+object 1 - set checkpoint at 3.100000e+01
+object 0 - queue_insert (from fallback) for an element with timestamp 3.179458e+01
+object 0 - queue_insert (from fallback) for an element with timestamp 3.118897e+01
+object 0 - inserting in retractable queue an event with timestamp 3.118897e+01
+object 0 - executing event (type 1) at time 3.118897e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 3.252867e+01 for object 0
+object 0 - inserting in retractable queue an event with timestamp 3.179458e+01
+object 0 - executing event (type 1) at time 3.179458e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 3.247524e+01 for object 0
+inserting avent with timestamp 3.252867e+01 in the fallback queue
+inserting avent with timestamp 3.247524e+01 in the fallback queue
+object 0 - set checkpoint at 3.200000e+01
+object 1 - set checkpoint at 3.200000e+01
+object 0 - queue_insert (from fallback) for an element with timestamp 3.252867e+01
+object 0 - queue_insert (from fallback) for an element with timestamp 3.247524e+01
+object 0 - inserting in retractable queue an event with timestamp 3.247524e+01
+object 0 - executing event (type 1) at time 3.247524e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 3.423383e+01 for object 0
+object 0 - inserting in retractable queue an event with timestamp 3.252867e+01
+object 0 - executing event (type 1) at time 3.252867e+01
+entered in ScheduleNewEvent
+still here (1)
+object 0 - inserted event for object 1 in the current epoch with timestamp 3.299625e+01
+object 1 - inserting in retractable queue an event with timestamp 3.299625e+01
+object 1 - executing event (type 1) at time 3.299625e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 3.391311e+01 for object 0
+inserting avent with timestamp 3.423383e+01 in the fallback queue
+object 0 - set checkpoint at 3.300000e+01
+inserting avent with timestamp 3.391311e+01 in the fallback queue
+object 1 - set checkpoint at 3.300000e+01
+object 0 - queue_insert (from fallback) for an element with timestamp 3.391311e+01
+object 0 - inserting in retractable queue an event with timestamp 3.391311e+01
+object 0 - executing event (type 1) at time 3.391311e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 3.429831e+01 for object 0
+inserting avent with timestamp 3.429831e+01 in the fallback queue
+object 0 - set checkpoint at 3.400000e+01
+object 1 - set checkpoint at 3.400000e+01
+object 0 - queue_insert (from fallback) for an element with timestamp 3.423383e+01
+object 0 - queue_insert (from fallback) for an element with timestamp 3.429831e+01
+object 0 - inserting in retractable queue an event with timestamp 3.423383e+01
+object 0 - executing event (type 1) at time 3.423383e+01
+entered in ScheduleNewEvent
+still here (1)
+object 0 - inserted event for object 1 in the current epoch with timestamp 3.487107e+01
+object 0 - inserting in retractable queue an event with timestamp 3.429831e+01
+object 0 - executing event (type 1) at time 3.429831e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 3.675698e+01 for object 1
+object 1 - inserting in retractable queue an event with timestamp 3.487107e+01
+object 1 - executing event (type 1) at time 3.487107e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 3.686005e+01 for object 0
+inserting avent with timestamp 3.675698e+01 in the fallback queue
+object 0 - set checkpoint at 3.500000e+01
+inserting avent with timestamp 3.686005e+01 in the fallback queue
+object 1 - set checkpoint at 3.500000e+01
+object 0 - set checkpoint at 3.600000e+01
+object 1 - set checkpoint at 3.600000e+01
+object 1 - queue_insert (from fallback) for an element with timestamp 3.675698e+01
+object 0 - queue_insert (from fallback) for an element with timestamp 3.686005e+01
+object 0 - inserting in retractable queue an event with timestamp 3.686005e+01
+object 0 - executing event (type 1) at time 3.686005e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 3.721202e+01 for object 1
+object 1 - inserting in retractable queue an event with timestamp 3.675698e+01
+object 1 - executing event (type 1) at time 3.675698e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 3.793697e+01 for object 0
+inserting avent with timestamp 3.721202e+01 in the fallback queue
+object 0 - set checkpoint at 3.700000e+01
+inserting avent with timestamp 3.793697e+01 in the fallback queue
+object 1 - set checkpoint at 3.700000e+01
+object 1 - queue_insert (from fallback) for an element with timestamp 3.721202e+01
+object 0 - queue_insert (from fallback) for an element with timestamp 3.793697e+01
+object 0 - inserting in retractable queue an event with timestamp 3.793697e+01
+object 0 - executing event (type 1) at time 3.793697e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 3.850703e+01 for object 1
+object 1 - inserting in retractable queue an event with timestamp 3.721202e+01
+object 1 - executing event (type 1) at time 3.721202e+01
+entered in ScheduleNewEvent
+still here (1)
+Rollback needed for object 0 (current_time 3.793697e+01) with rollback_time 3.778373e+01
+entered here
+putting 0 into the stack
+putting 1 head into the stack
+getting 0 from the stack
+object 0 - rollback with rollback_time 3.778373e+01
+object 0 - log_rollback called with rollback_time 3.778373e+01
+Queue status before restore_retractable_events
+printing the queue of object 0
+object 0 - event in queue with timestamp 3.778373e+01
+printing the retractble queue of object 0
+object 0 - event in retractable_queue with timestamp 3.793697e+01
+Queues status during restore_retractable_events
+printing the queue of object 0
+object 0 - event in queue with timestamp 3.778373e+01
+object 0 - event in queue with timestamp 3.793697e+01
+printing the retractble queue of object 0
+Queues status after rollback
+printing the queue of object 0
+object 0 - event in queue with timestamp 3.778373e+01
+object 0 - event in queue with timestamp 3.793697e+01
+printing the retractble queue of object 0
+object 0 - inserting in retractable queue an event with timestamp 3.778373e+01
+object 0 - executing event (type 1) at time 3.778373e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 3.835380e+01 for object 1
+getting 1 from the stack
+object 0 - queue not empty first object timestamp is 3.793697e+01
+object 0 - in stack: 0 - state: 1 - standing_rollback: 0
+printing the queue of object 0
+object 0 - event in queue with timestamp 3.793697e+01
+printing the retractble queue of object 0
+object 0 - event in retractable_queue with timestamp 3.778373e+01
+inserting avent with timestamp 3.835380e+01 in the fallback queue
+object 0 - set checkpoint at 3.800000e+01
+object 1 - set checkpoint at 3.800000e+01
+object 1 - queue_insert (from fallback) for an element with timestamp 3.835380e+01
+object 1 - inserting in retractable queue an event with timestamp 3.835380e+01
+object 1 - executing event (type 1) at time 3.835380e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 4.012506e+01 for object 1
+object 0 - set checkpoint at 3.900000e+01
+inserting avent with timestamp 4.012506e+01 in the fallback queue
+object 1 - set checkpoint at 3.900000e+01
+object 0 - set checkpoint at 4.000000e+01
+object 1 - set checkpoint at 4.000000e+01
+object 1 - queue_insert (from fallback) for an element with timestamp 4.012506e+01
+object 1 - inserting in retractable queue an event with timestamp 4.012506e+01
+object 1 - executing event (type 1) at time 4.012506e+01
+entered in ScheduleNewEvent
+still here (1)
+object 1 - inserted event for object 0 in the current epoch with timestamp 4.049736e+01
+well I'm running here
+putting 0 into the stack
+putting 1 head into the stack
+getting 0 from the stack
+object 0 - inserting in retractable queue an event with timestamp 4.049736e+01
+object 0 - executing event (type 1) at time 4.049736e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 4.235120e+01 for object 1
+getting 1 from the stack
+inserting avent with timestamp 4.235120e+01 in the fallback queue
+object 0 - set checkpoint at 4.100000e+01
+object 1 - set checkpoint at 4.100000e+01
+object 0 - set checkpoint at 4.200000e+01
+object 1 - set checkpoint at 4.200000e+01
+object 1 - queue_insert (from fallback) for an element with timestamp 4.235120e+01
+object 1 - inserting in retractable queue an event with timestamp 4.235120e+01
+object 1 - executing event (type 1) at time 4.235120e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 4.344602e+01 for object 1
+object 0 - set checkpoint at 4.300000e+01
+inserting avent with timestamp 4.344602e+01 in the fallback queue
+object 1 - set checkpoint at 4.300000e+01
+object 1 - queue_insert (from fallback) for an element with timestamp 4.344602e+01
+object 1 - inserting in retractable queue an event with timestamp 4.344602e+01
+object 1 - executing event (type 1) at time 4.344602e+01
+entered in ScheduleNewEvent
+still here (1)
+object 1 - inserted event for object 0 in the current epoch with timestamp 4.378083e+01
+well I'm running here
+putting 0 into the stack
+putting 1 head into the stack
+getting 0 from the stack
+object 0 - inserting in retractable queue an event with timestamp 4.378083e+01
+object 0 - executing event (type 1) at time 4.378083e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 4.426618e+01 for object 0
+getting 1 from the stack
+inserting avent with timestamp 4.426618e+01 in the fallback queue
+object 0 - set checkpoint at 4.400000e+01
+object 1 - set checkpoint at 4.400000e+01
+object 0 - queue_insert (from fallback) for an element with timestamp 4.426618e+01
+object 0 - inserting in retractable queue an event with timestamp 4.426618e+01
+object 0 - executing event (type 1) at time 4.426618e+01
+entered in ScheduleNewEvent
+still here (1)
+inserting in speculation queue an event with timestamp 4.802016e+01 for object 0
+inserting avent with timestamp 4.802016e+01 in the fallback queue
+object 0 - set checkpoint at 4.500000e+01
+object 1 - set checkpoint at 4.500000e+01
+object 0 - set checkpoint at 4.600000e+01
+object 1 - set checkpoint at 4.600000e+01
+object 0 - set checkpoint at 4.700000e+01
+object 1 - set checkpoint at 4.700000e+01
+illegal retractable queue insert - object is 0 - timestamp is 3.793697e+01 - min speculation limit is 4.700000e+01
