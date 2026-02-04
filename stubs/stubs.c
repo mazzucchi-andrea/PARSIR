@@ -21,8 +21,10 @@ int ScheduleNewEvent(int destination, double timestamp, int event_type, char *bo
     source = get_current();
 #endif
 
-    printf("entered in ScheduleNewEvent\n");
-    fflush(stdout);
+    AUDIT {
+        printf("entered in ScheduleNewEvent with %d destination and %e timestamp\n", destination, timestamp);
+        fflush(stdout);
+    }
 
     if (size > MAX_EVENT_SIZE) {
         printf("event size too large\n");
@@ -54,14 +56,14 @@ int ScheduleNewEvent(int destination, double timestamp, int event_type, char *bo
     }
     object_unlock(source);
     if (flag) {
-	printf("message filtered!!!\n");
-	fflush(stdout);
+        AUDIT {
+            printf("message filtered\n");
+            fflush(stdout);
+        }
         return 0;
     }
 #endif
 
-printf("still here (1)\n");
-fflush(stdout);
     p = malloc(sizeof(event)); // allocating the actual storage for the event
     if (!p) {
         printf("event allocation failure\n");

@@ -124,9 +124,11 @@ void *thread(void *me) {
     // we need to wait each other for correct
     // management of the lookahead epoch in
     // the event queue
-    {
-        printf("\n---------- INIT EVENTS COMPLETED ----------\n\n");
-        fflush(stdout);
+    AUDIT {
+        if (barrier()) {
+            printf("\n---------- INIT EVENTS COMPLETED ----------\n\n");
+            fflush(stdout);
+        }
     }
     barrier();
 
