@@ -9,7 +9,7 @@
 #include "random.h"
 #include "setup.h"
 
-#define TEST
+//#define TEST
 
 #ifdef SPECULATION
 #include "speculation.h"
@@ -26,6 +26,7 @@ void retractable_queue_flush(void);
 #ifdef TEST
 void verify_empty_queues(void);
 void verify_empty_speculation_queues(void);
+void verify_empty_retractable_queues(void);
 void verify_speculation_status(void);
 #endif
 #endif
@@ -203,6 +204,34 @@ int queue_insert_from_fallback(queue_elem *elem) {
     destination = elem->destination;
     index = (int)((elem->timestamp) / (double)SLOT_LEN);
     index = index % NUM_SLOTS;
+
+    AUDIT {
+        printf("object %d - inserting event with timestamp %e in slot %d\n", destination, elem->timestamp, index);
+        fflush(stdout);
+    }
+
+    pthread_spin_lock(&locks[destination][index].lock);
+
+    current = queue[destination][index].head.next;
+    tail = &queue[destination][index].tail;
+
+    while (current != tail && current->timestamp <= elem->timestamp) {
+        current = current->next;
+    }
+    elem->next = current;
+    elem->prev = current->prev;
+    current->prev->next = elem;
+    current->prev = elem;
+
+    pthread_spin_unlock(&locks[destination][index].lock);
+}
+
+int queue_insert_in_slot(queue_elem *elem, int index) {
+    queue_elem *current;
+    queue_elem *tail;
+    int destination;
+
+    destination = elem->destination;
 
     AUDIT {
         printf("object %d - inserting event with timestamp %e in slot %d\n", destination, elem->timestamp, index);
@@ -464,8 +493,13 @@ redo:
 #endif
         barrier();
         retractable_queue_flush();
+#ifdef TEST
+        if (barrier()) {
+            verify_empty_retractable_queues();
+        }
+#endif
         speculation_queue_flush();
-        #ifdef TEST
+#ifdef TEST
         if (barrier()) {
             verify_empty_speculation_queues();
         }
@@ -923,6 +957,14 @@ void restore_retractable_events(int object) {
     queue_elem *head = &retractable_queue[object].head;
     queue_elem *tail = &retractable_queue[object].tail;
     queue_elem *current;
+    int index;
+
+    if (head->next != tail) {
+        index = (int)((head->next->timestamp) / (double)SLOT_LEN);
+        index = index % NUM_SLOTS;
+    } else {
+        return;
+    }
 
     while (head->next != tail) {
         current = head->next;
@@ -933,7 +975,7 @@ void restore_retractable_events(int object) {
         current->next = NULL;
         current->prev = NULL;
         __sync_fetch_and_add(&retractable_events, -1);
-        queue_insert_in_epoch(current);
+        queue_insert_in_slot(current, index);
     }
 }
 
@@ -967,6 +1009,7 @@ void verify_empty_queues(void) {
                    speculation[i].owner, speculation[i].in_stack, speculation[i].the_state,
                    speculation[i].standing_rollback, speculation[i].already_taken);
             printf("target counter status: %d\n", object_identifiers_vector[myNUMAindex]);
+            print_queues_status(i);
             exit(EXIT_FAILURE);
         }
     }
@@ -975,8 +1018,18 @@ void verify_empty_queues(void) {
 void verify_empty_speculation_queues() {
     for (int i = 0; i < OBJECTS; i++) {
         if (speculation_queue[i].head != NULL || speculation_queue[i].tail != NULL) {
-            printf("object %d - speculation_queue not empty first object timestamp is %e\n", i,
-                   speculation_queue[i].head->timestamp);
+            printf("object %d - in_stack: %d - state: %d - standing_rollback: %d\n", i, speculation[i].in_stack,
+                   speculation[i].the_state, speculation[i].standing_rollback);
+            printf("target counter status: %d\n", object_identifiers_vector[myNUMAindex]);
+            print_queues_status(i);
+            exit(EXIT_FAILURE);
+        }
+    }
+}
+
+void verify_empty_retractable_queues() {
+    for (int i = 0; i < OBJECTS; i++) {
+        if (retractable_queue[i].head.next != &retractable_queue[i].tail) {
             printf("object %d - in_stack: %d - state: %d - standing_rollback: %d\n", i, speculation[i].in_stack,
                    speculation[i].the_state, speculation[i].standing_rollback);
             printf("target counter status: %d\n", object_identifiers_vector[myNUMAindex]);
@@ -994,7 +1047,16 @@ void verify_speculation_status(void) {
                    speculation[i].owner, speculation[i].in_stack, speculation[i].the_state,
                    speculation[i].standing_rollback, speculation[i].already_taken);
             printf("target counter status: %d\n", object_identifiers_vector[myNUMAindex]);
-                        print_queues_status(i);
+            print_queues_status(i);
+            exit(EXIT_FAILURE);
+        }
+        if (speculation[i].owner != -1) {
+            printf("ERROR: object %d has a owner\n", i);
+            printf("object %d - owner: %d - in_stack: %d - state: %d - standing_rollback: %d - already_taken: %d\n", i,
+                   speculation[i].owner, speculation[i].in_stack, speculation[i].the_state,
+                   speculation[i].standing_rollback, speculation[i].already_taken);
+            printf("target counter status: %d\n", object_identifiers_vector[myNUMAindex]);
+            print_queues_status(i);
             exit(EXIT_FAILURE);
         }
     }

@@ -16,6 +16,10 @@ int GetEvent(int *, double *, int *, char *, int *);
 
 void ProcessEvent(unsigned int, double, int, void *, unsigned int, void *ptr);
 
+uint32_t *get_seed1_ptr(unsigned int);
+
+uint32_t *get_seed2_ptr(unsigned int);
+
 double Random(uint32_t *, uint32_t *);
 double Expent(double, uint32_t *, uint32_t *);
 

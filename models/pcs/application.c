@@ -64,7 +64,9 @@ void ProcessEvent(unsigned int me, double now, int event_type, void *the_event_c
 
     new_call = 1;
 
+#ifndef SPECULATION
     double barrier = (double)((int)(now / LOOKAHEAD) * LOOKAHEAD) + LOOKAHEAD + 0.00000001;
+#endif
 
     if (state != NULL) {
         SET_MEMORY(&state->lvt, now);
@@ -192,12 +194,14 @@ void ProcessEvent(unsigned int me, double now, int event_type, void *the_event_c
                 handoff_time = now + (simtime_t)(5 * Random(s1, s2));
             }
 
+#ifndef SPECULATION
             if (new_event_content.call_term_time < barrier) {
                 new_event_content.call_term_time = barrier;
             }
             if (handoff_time < barrier) {
                 handoff_time = barrier;
             }
+#endif
 
             if (new_event_content.call_term_time <= handoff_time + HANDOFF_SHIFT) {
                 ScheduleNewEvent(me, new_event_content.call_term_time, END_CALL, (char *)&new_event_content,
@@ -512,4 +516,14 @@ int allocation(lp_state_type *pointer, uint32_t *s1, uint32_t *s2) {
     }
 
     return index;
+}
+
+uint32_t *get_seed1_ptr(unsigned int me) {
+    //printf("object %d - get seed1 %d\n", me, state->seed1);
+    return &(state->seed1);
+}
+
+uint32_t *get_seed2_ptr(unsigned int me) {
+    //printf("object %d - get seed2 %d\n", me, state->seed2);
+    return &(state->seed2);
 }

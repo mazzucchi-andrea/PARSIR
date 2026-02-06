@@ -9,7 +9,7 @@
 typedef double simtime_t;
 
 #define SIZE1 32
-typedef union _datatye1 {
+typedef union _datatype1 {
     void *p;
     char buff[SIZE1];
 } datatype1;

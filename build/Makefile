@@ -4,7 +4,7 @@ GRID_CKPT_FLAGS = -pie -fPIE -fstack-protector-all -DGRID_CKPT -DMOD=$(MOD) -DSP
 CHUNK_CKPT_FLAGS = -pie -fPIE -fstack-protector-all -DSPECULATION -DCHUNK_BASED -DCHUNK_BASED_SAVE
 CHUNK_CKPT_FULL_FLAGS = -DSPECULATION -DCHUNK_BASED -DCHUNK_FULL
 
-PHOLD_TARGET_FUNCTIONS = \""<add1>:","<dell1>:","<add2>:","<dell2>:","<read1>:","<read2>:","<ProcessEvent>:"\"
+PHOLD_TARGET_FUNCTIONS = \""<add1>:","<dell1>:","<add2>:","<dell2>:","<read1>:","<read2>:","<update1>:","<update2>:","<ProcessEvent>:"\"
 PHOLD_TARGET_MODULES = ../models/phold/application.c
 
 PCS_TARGET_FUNCTIONS = \""<ProcessEvent>:","<allocation>:","<deallocation>:","<fading_recheck>:"\"

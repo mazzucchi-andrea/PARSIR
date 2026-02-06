@@ -1,6 +1,7 @@
 #define _GNU_SOURCE
 
 #include <pthread.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,6 +20,8 @@
 #elif CHUNK_BASED
 #include "chunk_ckpt.h"
 #endif
+
+#define BENCHMARKING
 
 typedef struct _thread_startup {
     long vTID;
@@ -47,6 +50,9 @@ __thread double current_time = -1;
 #endif
 __thread int NUMAnode = -1;
 __thread int numaNodePerObjects = 0;
+
+uint32_t *seeds1[OBJECTS];
+uint32_t *seeds2[OBJECTS];
 
 int get_current(void) { return current; }
 #ifdef SPECULATION
@@ -114,6 +120,11 @@ void *thread(void *me) {
         object_allocator_setup(); // you cannot init any object if its chunk allocator is not setup
         AUDIT printf("thread %ld - setting up object %d\n", aux, current);
         ProcessEvent(minID, STARTUP_TIME, INIT, NULL, 0, NULL);
+        seeds1[current] = get_seed1_ptr(current);
+        AUDIT printf("object %d - get seed1 %d\n", current, *seeds1[current]);
+        seeds2[current] = get_seed2_ptr(current);
+        AUDIT printf("object %d - get seed2 %d\n", current, *seeds2[current]);
+
 #ifdef SPECULATION
         set_ckpt(minID);
 #endif
@@ -388,5 +399,34 @@ int main(int argc, char **argv) {
         printf("objects assigned to NUMA node %ld are %d min is %d - max is %d\n", i, c[i], min[i], max[i]);
     }
 
+#ifdef BENCHMARKING
+    j = 0;
+    stable = 0;
+    while (1) {
+        sleep(PERIOD);
+        total = 0;
+        for (i = 0; i < THREADS; i++) {
+            total += processed_events[i];
+            processed_events[i] = 0;
+        }
+
+        if (stable && (total != 0)) {
+            printf("last event throughput is %f\n", (float)total / (float)PERIOD);
+            // res = getrusage(RUSAGE_SELF,&usage);
+            // printf("resident set max size is %ld\n",usage.ru_maxrss);
+        }
+        // printf("%f\n",(float)total/(float)PERIOD);
+        fflush(stdout);
+        j += PERIOD;
+        if (j >= 2) {
+            stable = 1;
+        }
+        if (j >= DURATION) {
+            break;
+        }
+    }
+    exit(0);
+#else
     pause();
+#endif
 }

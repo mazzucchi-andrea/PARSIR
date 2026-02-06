@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,6 +9,8 @@
 lp_state_type *states[OBJECTS];
 
 #define state states[me]
+
+#define FILL_VALUE 42UL
 
 // stuff for managing the allocation/deallocation
 // of chunks which the state of the simulation objects
@@ -56,6 +59,27 @@ void read2(datatype2 **p) {
         p = (*p)->p;
     }
 }
+// stuff for managing the actual memory access to the state content
+void update1(datatype1 **p) {
+    int count = 0;
+    while (*p && count < P) {
+        for (int i = 8; i < SIZE1; i += 8) {
+            *(uint64_t *)((*p)->buff + i) = FILL_VALUE;
+        }
+        count++;
+        p = (*p)->p;
+    }
+}
+void update2(datatype2 **p) {
+    int count = 0;
+    while (*p && count < P) {
+        for (int i = 8; i < SIZE2; i += 8) {
+            *(uint64_t *)((*p)->buff + i) = FILL_VALUE; // Now safe to overwrite
+        }
+        count++;
+        p = (*p)->p;
+    }
+}
 void alloc_lp_state_memory(unsigned int me) {
     // Initialize the LP's state
     state = (lp_state_type *)malloc(sizeof(lp_state_type));
@@ -89,6 +113,9 @@ void ProcessEvent(unsigned int me, double now, int event_type, void *event_conte
         s2 = &(state->seed2);
         *s1 = (0x01 * me) + 1;
         *s2 = *s1 ^ *s1;
+        //printf("object %d - seed1 init value %d\n", me, state->seed1);
+        //printf("object %d - seed2 init value %d\n", me, state->seed2);
+
 
         state->p1 = NULL;
         state->p2 = NULL;
@@ -147,13 +174,24 @@ void ProcessEvent(unsigned int me, double now, int event_type, void *event_conte
             add2(&(state->p2), (datatype2 *)malloc(SIZE2));
         }
 
-        read1(&(state->p1));
-        read2(&(state->p2));
-
+        // read1(&(state->p1));
+        // read2(&(state->p2));
+        update1(&(state->p1));
+        update2(&(state->p2));
         break;
 
     default:
         printf("phold: unknown event type! (me = %d - event type = %d)\n", me, event_type);
         exit(EXIT_FAILURE);
     }
+}
+
+uint32_t *get_seed1_ptr(unsigned int me) {
+    //printf("object %d - get seed1 %d\n", me, state->seed1);
+    return &(state->seed1);
+}
+
+uint32_t *get_seed2_ptr(unsigned int me) {
+    //printf("object %d - get seed2 %d\n", me, state->seed2);
+    return &(state->seed2);
 }
