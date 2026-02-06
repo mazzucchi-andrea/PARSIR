@@ -6,9 +6,9 @@
 
 typedef struct _object_status{
         double current_time;
+        int owner;
         double causality_violation_time;
         int standing_rollback;
-        int in_rollback;
         int in_stack;
         int the_state;//this is required in order to handle the rollback phase
                       //the two possible values are FREE (currently the object is not under control

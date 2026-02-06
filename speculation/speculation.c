@@ -43,6 +43,7 @@ int speculation_init(void) {
         log_queue[j].prev = NULL;
         log_queue[j].first = NULL;
         log_queue[j].last = NULL;
+        speculation[j].owner = -1;
     }
     return 1;
 }

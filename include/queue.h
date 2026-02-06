@@ -5,7 +5,7 @@
 
 #include "setup.h"
 
-#define NUM_SLOTS (10)
+#define NUM_SLOTS (2000)
 #define SLOT_LEN (LOOKAHEAD)
 #define QUEUE_TIME_INTERVAL (SLOT_LEN * NUM_SLOTS)
 typedef struct _queue_elem {
