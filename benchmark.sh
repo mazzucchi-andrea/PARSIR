@@ -29,7 +29,7 @@ mkdir -p plots/pcs
 # Phold Benchmark
 
 rm phold_bench.csv
-echo "CKPT_TYPE,THREADS,LOOKAHEAD,OBJECTS,THROHGHPUT_MEAN,THROHGHPUT_CI" >> phold_bench.csv
+echo "CKPT_TYPE,THREADS,LOOKAHEAD,OBJECTS,THROHGHPUT_MEAN,THROHGHPUT_CI" > phold_bench.csv
 
 for t in ${THREADS[@]};
 do
@@ -59,7 +59,7 @@ done
 # PCS Benchmark
 
 rm pcs_output.csv
-echo "CKPT_TYPE,THREADS,LOOKAHEAD,OBJECTS,TA,THROHGHPUT_MEAN,THROHGHPUT_CI" >> pcs_bench.csv
+echo "CKPT_TYPE,THREADS,LOOKAHEAD,OBJECTS,TA,THROHGHPUT_MEAN,THROHGHPUT_CI" > pcs_bench.csv
 
 for t in ${THREADS[@]};
 do
