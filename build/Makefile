@@ -108,7 +108,7 @@ highway: runtime
 phold_grid_ckpt: runtime_grid_ckpt
 	@if [ ! -d ../bin ]; then mkdir -p ../bin; fi
 	cd ../MVM_GRID_CKPT ; make checks backup-files file-rewriting TARGET_MODULES=$(PHOLD_TARGET_MODULES) TARGET_FUNCTIONS=$(PHOLD_TARGET_FUNCTIONS) ALLOCATOR_AREA_SIZE=$(MAX_MEMORY) MOD=$(MOD)
-	cd ../models/phold ; make grid_ckpt OBJECTS=$(OBJECTS)
+	cd ../models/phold ; make grid_ckpt OBJECTS=$(OBJECTS) M=$(M)
 	ld -r ../models/phold/phold.o ../lib/PARSIR-runtime.o -I../include -I../MVM_GRID_CKPT/include -o ../bin/PARSIR-simulator.o
 	cd ../MVM_GRID_CKPT ; make compile-and-link restore-files MOD=$(MOD) ALLOCATOR_AREA_SIZE=$(MAX_MEMORY) TARGET_MODULES=$(PHOLD_TARGET_MODULES) TARGET_FUNCTIONS=$(PHOLD_TARGET_FUNCTIONS) ALLOCATOR_AREA_SIZE=$(MAX_MEMORY) MOD=$(MOD)
 	@echo MVM_GRID_CKPT CKPT applied to PARSIR
@@ -156,7 +156,7 @@ highway_grid_ckpt_bs: runtime_grid_ckpt_bs
 phold_chunk_ckpt: runtime_chunk_ckpt
 	@if [ ! -d ../bin ]; then mkdir -p ../bin; fi
 	cd ../MVM_CHUNK ; make checks backup-files file-rewriting TARGET_MODULES=$(PHOLD_TARGET_MODULES) TARGET_FUNCTIONS=$(PHOLD_TARGET_FUNCTIONS) ALLOCATOR_AREA_SIZE=$(MAX_MEMORY) MOD=$(MOD)
-	cd ../models/phold ; make chunk_ckpt OBJECTS=$(OBJECTS)
+	cd ../models/phold ; make chunk_ckpt OBJECTS=$(OBJECTS) M=$(M)
 	ld -r ../models/phold/phold.o ../lib/PARSIR-runtime.o -I../include -I../MVM_CHUNK/include -o ../bin/PARSIR-simulator.o
 	cd ../MVM_CHUNK ; make compile-and-link restore-files TARGET_MODULES=$(PHOLD_TARGET_MODULES) TARGET_FUNCTIONS=$(PHOLD_TARGET_FUNCTIONS) ALLOCATOR_AREA_SIZE=$(MAX_MEMORY) MOD=$(MOD)
 	@echo MVM_CHUNK applied to PARSIR
@@ -179,7 +179,7 @@ highway_chunk_ckpt: runtime_chunk_ckpt
 
 phold_chunk_full_ckpt: runtime_chunk_full_ckpt
 	@if [ ! -d ../bin ]; then mkdir -p ../bin; fi
-	cd ../models/phold ; make chunk_full_ckpt OBJECTS=$(OBJECTS)
+	cd ../models/phold ; make chunk_full_ckpt OBJECTS=$(OBJECTS) M=$(M)
 	gcc -o ../bin/PARSIR-simulator ../models/phold/phold.o ../lib/PARSIR-runtime.o -I../include -lpthread -lnuma -lm
 
 pcs_chunk_full_ckpt: runtime_chunk_full_ckpt

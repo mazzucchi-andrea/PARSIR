@@ -16,11 +16,13 @@ COL_CKPT      = 1
 COL_THREADS   = 2
 COL_LOOKAHEAD = 3
 COL_OBJECTS   = 4
-COL_TPUT      = 5
-COL_TPUT_DELTA= 6
+COL_M         = 5
+COL_TPUT      = 6
+COL_TPUT_DELTA= 7
 
 ckpt_types  = "grid_ckpt chunk_ckpt chunk_full_ckpt"
 objects_lst = "1024 4096"
+m_values    = "1 1000"
 lookaheads  = "0.25 0.5 1.0"
 
 # ---------- styles ----------
@@ -34,18 +36,20 @@ pt_la(l) = (l == 0.25 ? 7 : \
 ls_unique(idx) = idx  # gnuplot will auto-cycle styles
 
 # Loop over objects to generate one plot per objects value
-do for [o in objects_lst] {
+do for [m in m_values] {
+    do for [o in objects_lst] {
 
-    # Set output file per objects value
-    set output sprintf("plots/phold/throughput_obj%s.png", o)
+        # Set output file per objects value
+        set output sprintf("plots/phold/throughput_obj%s_m%s.png", o, m)
 
-    plot for [c in ckpt_types] for [l in lookaheads] 'phold_bench.csv' using \
-        (strcol(COL_CKPT) eq c && int(column(COL_OBJECTS)) == int(o) && column(COL_LOOKAHEAD) == real(l) ? column(COL_THREADS) : 1/0): \
-        (strcol(COL_CKPT) eq c && int(column(COL_OBJECTS)) == int(o) && column(COL_LOOKAHEAD) == real(l) ? column(COL_TPUT) : 1/0): \
-        (strcol(COL_CKPT) eq c && int(column(COL_OBJECTS)) == int(o) && column(COL_LOOKAHEAD) == real(l) ? column(COL_TPUT_DELTA) : 1/0) \
-        with yerrorlines lw 2 pt pt_la(real(l)) ps 1.4 title sprintf("%s, la=%s", c, l) noenhanced
+        plot for [c in ckpt_types] for [l in lookaheads] 'phold_bench.csv' using \
+            (strcol(COL_CKPT) eq c && int(column(COL_OBJECTS)) == int(o) && int(column(COL_M)) == int(m) && column(COL_LOOKAHEAD) == real(l) ? column(COL_THREADS) : 1/0): \
+            (strcol(COL_CKPT) eq c && int(column(COL_OBJECTS)) == int(o) && int(column(COL_M)) == int(m) && column(COL_LOOKAHEAD) == real(l) ? column(COL_TPUT) : 1/0): \
+            (strcol(COL_CKPT) eq c && int(column(COL_OBJECTS)) == int(o) && int(column(COL_M)) == int(m) && column(COL_LOOKAHEAD) == real(l) ? column(COL_TPUT_DELTA) : 1/0) \
+            with yerrorlines lw 2 pt pt_la(real(l)) ps 1.4 title sprintf("%s, la=%s", c, l) noenhanced
 
-    unset output
+        unset output
+    }
 }
 
 set datafile separator comma
