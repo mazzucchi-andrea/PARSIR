@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,6 +10,9 @@
 #ifdef SPECULATION
 #include "speculation.h"
 extern double filter_message[OBJECTS];
+#ifdef BENCHMARKING
+uint64_t filtered_events __attribute__((aligned(64))) = 0;
+#endif
 #endif
 
 int ScheduleNewEvent(int destination, double timestamp, int event_type, char *body, int size) {
@@ -56,6 +60,9 @@ int ScheduleNewEvent(int destination, double timestamp, int event_type, char *bo
     }
     object_unlock(source);
     if (flag) {
+#ifdef BENCHMARKING
+        __sync_fetch_and_add(&filtered_events, 1);
+#endif
         AUDIT {
             printf("message filtered\n");
             fflush(stdout);

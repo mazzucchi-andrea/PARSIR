@@ -44,11 +44,16 @@ __thread thread_startup *thread_startup_data;
 thread_startup startup_info[THREADS];
 volatile int processed_events[THREADS];
 // sampling period (this is setup in seconds)
+#ifdef BENCHMARKING
 #ifndef PERIOD
 #define PERIOD 5
 #endif
 #ifndef SAMPLES
-#define SAMPLES 30
+#define SAMPLES 5
+#endif
+extern uint64_t rollbacks;
+extern uint64_t epochs;
+extern uint64_t filtered_events;
 #endif
 
 __thread int current = -1;
@@ -467,6 +472,9 @@ int main(int argc, char **argv) {
     mean_ci_95(throughputs, SAMPLES, &throughput_mean, &throughput_ci);
     printf("THROHGHPUT_MEAN: %f\n", throughput_mean);
     printf("THROHGHPUT_CI: %f\n", throughput_ci);
+    printf("ROLLBACKS: %ld\n", rollbacks);
+    printf("EPOCHS: %ld\n", epochs);
+    printf("FILTERED_EVENTS: %ld\n", filtered_events);
     exit(EXIT_SUCCESS);
 #else
     pause();

@@ -57,7 +57,9 @@ long retractable_events __attribute__((aligned(64))) = 0;
 double filter_message[OBJECTS] = {(0.0 - epsilon)}; // this just initializes the 0-th entry to show
                                                     // the value that should be written across all
 extern object_status speculation[OBJECTS];
+uint64_t rollbacks __attribute__((aligned(64))) = 0;
 #endif
+uint64_t epochs = 0;
 
 __thread int seen_empty_slot = 0;
 __thread int my_index = 0;
@@ -131,6 +133,7 @@ void update_timing(void) {
     current_min_limit += LOOKAHEAD;
     current_max_limit += LOOKAHEAD;
     current_index = (current_index + 1) % NUM_SLOTS;
+    epochs += 1;
     int i;
 
     AUDIT {
@@ -425,9 +428,12 @@ redo:
                 fflush(stdout);
             }
             run_rollback(target, rollback_time); // we restore the current epoch initial state of the object
-            // after we need to run this object as a normal execution
-            // but we need to avoid new events production up to the rollback_time
-            // that has been flushed to the filter_message[] entry of the object
+                                                 // after we need to run this object as a normal execution
+                                                 // but we need to avoid new events production up to the rollback_time
+                                                 // that has been flushed to the filter_message[] entry of the object
+#ifdef BENCHMARKING
+            __sync_fetch_and_add(&rollbacks, 1);
+#endif
             AUDIT {
                 printf("thread %d - completed rollback for object %d\n", me, target);
                 fflush(stdout);
@@ -516,7 +522,6 @@ redo:
         if (barrier()) {
             update_timing(); // this call updates the queue layout and releases the objects taken by threads in the last
                              // epoch
-            
         }
         barrier();
 
@@ -759,7 +764,7 @@ flush_another:
             AUDIT {
                 printf("object %d - inserting in the queue an event with timestamp %e for object %d from speculation "
                        "queue\n",
-                       target_object, current->destination, current->timestamp);
+                       target_object, current->timestamp, current->destination);
                 fflush(stdout);
             }
             queue_insert(current);
