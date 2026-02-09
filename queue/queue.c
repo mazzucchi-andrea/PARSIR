@@ -9,8 +9,6 @@
 #include "random.h"
 #include "setup.h"
 
-//#define TEST
-
 #ifdef SPECULATION
 #include "speculation.h"
 #endif
@@ -190,9 +188,9 @@ int queue_insert_in_epoch(queue_elem *elem) {
     current->prev->next = elem;
     current->prev = elem;
 
-    __sync_fetch_and_add(&pending_events, 1); // there is one more element in the queue
-
     pthread_spin_unlock(&locks[destination][index].lock);
+
+    __sync_fetch_and_add(&pending_events, 1); // there is one more element in the queue
 }
 
 int queue_insert_from_fallback(queue_elem *elem) {
@@ -252,6 +250,8 @@ int queue_insert_in_slot(queue_elem *elem, int index) {
     current->prev = elem;
 
     pthread_spin_unlock(&locks[destination][index].lock);
+
+    __sync_fetch_and_add(&pending_events, 1);
 }
 
 int queue_insert(queue_elem *elem) {
@@ -305,9 +305,9 @@ int queue_insert(queue_elem *elem) {
     current->prev->next = elem;
     current->prev = elem;
 
-    __sync_fetch_and_add(&pending_events, 1); // there is one more element in the queue
-
     pthread_spin_unlock(&locks[destination][index].lock);
+
+    __sync_fetch_and_add(&pending_events, 1); // there is one more element in the queue
 
     return 0;
 }
@@ -496,18 +496,27 @@ redo:
 #ifdef TEST
         if (barrier()) {
             verify_empty_retractable_queues();
+            /* if (retractable_events != 0) {
+                printf("ERROR: retractable_events not zero (%d)!\n", retractable_events);
+                exit(EXIT_FAILURE);
+            } */
         }
 #endif
         speculation_queue_flush();
 #ifdef TEST
         if (barrier()) {
             verify_empty_speculation_queues();
+            if (speculation_events != 0) {
+                printf("ERROR: speculation_events not zero (%d)!\n", speculation_events);
+                exit(EXIT_FAILURE);
+            }
         }
 #endif
 #endif
         if (barrier()) {
             update_timing(); // this call updates the queue layout and releases the objects taken by threads in the last
                              // epoch
+            
         }
         barrier();
 
@@ -564,10 +573,6 @@ redo:
     elem->next = NULL;
     elem->prev = NULL;
 
-#ifndef SPECULATION
-    __sync_fetch_and_add(&pending_events, -1);
-#endif
-
     pthread_spin_unlock(&locks[target][index].lock);
 
 #ifdef SPECULATION
@@ -584,6 +589,10 @@ redo:
 #endif
     speculation[target].current_time = elem->timestamp;
     object_unlock(target);
+#endif
+
+#ifndef SPECULATION
+    __sync_fetch_and_add(&pending_events, -1);
 #endif
 
     return elem;
@@ -729,8 +738,8 @@ void speculation_queue_flush(void) {
 
 flush_another:
     target_object = __sync_fetch_and_add(&shadow_object_identifiers, 1);
-    AUDIT printf("flushing for object %d\n", target_object);
     if (target_object < OBJECTS) {
+        AUDIT printf("flushing speculation queue for object %d\n", target_object);
         speculation[target_object].causality_violation_time = 0.0;
         speculation[target_object].standing_rollback = 0;
         speculation[target_object].the_state = FREE;
@@ -742,6 +751,7 @@ flush_another:
 
         queue_elem *current = speculation_queue[target_object].head;
         queue_elem *next;
+        int count = 0;
         while (current) {
             next = current->next;
             current->next = NULL;
@@ -753,10 +763,10 @@ flush_another:
                 fflush(stdout);
             }
             queue_insert(current);
-
-            __sync_fetch_and_add(&speculation_events, -1);
+            count++;
             current = next;
         }
+        __sync_fetch_and_add(&speculation_events, -count);
         speculation_queue[target_object].head = NULL;
         speculation_queue[target_object].tail = NULL;
     } else {
@@ -784,13 +794,14 @@ flush_another:
         queue_elem *curr = retractable_queue[target_object].head.next;
         queue_elem *tail = &retractable_queue[target_object].tail;
         queue_elem *next;
+        int count = 0;
         while (curr != tail) {
             next = curr->next;
             free(container_of(curr, event, q));
-            __sync_fetch_and_add(&retractable_events, -1);
-            __sync_fetch_and_add(&pending_events, -1);
+            count++;
             curr = next;
         }
+        __sync_fetch_and_add(&retractable_events, -count);
         retractable_queue[target_object].head.next = tail;
         tail->prev = &retractable_queue[target_object].head;
 
@@ -841,6 +852,7 @@ void retractable_queue_insert(queue_elem *elem) {
     retractable_queue[dest].tail.prev = elem;
 
     __sync_fetch_and_add(&retractable_events, 1);
+    __sync_fetch_and_add(&pending_events, 1);
 }
 
 void rollback_speculation_queue(int object, double rollback_time) {
@@ -904,17 +916,18 @@ try_get_object:
         put_head_into_stack(source);
     }
 
-    if (speculation[object].current_time > the_elem->timestamp) {
+    if (speculation[object].current_time >
+        the_elem->timestamp) { // now really remove the event to be annihilated from the retractable_queue
         the_elem->prev->next = the_elem->next;
         the_elem->next->prev = the_elem->prev;
         __sync_fetch_and_add(&retractable_events, -1);
 
-    } else { // now really remove the event to be annihilated
+    } else { // now really remove the event to be annihilated from the queue
         pthread_spin_lock(&locks[object][my_index].lock);
         the_elem->prev->next = the_elem->next;
         the_elem->next->prev = the_elem->prev;
-        __sync_fetch_and_add(&pending_events, -1);
         pthread_spin_unlock(&locks[object][my_index].lock);
+        __sync_fetch_and_add(&pending_events, -1);
     }
     free(container_of(the_elem, event, q));
     object_unlock(object);
@@ -958,6 +971,7 @@ void restore_retractable_events(int object) {
     queue_elem *tail = &retractable_queue[object].tail;
     queue_elem *current;
     int index;
+    int count = 0;
 
     if (head->next != tail) {
         index = (int)((head->next->timestamp) / (double)SLOT_LEN);
@@ -974,9 +988,10 @@ void restore_retractable_events(int object) {
 
         current->next = NULL;
         current->prev = NULL;
-        __sync_fetch_and_add(&retractable_events, -1);
+        count++;
         queue_insert_in_slot(current, index);
     }
+    __sync_fetch_and_add(&retractable_events, -count);
 }
 
 void print_queues_status(int object) {

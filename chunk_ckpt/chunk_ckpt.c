@@ -1,5 +1,4 @@
 #include <asm/prctl.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,13 +9,36 @@
 #include "memory.h"
 #include "setup.h"
 
-// #define TEST
-
 #ifdef TEST
 uint8_t *shadow_area[OBJECTS] = {NULL};
 #endif
 
+typedef struct _seeds {
+    uint32_t seed1; // seed passed in input to randomization functions
+    uint32_t seed2; // seed passed in input to randomization functions
+} seeds;
+
+extern uint32_t *seeds1[OBJECTS];
+extern uint32_t *seeds2[OBJECTS];
+
+seeds object_seeds[OBJECTS];
+
+void save_seeds(int object) {
+    object_seeds[object].seed1 = *seeds1[object];
+    AUDIT printf("object %d - saving seed1 %d\n", object, object_seeds[object].seed1);
+    object_seeds[object].seed2 = *seeds2[object];
+    AUDIT printf("object %d - saving seed2 %d\n", object, object_seeds[object].seed2);
+}
+
+void restore_seeds(int object) {
+    *seeds1[object] = object_seeds[object].seed1;
+    AUDIT printf("object %d - restore seed1 %d\n", object, *seeds1[object]);
+    *seeds2[object] = object_seeds[object].seed2;
+    AUDIT printf("object %d - restore seed2 %d\n", object, *seeds2[object]);
+}
+
 void restore_object(int object) {
+    restore_seeds(object);
     restore_allocator(object);
     restore_chunks(object);
 #ifdef TEST
@@ -30,6 +52,7 @@ void restore_object(int object) {
 }
 
 void set_ckpt(int object) {
+    save_seeds(object);
     set_allocator_ckpt(object);
 #ifdef TEST
     uint8_t *area = (uint8_t *)(8 * (1024 * MAX_MEMORY) + object * (2 * MAX_MEMORY * MEM_NODES));

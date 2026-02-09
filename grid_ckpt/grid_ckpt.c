@@ -1,5 +1,4 @@
 #include <asm/prctl.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,7 +7,6 @@
 #include <unistd.h>
 
 #include "ckpt_setup.h"
-#include "engine.h"
 #include "memory.h"
 #include "setup.h"
 
@@ -21,8 +19,6 @@ extern uint32_t *seeds1[OBJECTS];
 extern uint32_t *seeds2[OBJECTS];
 
 seeds object_seeds[OBJECTS];
-
-// #define TEST
 
 #ifdef TEST
 uint8_t *shadow_area[OBJECTS] = {NULL};

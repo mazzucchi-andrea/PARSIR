@@ -6,7 +6,7 @@ EXECUTABLE = $(APP)/PARSIR-simulator
 APP_OBJ = $(APP)/PARSIR-simulator.o
 #TARGET_MODULES= a.c  sub-dir/b.c this is an example usage
 #TARGET_FUNCTIONS="<a>:","<b>:" this is an example usage
-LIBS = -lpthread -lnuma
+LIBS = -lpthread -lnuma -lm
 
 
 INCLUDE = $(PWD)/include

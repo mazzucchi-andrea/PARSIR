@@ -29,7 +29,8 @@ double Expent(double, uint32_t *, uint32_t *);
 #define MAX_CPUS_PER_NODE 1024
 
 #define NUMA_BALANCING
-#define BENCHMARKING
+//#define BENCHMARKING
+//#define TEST
 
 //int get_current(void);
 //double get_current_time(void);

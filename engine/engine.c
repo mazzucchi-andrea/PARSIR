@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 
+#include <math.h>
 #include <pthread.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,16 +12,18 @@
 #include "engine.h"
 #include "memory.h"
 #include "queue.h"
+#include "setup.h"
+
 #ifdef SPECULATION
 #include "speculation.h"
 #endif
+
 #if GRID_CKPT
 #include "grid_ckpt.h"
 #elif CHUNK_BASED
 #include "chunk_ckpt.h"
+#else
 #endif
-
-#define BENCHMARKING
 
 typedef struct _thread_startup {
     long vTID;
@@ -41,8 +43,13 @@ __thread thread_startup *thread_startup_data;
 
 thread_startup startup_info[THREADS];
 volatile int processed_events[THREADS];
-#define PERIOD (5)    // this is setup in seconds
-#define DURATION (60) // this is setup in seconds
+// sampling period (this is setup in seconds)
+#ifndef PERIOD
+#define PERIOD 5
+#endif
+#ifndef SAMPLES
+#define SAMPLES 30
+#endif
 
 __thread int current = -1;
 #ifdef SPECULATION
@@ -285,6 +292,49 @@ default_config:
     return;
 }
 
+#ifdef BENCHMARKING
+
+double get_t_value(int df) {
+    // Approximate t-values for 95% CI (two-tailed, alpha = 0.05)
+    // For large samples (df > 30), approaches 1.96 (z-score)
+    double t_table[] = {
+        12.706, 4.303, 3.182, 2.776, 2.571, // df: 1-5
+        2.447,  2.365, 2.306, 2.262, 2.228, // df: 6-10
+        2.201,  2.179, 2.160, 2.145, 2.131, // df: 11-15
+        2.120,  2.110, 2.101, 2.093, 2.086, // df: 16-20
+        2.080,  2.074, 2.069, 2.064, 2.060, // df: 21-25
+        2.056,  2.052, 2.048, 2.045, 2.042  // df: 26-30
+    };
+
+    if (df >= 1 && df <= 30) {
+        return t_table[df - 1];
+    } else if (df > 30) {
+        return 1.96; // Use z-score for large samples
+    }
+    return 1.96; // Default
+}
+void mean_ci_95(double *samples, int n, double *mean, double *ci) {
+    double sum = 0.0;
+    for (int i = 0; i < n; i++) {
+
+        sum += samples[i];
+    }
+    *mean = sum / n;
+
+    double var = 0.0;
+    for (int i = 0; i < n; i++) {
+
+        double d = samples[i] - *mean;
+        var += d * d;
+    }
+
+    double sd = sqrt(var / (n - 1)); // sample SD
+    double sem = sd / sqrt(n);       // standard error
+
+    *ci = get_t_value(n - 1) * sem;
+}
+#endif
+
 int main(int argc, char **argv) {
     long i, j;
     event *the_event;
@@ -299,8 +349,10 @@ int main(int argc, char **argv) {
     int numaNodeInit = 0;  // this is for setting up objects to NUMA node(s)
                            // starting form the NUMA node with id set to 0
     unsigned long total;
-    int stable = 0;
-
+#ifdef BENCHMARKING
+    double throughputs[SAMPLES];
+    double throughput_mean, throughput_ci;
+#endif
     // this function uses the lscpu command to take information
     // on the hardware level configuration
     // if this command is not available a default config is adopted
@@ -401,31 +453,21 @@ int main(int argc, char **argv) {
 
 #ifdef BENCHMARKING
     j = 0;
-    stable = 0;
-    while (1) {
+    sleep(2 * PERIOD);
+    while (j < SAMPLES) {
         sleep(PERIOD);
         total = 0;
         for (i = 0; i < THREADS; i++) {
             total += processed_events[i];
             processed_events[i] = 0;
         }
-
-        if (stable && (total != 0)) {
-            printf("last event throughput is %f\n", (float)total / (float)PERIOD);
-            // res = getrusage(RUSAGE_SELF,&usage);
-            // printf("resident set max size is %ld\n",usage.ru_maxrss);
-        }
-        // printf("%f\n",(float)total/(float)PERIOD);
-        fflush(stdout);
-        j += PERIOD;
-        if (j >= 2) {
-            stable = 1;
-        }
-        if (j >= DURATION) {
-            break;
-        }
+        throughputs[j] = (float)total / (float)PERIOD;
+        j++;
     }
-    exit(0);
+    mean_ci_95(throughputs, SAMPLES, &throughput_mean, &throughput_ci);
+    printf("THROHGHPUT_MEAN: %f\n", throughput_mean);
+    printf("THROHGHPUT_CI: %f\n", throughput_ci);
+    exit(EXIT_SUCCESS);
 #else
     pause();
 #endif
