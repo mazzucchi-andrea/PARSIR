@@ -38,9 +38,9 @@ void restore_seeds(int object) {
 }
 
 void restore_object(int object) {
-    restore_seeds(object);
     restore_allocator(object);
     restore_chunks(object);
+    restore_seeds(object);
 #ifdef TEST
     uint8_t *area = (uint8_t *)(8 * (1024 * MAX_MEMORY) + object * (2 * MAX_MEMORY * MEM_NODES));
     if (memcmp(shadow_area[object], area, MAX_MEMORY)) {

@@ -6,6 +6,7 @@ if [ $# -ne 1 ]; then
 fi
 
 python3 - "$1" <<'PY' || exit 1
+
 import re
 import sys
 
@@ -31,8 +32,8 @@ def instrument_c_code(filename):
     def insert(indent):
         nonlocal macro_inserted
         if macro_inserted == False:
-            out.append(indent + INSTR)
             macro_inserted = True
+            out.append(indent + INSTR)
 
     while i < n:
         line = lines[i]
@@ -42,21 +43,34 @@ def instrument_c_code(filename):
         # ---------- SINGLE LINE COMMENT ----------
         if COMMENT_RE.match(line):
             out.append(line)
+
+            i += 1
+            continue
+
+        # ---------- PREPROCESSOR ----------
+        if stripped.startswith("#define") or stripped.startswith("#include"):
+            out.append(line)
             i += 1
             continue
 
         if "}" in stripped:
+            out.append(line)
             macro_inserted = False
+            i += 1
+            continue
 
         # ---------- IF / FOR / WHILE ----------
         if IF_FOR_WHILE_RE.match(stripped):
             if "{" in stripped:
                 out.append(line)
-                macro_inserted = False
                 insert(indent + INDENT_STEP)
+            elif "{" in lines[i + 1]:
+                out.append(line)
+                out.append(lines[i + 1])
+                insert(indent + INDENT_STEP)
+                i += 1
             else:
                 out.append(line.rstrip() + " {")
-
                 insert(indent + INDENT_STEP)
                 i += 1
                 out.append(indent + INDENT_STEP + lines[i].lstrip())
@@ -69,11 +83,9 @@ def instrument_c_code(filename):
         if ELSE_RE.match(stripped):
             if "{" in stripped:
                 out.append(line)
-
                 insert(indent + INDENT_STEP)
             else:
                 out.append(line.rstrip() + " {")
-
                 insert(indent + INDENT_STEP)
                 i += 1
                 out.append(indent + INDENT_STEP + lines[i].lstrip())
@@ -90,7 +102,7 @@ def instrument_c_code(filename):
             continue
 
         # ---------- PRINTF / MALLOC ----------
-        if re.search(r"\b(fprintf|printf|malloc|memcpy)\s*\(", line):
+        if re.search(r"\b(printf|malloc|memcpy)\s*\(", line):
             insert(indent)
             out.append(line)
             i += 1
@@ -117,4 +129,3 @@ instrumented_code = instrument_c_code(filename)
 print(instrumented_code)
 
 PY
-

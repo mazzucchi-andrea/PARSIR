@@ -1,9 +1,9 @@
 #!/bin/bash
 
-declare -a LOOKAHEAD=(0.25 0.5 1.0)
-declare -a PHOLD_OBJECTS=(1024 4096)
+declare -a LOOKAHEAD=(0.25 0.5 1.0 2.0)
+declare -a PHOLD_OBJECTS=(1024)
 declare -a M_VALUES=(1 1000) 
-declare -a PCS_OBJECTS=(1024 4096)
+declare -a PCS_OBJECTS=(1024)
 declare -a TA=(0.4 0.1)
 
 threads=$(getconf _NPROCESSORS_ONLN)
@@ -70,7 +70,7 @@ do
                 epochs=$(awk '/^EPOCHS:/ {print $2}' <<< "$output")
                 rollbacks=$(awk '/^ROLLBACKS:/ {print $2}' <<< "$output")
                 filtered=$(awk '/^FILTERED_EVENTS:/ {print $2}' <<< "$output")
-                echo "chunk_full_ckpt,$t,$l,$o,$m,$throughput_mean,$throughput_ci,$epochs,$rollbacks,$filtered" >> phold_bench.csv
+                echo "full_ckpt,$t,$l,$o,$m,$throughput_mean,$throughput_ci,$epochs,$rollbacks,$filtered" >> phold_bench.csv
             done
         done
     done
@@ -112,7 +112,7 @@ do
                 epochs=$(awk '/^EPOCHS:/ {print $2}' <<< "$output")
                 rollbacks=$(awk '/^ROLLBACKS:/ {print $2}' <<< "$output")
                 filtered=$(awk '/^FILTERED_EVENTS:/ {print $2}' <<< "$output")
-                echo "chunk_full_ckpt,$t,$l,$o,$ta,$throughput_mean,$throughput_ci,$epochs,$rollbacks,$filtered" >> pcs_bench.csv
+                echo "full_ckpt,$t,$l,$o,$ta,$throughput_mean,$throughput_ci,$epochs,$rollbacks,$filtered" >> pcs_bench.csv
             done
         done
     done

@@ -108,8 +108,7 @@ void restore_state(int object) {
         printf("object %d - restore_state called\n", object);
         fflush(stdout);
     }
-    restore_object(object);
-    // rollback grid/chunk
+    restore_object(object); // rollback grid/chunk
 }
 
 int run_rollback(int object, double rollback_time) {

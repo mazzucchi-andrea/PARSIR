@@ -112,9 +112,8 @@ void ProcessEvent(unsigned int me, double now, int event_type, void *event_conte
         s2 = &(state->seed2);
         *s1 = (0x01 * me) + 1;
         *s2 = *s1 ^ *s1;
-        //printf("object %d - seed1 init value %d\n", me, state->seed1);
-        //printf("object %d - seed2 init value %d\n", me, state->seed2);
-
+        // printf("object %d - seed1 init value %d\n", me, state->seed1);
+        // printf("object %d - seed2 init value %d\n", me, state->seed2);
 
         state->p1 = NULL;
         state->p2 = NULL;
@@ -186,11 +185,11 @@ void ProcessEvent(unsigned int me, double now, int event_type, void *event_conte
 }
 
 uint32_t *get_seed1_ptr(unsigned int me) {
-    //printf("object %d - get seed1 %d\n", me, state->seed1);
+    // printf("object %d - get seed1 %d\n", me, state->seed1);
     return &(state->seed1);
 }
 
 uint32_t *get_seed2_ptr(unsigned int me) {
-    //printf("object %d - get seed2 %d\n", me, state->seed2);
+    // printf("object %d - get seed2 %d\n", me, state->seed2);
     return &(state->seed2);
 }
