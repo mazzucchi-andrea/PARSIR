@@ -440,6 +440,10 @@ redo:
                                                  // after we need to run this object as a normal execution
                                                  // but we need to avoid new events production up to the rollback_time
                                                  // that has been flushed to the filter_message[] entry of the object
+            if (target == -1){
+                get_from_stack(&target);
+                goto redo;
+            }
 #ifdef BENCHMARKING
             __sync_fetch_and_add(&rollbacks, 1);
 #endif
@@ -930,7 +934,9 @@ try_get_object:
     if (speculation[object].the_state == FREE) {
         speculation[object].the_state = BUSY;
         speculation[object].owner = me;
+        put_head_into_stack(source);
         put_into_stack(object);
+        target = -1;
     }
 
     if (speculation[object].current_time >
