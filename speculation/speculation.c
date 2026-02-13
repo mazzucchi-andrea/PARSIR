@@ -44,6 +44,9 @@ int speculation_init(void) {
         log_queue[j].first = NULL;
         log_queue[j].last = NULL;
         speculation[j].owner = -1;
+#ifdef AVOID_THROTTLING
+        speculation[j].checkpointed = 1;
+#endif
     }
     return 1;
 }

@@ -422,6 +422,12 @@ redo:
                 goto start;
             }
         }
+#ifdef AVOID_THROTTLING
+        if (speculation[target].checkpointed == 0) {
+            set_ckpt(target);
+            speculation[target].checkpointed = 1;
+        }
+#endif
         speculation[target].already_taken = 1;
         rollback_time = 0.0;
         if (speculation[target].standing_rollback) {
@@ -440,10 +446,6 @@ redo:
                                                  // after we need to run this object as a normal execution
                                                  // but we need to avoid new events production up to the rollback_time
                                                  // that has been flushed to the filter_message[] entry of the object
-            if (target == -1){
-                get_from_stack(&target);
-                goto redo;
-            }
 #ifdef BENCHMARKING
             __sync_fetch_and_add(&rollbacks, 1);
 #endif
@@ -796,7 +798,12 @@ flush_another:
         printf("object %d - set checkpoint at %e\n", target_object, current_min_limit + LOOKAHEAD);
         fflush(stdout);
     }
+#ifndef AVOID_THROTTLING
     set_ckpt(target_object);
+#endif
+#ifdef AVOID_THROTTLING
+    speculation[target_object].checkpointed = 0;
+#endif
     goto flush_another;
 }
 
@@ -934,9 +941,7 @@ try_get_object:
     if (speculation[object].the_state == FREE) {
         speculation[object].the_state = BUSY;
         speculation[object].owner = me;
-        put_head_into_stack(source);
         put_into_stack(object);
-        target = -1;
     }
 
     if (speculation[object].current_time >
