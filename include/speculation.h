@@ -14,6 +14,9 @@ typedef struct _object_status{
                       //the two possible values are FREE (currently the object is not under control
                       //of any thread) and BUSY (it is under control by some thread)
 	int already_taken;
+#ifdef AVOID_THROTTLING
+    int checkpointed;
+#endif
 } object_status;
 
 int speculation_init(void);
