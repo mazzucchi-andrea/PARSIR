@@ -24,6 +24,10 @@ else
 BENCH_OPT :=
 endif
 
+ifeq ($(AVOID_THROTTLING),1)
+BENCH_OPT += -DAVOID_THROTTLING
+endif
+
 all: runtime
 	@ echo "The runtime environment of PARSIR has been compiled - object files are available in the lib directory"
 
@@ -54,14 +58,14 @@ runtime_grid_ckpt:
 runtime_grid_ckpt_bs:
 	cd ../scripts ; make get-HW-info
 	@if [ ! -d ../lib ]; then mkdir -p ../lib; fi
-	gcc -c -O3 ../queue/queue.c -o ../lib/queue.o -I../include $(GRID_CKPT_FLAGS)
-	gcc -c ../queue/barrier-synchronization.c -o ../lib/barrier-synchronization.o -I../include $(GRID_CKPT_FLAGS)
-	gcc -c -O3 ../stubs/stubs.c -o ../lib/stubs.o -I../include $(GRID_CKPT_FLAGS)
-	gcc -c -O3 ../random/random.c -o ../lib/random.o -I../include $(GRID_CKPT_FLAGS)
-	gcc -c -O3 ../memory/memory.c -o ../lib/memory.o -I../include $(GRID_CKPT_FLAGS)
-	gcc -c -O3 ../engine/engine.c -o ../lib/engine.o -I../include $(GRID_CKPT_FLAGS)
-	gcc -c -O3 ../grid_ckpt/grid_ckpt.c -o ../lib/grid_ckpt.o -I../include -I../MVM_GRID_CKPT_BS/include -DMAX_MEMORY=$(MAX_MEMORY) $(GRID_CKPT_FLAGS)
-	gcc -c -O3 ../speculation/speculation.c -o ../lib/speculation.o -I../include -pthread $(GRID_CKPT_FLAGS)
+	gcc -c -O3 ../queue/queue.c -o ../lib/queue.o -I../include $(GRID_CKPT_FLAGS) $(BENCH_OPT)
+	gcc -c ../queue/barrier-synchronization.c -o ../lib/barrier-synchronization.o -I../include $(GRID_CKPT_FLAGS) $(BENCH_OPT)
+	gcc -c -O3 ../stubs/stubs.c -o ../lib/stubs.o -I../include $(GRID_CKPT_FLAGS) $(BENCH_OPT)
+	gcc -c -O3 ../random/random.c -o ../lib/random.o -I../include $(GRID_CKPT_FLAGS) $(BENCH_OPT)
+	gcc -c -O3 ../memory/memory.c -o ../lib/memory.o -I../include $(GRID_CKPT_FLAGS) $(BENCH_OPT)
+	gcc -c -O3 ../engine/engine.c -o ../lib/engine.o -I../include $(GRID_CKPT_FLAGS) $(BENCH_OPT)
+	gcc -c -O3 ../grid_ckpt/grid_ckpt.c -o ../lib/grid_ckpt.o -I../include -I../MVM_GRID_CKPT_BS/include -DMAX_MEMORY=$(MAX_MEMORY) $(GRID_CKPT_FLAGS) $(BENCH_OPT)
+	gcc -c -O3 ../speculation/speculation.c -o ../lib/speculation.o -I../include -pthread $(GRID_CKPT_FLAGS) $(BENCH_OPT)
 	ld -r ../lib/queue.o ../lib/memory.o ../lib/barrier-synchronization.o ../lib/stubs.o ../lib/random.o ../lib/engine.o ../lib/grid_ckpt.o ../lib/speculation.o -I../include -I../MVM_GRID_CKPT_BS/include -o ../lib/PARSIR-runtime.o
 
 runtime_chunk_ckpt:
@@ -132,7 +136,7 @@ highway_grid_ckpt: runtime_grid_ckpt
 phold_grid_ckpt_bs: runtime_grid_ckpt_bs
 	@if [ ! -d ../bin ]; then mkdir -p ../bin; fi
 	cd ../MVM_GRID_CKPT_BS ; make checks backup-files file-rewriting TARGET_MODULES=$(PHOLD_TARGET_MODULES) TARGET_FUNCTIONS=$(PHOLD_TARGET_FUNCTIONS) ALLOCATOR_AREA_SIZE=$(MAX_MEMORY) MOD=$(MOD)
-	cd ../models/phold ; make grid_ckpt_bs
+	cd ../models/phold ; make grid_ckpt_bs OBJECTS=$(OBJECTS) M=$(M)
 	ld -r ../models/phold/phold.o ../lib/PARSIR-runtime.o -I../include -I../MVM_GRID_CKPT_BS/include -o ../bin/PARSIR-simulator.o
 	cd ../MVM_GRID_CKPT_BS ; make compile-and-link restore-files MOD=$(MOD) ALLOCATOR_AREA_SIZE=$(MAX_MEMORY) TARGET_MODULES=$(PHOLD_TARGET_MODULES) TARGET_FUNCTIONS=$(PHOLD_TARGET_FUNCTIONS) ALLOCATOR_AREA_SIZE=$(MAX_MEMORY) MOD=$(MOD)
 	@echo MVM_GRID_CKPT_BS applied to PARSIR

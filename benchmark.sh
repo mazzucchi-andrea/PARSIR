@@ -2,7 +2,7 @@
 
 declare -a LOOKAHEAD=(0.25 0.5 1.0)
 declare -a PHOLD_OBJECTS=(1024)
-declare -a M_VALUES=(1 100 500 1000) 
+declare -a M_VALUES=(1 100) 
 declare -a PCS_OBJECTS=(1024)
 declare -a TA=(0.4 0.1)
 
