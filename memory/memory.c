@@ -239,6 +239,7 @@ void ckpt_chunk(void *ptr) {
     uint8_t bitmask, bit_index;
 
     current = get_current();
+    AUDIT printf("object %d - saving chunck at address %p\n", current, ptr);
     if (ptr < base[current] || ptr >= (base[current] + MAX_MEMORY)) {
         printf("bad address (%p) for ckpt_chunk by object %d\n", ptr, current);
         exit(EXIT_FAILURE);
@@ -268,6 +269,7 @@ void restore_chunks(int current) {
     int chunk_size;
     uint8_t current_byte;
     size_t bitmap_size;
+    AUDIT printf("object %d - restoring chunks\n", current);
 
     chunk_size = MIN_CHUNK_SIZE;
     for (int i = 0; chunk_size <= MAX_CHUNK_SIZE; i++) {

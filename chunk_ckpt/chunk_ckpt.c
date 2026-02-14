@@ -10,6 +10,7 @@
 #include "setup.h"
 
 #ifdef TEST
+void verify_restored_area(uint8_t *, uint8_t *);
 uint8_t *shadow_area[OBJECTS] = {NULL};
 #endif
 
@@ -46,6 +47,7 @@ void restore_object(int object) {
     if (memcmp(shadow_area[object], area, MAX_MEMORY)) {
         printf("ERROR: object %d restore failed\n", object);
         fflush(stdout);
+        verify_restored_area(area, shadow_area[object]);
         exit(EXIT_FAILURE);
     }
 #endif
@@ -73,3 +75,16 @@ void set_ckpt(int object) {
     set_used_chunks_ckpt(object);
 #endif
 }
+
+#ifdef TEST
+void verify_restored_area(uint8_t *area, uint8_t *area_copy) {
+    for (int offset = 0; offset < MAX_MEMORY; offset += 32) {
+        if (memcmp((void *)(area + offset), (void *)(area_copy + offset), 32)) {
+            printf("Checkpoint verify failed:\n"
+                   "Offset: %d\n",
+                   offset);
+            exit(EXIT_FAILURE);
+        }
+    }
+}
+#endif

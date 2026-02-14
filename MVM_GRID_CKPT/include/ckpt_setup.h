@@ -8,7 +8,7 @@
 #endif
 
 #ifndef ALLOCATOR_AREA_SIZE
-#define ALLOCATOR_AREA_SIZE 0x100000
+#define ALLOCATOR_AREA_SIZE 0x200000UL
 #endif
 
 #if MOD == 8 || MOD == 16 || MOD == 32 || MOD == 64

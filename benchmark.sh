@@ -26,8 +26,14 @@ then
     exit 1
 fi
 
-if [ ! -f "plot.gp" ]; then
-    echo "Error: Gnuplot template 'plot.gp' not found!"
+if [ ! -f "plot_phold.gp" ]; then
+    echo "Error: Gnuplot template 'plot_phold.gp' not found!"
+    echo "Please make sure it's in the same directory as this script."
+    exit 1
+fi
+
+if [ ! -f "plot_pcs.gp" ]; then
+    echo "Error: Gnuplot template 'plot_pcs.gp' not found!"
     echo "Please make sure it's in the same directory as this script."
     exit 1
 fi

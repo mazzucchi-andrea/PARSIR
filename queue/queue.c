@@ -27,6 +27,7 @@ void verify_empty_speculation_queues(void);
 void verify_empty_retractable_queues(void);
 void verify_speculation_status(void);
 void verify_queue_order(int);
+void verify_retractable_queue_order(int);
 #endif
 #endif
 
@@ -439,7 +440,7 @@ redo:
         object_unlock(target);
         if (rollback_time > 0.0) {
             AUDIT {
-                printf("thread %d - perfoming rollback for object %d\n", me, target);
+                printf("thread %d - executing rollback for object %d\n", me, target);
                 fflush(stdout);
             }
             run_rollback(target, rollback_time); // we restore the current epoch initial state of the object
@@ -578,11 +579,10 @@ redo:
             goto redo;
         }
 #endif
-        target = -1;
         if (end) {
             return NULL;
         } else {
-            goto start;
+            goto redo;
         }
     }
 
@@ -742,7 +742,7 @@ int speculation_queue_insert(queue_elem *elem) {
         if (speculation[destination].the_state == FREE && speculation[destination].already_taken) {
             speculation[destination].the_state = BUSY;
             speculation[destination].owner = me;
-            put_head_into_stack(destination);
+            put_into_stack(destination);
         }
     }
     object_unlock(destination);
@@ -878,6 +878,9 @@ void retractable_queue_insert(queue_elem *elem) {
     elem->next = &retractable_queue[dest].tail;
     retractable_queue[dest].tail.prev->next = elem;
     retractable_queue[dest].tail.prev = elem;
+#ifdef TEST
+    verify_retractable_queue_order(dest);
+#endif
     object_unlock(dest);
 
     __sync_fetch_and_add(&retractable_events, 1);
@@ -942,6 +945,8 @@ try_get_object:
         speculation[object].the_state = BUSY;
         speculation[object].owner = me;
         put_into_stack(object);
+        // put_head_into_stack(source);
+        // target = -1;
     }
 
     if (speculation[object].current_time >
@@ -949,7 +954,9 @@ try_get_object:
         the_elem->prev->next = the_elem->next;
         the_elem->next->prev = the_elem->prev;
         __sync_fetch_and_add(&retractable_events, -1);
-
+#ifdef TEST
+        verify_retractable_queue_order(object);
+#endif
     } else { // now really remove the event to be annihilated from the queue
         pthread_spin_lock(&locks[object][my_index].lock);
         the_elem->prev->next = the_elem->next;
@@ -1024,6 +1031,9 @@ void restore_retractable_events(int object) {
         current->prev = NULL;
         count++;
         queue_insert_in_slot(current, index);
+#ifdef TEST
+        verify_retractable_queue_order(object);
+#endif
     }
     object_unlock(object);
 
@@ -1119,13 +1129,30 @@ void verify_queue_order(int object) {
     current = queue[object][my_index].head.next;
     tail = &queue[object][my_index].tail;
     if (current == tail || current->next == tail) {
-        pthread_spin_unlock(&locks[object][my_index].lock);
         return;
     }
 
     while (current->next != tail) {
         if (current->timestamp > current->next->timestamp) {
             printf("ERROR: object %d wrong queue order\n", object);
+            exit(EXIT_FAILURE);
+        }
+        current = current->next;
+    }
+}
+
+void verify_retractable_queue_order(int object) {
+    queue_elem *current;
+    queue_elem *tail;
+    current = retractable_queue[object].head.next;
+    tail = &retractable_queue[object].tail;
+    if (current == tail || current->next == tail) {
+        return;
+    }
+
+    while (current->next != tail) {
+        if (current->timestamp > current->next->timestamp) {
+            printf("ERROR: object %d wrong retractable_queue order\n", object);
             exit(EXIT_FAILURE);
         }
         current = current->next;

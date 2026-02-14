@@ -6,7 +6,7 @@ EXECUTABLE = $(APP)/PARSIR-simulator
 APP_OBJ = $(APP)/PARSIR-simulator.o
 #TARGET_MODULES= a.c  sub-dir/b.c this is an example usage
 #TARGET_FUNCTIONS="<a>:","<b>:" this is an example usage
-LIBS = -lpthread -lnuma
+LIBS = -lpthread -lnuma -lm
 
 INCLUDE = $(PWD)/include
 OBJ = $(PWD)/obj
@@ -32,7 +32,7 @@ UDTEMPOBJ = -Duser_defined_temp_obj_file=\"$(USER_DEFINED)/$(USER_DEFINED_OBJ_FI
 
 SECURITY_FLAGS = -pie -fPIE -fstack-protector-all -fno-toplevel-reorder -fno-reorder-functions -fno-align-functions
 
-ADDITIONAL_FLAGS = -O3 -DCKPT -DAPPLY_PATCHES #-DVERBOSE
+ADDITIONAL_FLAGS = -O3 -DCKPT -DAPPLY_PATCHES -DVERBOSE
 
 #NOTE: 
 #the ASM_PREAMBLE macro enables building a demo patch for each memory access instruction
