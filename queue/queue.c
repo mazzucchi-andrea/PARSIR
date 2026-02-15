@@ -932,18 +932,14 @@ void queue_elem_annihilation(int source, queue_elem *the_elem) {
         fflush(stdout);
     }
     object_lock(object);
-    if (speculation[object].current_time >= cancellation_time && !speculation[object].standing_rollback) {
-        speculation[object].causality_violation_time = cancellation_time;
-        speculation[object].standing_rollback = 1;
-        goto try_get_object;
-    }
-    if (speculation[object].current_time >= cancellation_time && speculation[object].standing_rollback) {
+    if (speculation[object].standing_rollback) {
         if (speculation[object].causality_violation_time > cancellation_time) {
             speculation[object].causality_violation_time = cancellation_time;
-            goto try_get_object;
         }
+    } else {
+        speculation[object].standing_rollback = 1;
+        speculation[object].causality_violation_time = cancellation_time;
     }
-try_get_object:
     if (speculation[object].the_state == FREE) {
         speculation[object].the_state = BUSY;
         speculation[object].owner = me;
@@ -951,16 +947,15 @@ try_get_object:
         // put_head_into_stack(source);
         // target = -1;
     }
-
     if (speculation[object].current_time >
-        the_elem->timestamp) { // now really remove the event to be annihilated from the retractable_queue
+        the_elem->timestamp) { // now remove the event to be annihilated from the retractable_queue
         the_elem->prev->next = the_elem->next;
         the_elem->next->prev = the_elem->prev;
         __sync_fetch_and_add(&retractable_events, -1);
 #ifdef DEBUG
         verify_retractable_queue_order(object);
 #endif
-    } else { // now really remove the event to be annihilated from the queue
+    } else { // now remove the event to be annihilated from the queue
         pthread_spin_lock(&locks[object][my_index].lock);
         the_elem->prev->next = the_elem->next;
         the_elem->next->prev = the_elem->prev;

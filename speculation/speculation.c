@@ -111,7 +111,7 @@ void restore_state(int object) {
 }
 
 int run_rollback(int object, double rollback_time) {
-    {
+    AUDIT {
         printf("object %d - rollback with rollback_time %e\n", object, rollback_time);
         fflush(stdout);
     }
