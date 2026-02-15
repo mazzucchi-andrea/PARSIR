@@ -12,7 +12,7 @@ typedef struct _queue_elem {
     int destination;
     double timestamp;
 #ifdef SPECULATION
-    double send_time; // this is required to kep track of what to undo at sender side
+    double send_time; // this is required to keep track of what to undo at sender side
                       // if some straggler hits an object
 #endif
     struct _queue_elem *next;
@@ -22,12 +22,9 @@ typedef struct _queue_elem {
 typedef struct _slot {
     queue_elem head;
     queue_elem tail;
-    // #ifdef SPECULATION
-    //    queue_elem safe_head;
-    // #endif
 } slot;
 
-typedef struct _fallbacks_lot {
+typedef struct _fallbacks_slot {
     queue_elem *head;
     queue_elem *tail;
 } fallback_slot;
@@ -37,11 +34,14 @@ typedef union _lock_buffer {
     char buff[64];
 } __attribute__((packed)) lock_buffer;
 
+typedef struct _log_send {
+    struct _log_element *head;
+    struct _log_element *tail;
+} send_log;
+
 typedef struct _log_element {
     queue_elem *the_element;
     double send_time;
-    struct _log_element *first;
-    struct _log_element *last;
     struct _log_element *next;
     struct _log_element *prev;
 } log_element;

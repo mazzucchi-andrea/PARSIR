@@ -21,7 +21,7 @@
 #ifdef SPECULATION
 void speculation_queue_flush(void);
 void retractable_queue_flush(void);
-#ifdef TEST
+#ifdef DEBUG
 void verify_empty_queues(void);
 void verify_empty_speculation_queues(void);
 void verify_empty_retractable_queues(void);
@@ -37,7 +37,7 @@ alignas(64) lock_buffer locks[OBJECTS][NUM_SLOTS];
 
 #ifdef SPECULATION
 slot retractable_queue[OBJECTS];
-log_element log_queue[OBJECTS]; // this queue will just record <send_time,buffer_address> entries
+send_log log_queue[OBJECTS]; // this queue will just record <send_time,buffer_address> entries
 #endif
 
 double volatile current_min_limit = 0.0;
@@ -192,7 +192,7 @@ int queue_insert_in_epoch(queue_elem *elem) {
     elem->prev = current->prev;
     current->prev->next = elem;
     current->prev = elem;
-#ifdef TEST
+#ifdef DEBUG
     verify_queue_order(destination);
 #endif
     pthread_spin_unlock(&locks[destination][index].lock);
@@ -227,7 +227,7 @@ int queue_insert_from_fallback(queue_elem *elem) {
     elem->prev = current->prev;
     current->prev->next = elem;
     current->prev = elem;
-#ifdef TEST
+#ifdef DEBUG
     verify_queue_order(destination);
 #endif
     pthread_spin_unlock(&locks[destination][index].lock);
@@ -257,7 +257,7 @@ int queue_insert_in_slot(queue_elem *elem, int index) {
     elem->prev = current->prev;
     current->prev->next = elem;
     current->prev = elem;
-#ifdef TEST
+#ifdef DEBUG
     verify_queue_order(destination);
 #endif
     pthread_spin_unlock(&locks[destination][index].lock);
@@ -315,7 +315,7 @@ int queue_insert(queue_elem *elem) {
     elem->prev = current->prev;
     current->prev->next = elem;
     current->prev = elem;
-#ifdef TEST
+#ifdef DEBUG
     verify_queue_order(destination);
 #endif
     pthread_spin_unlock(&locks[destination][index].lock);
@@ -404,7 +404,7 @@ redo:
     if (end) {
         return NULL;
     }
-#ifdef TEST
+#ifdef DEBUG
     if (target == -1) {
         printf("ERROR: target management corrupted\n");
         exit(EXIT_FAILURE);
@@ -507,7 +507,7 @@ redo:
         }
 
 #ifdef SPECULATION
-#ifdef TEST
+#ifdef DEBUG
         if (barrier()) {
             verify_empty_queues();
             verify_speculation_status();
@@ -515,7 +515,7 @@ redo:
 #endif
         barrier();
         retractable_queue_flush();
-#ifdef TEST
+#ifdef DEBUG
         if (barrier()) {
             verify_empty_retractable_queues();
             /* if (retractable_events != 0) {
@@ -525,7 +525,7 @@ redo:
         }
 #endif
         speculation_queue_flush();
-#ifdef TEST
+#ifdef DEBUG
         if (barrier()) {
             verify_empty_speculation_queues();
             if (speculation_events != 0) {
@@ -595,13 +595,13 @@ redo:
 
     elem->next = NULL;
     elem->prev = NULL;
-#ifdef TEST
+#ifdef DEBUG
     verify_queue_order(target);
 #endif
     pthread_spin_unlock(&locks[target][index].lock);
 
 #ifdef SPECULATION
-#ifdef TEST
+#ifdef DEBUG
     if (speculation[target].current_time > elem->timestamp) {
         printf("ERROR: object %d - thread %d - causality violation order: current_time %e - event_time %e\n", target,
                me, speculation[target].current_time, elem->timestamp);
@@ -626,47 +626,50 @@ redo:
 #ifdef SPECULATION
 
 void log_the_send(queue_elem *the_elem, int current_object, double current_time) {
-    log_element *queue = &log_queue[current_object];
-    log_element *node;
+    send_log *queue = &log_queue[current_object];
 
-    node = malloc(sizeof(log_element));
+    log_element *node = malloc(sizeof(log_element));
     if (!node) {
-        return;
+        printf("object %d - unable to allocate log entry\n", current_object);
+        exit(EXIT_FAILURE);
     }
+
+#ifdef DEBUG
+    if (queue->tail && queue->tail->send_time > current_time) {
+        printf("FATAL: non-monotonic send time: %.15e -> %.15e (obj %d)\n", queue->tail->send_time, current_time,
+               current_object);
+        exit(EXIT_FAILURE);
+    }
+#endif
 
     node->the_element = the_elem;
     node->send_time = current_time;
-    node->next = NULL;
-    node->prev = queue->last;
-    node->first = NULL; /* unused in nodes */
-    node->last = NULL;  /* unused in nodes */
 
-    if (queue->last) {
-        /* queue not empty */
-        queue->last->next = node;
+    node->next = NULL;
+    node->prev = queue->tail;
+
+    if (queue->tail) {
+        queue->tail->next = node; /* append */
     } else {
-        /* first element */
-        queue->first = node;
+        queue->head = node; /* first element */
     }
 
-    queue->last = node;
+    queue->tail = node;
 }
 
 void flush_log(int object) {
-    log_element *queue = &log_queue[object];
-    log_element *cur;
+    send_log *queue = &log_queue[object];
+    log_element *current = queue->head;
     log_element *next;
 
-    cur = queue->first;
-
-    while (cur != NULL) {
-        next = cur->next;
-        free(cur);
-        cur = next;
+    while (current) {
+        next = current->next;
+        free(current);
+        current = next;
     }
 
-    queue->first = NULL;
-    queue->last = NULL;
+    queue->head = NULL;
+    queue->tail = NULL;
 }
 
 int speculation_queue_insert(queue_elem *elem) {
@@ -878,7 +881,7 @@ void retractable_queue_insert(queue_elem *elem) {
     elem->next = &retractable_queue[dest].tail;
     retractable_queue[dest].tail.prev->next = elem;
     retractable_queue[dest].tail.prev = elem;
-#ifdef TEST
+#ifdef DEBUG
     verify_retractable_queue_order(dest);
 #endif
     object_unlock(dest);
@@ -954,14 +957,14 @@ try_get_object:
         the_elem->prev->next = the_elem->next;
         the_elem->next->prev = the_elem->prev;
         __sync_fetch_and_add(&retractable_events, -1);
-#ifdef TEST
+#ifdef DEBUG
         verify_retractable_queue_order(object);
 #endif
     } else { // now really remove the event to be annihilated from the queue
         pthread_spin_lock(&locks[object][my_index].lock);
         the_elem->prev->next = the_elem->next;
         the_elem->next->prev = the_elem->prev;
-#ifdef TEST
+#ifdef DEBUG
         verify_queue_order(object);
 #endif
         pthread_spin_unlock(&locks[object][my_index].lock);
@@ -972,35 +975,33 @@ try_get_object:
 }
 
 void log_rollback(int object, double rollback_time) {
-    log_element *queue = &log_queue[object];
-    log_element *curr = queue->last;
-    log_element *prev;
+    send_log *queue = &log_queue[object];
+    log_element *current;
 
     AUDIT {
         printf("object %d - log_rollback called with rollback_time %e\n", object, rollback_time);
         fflush(stdout);
     }
 
-    while (curr != NULL && curr->send_time >= rollback_time) {
-        prev = curr->prev;
+    current = queue->tail;
 
-        /* unlink curr from the queue */
-        if (curr->prev) {
-            curr->prev->next = curr->next;
-        } else {
-            queue->first = curr->next;
-        }
+    /* Remove only from tail — monotonic log assumption */
+    while (current && current->send_time >= rollback_time) {
 
-        if (curr->next) {
-            curr->next->prev = curr->prev;
-        } else {
-            queue->last = curr->prev;
-        }
+        log_element *prev = current->prev;
 
-        queue_elem_annihilation(object, curr->the_element);
+        queue_elem_annihilation(object, current->the_element);
+        free(current);
 
-        free(curr);
-        curr = prev;
+        current = prev;
+    }
+
+    queue->tail = current;
+
+    if (current) {
+        current->next = NULL;
+    } else {
+        queue->head = NULL; /* list became empty */
     }
 }
 
@@ -1031,7 +1032,7 @@ void restore_retractable_events(int object) {
         current->prev = NULL;
         count++;
         queue_insert_in_slot(current, index);
-#ifdef TEST
+#ifdef DEBUG
         verify_retractable_queue_order(object);
 #endif
     }
@@ -1061,7 +1062,7 @@ void print_queues_status(int object) {
     }
 }
 
-#ifdef TEST
+#ifdef DEBUG
 void verify_empty_queues(void) {
     for (int i = 0; i < OBJECTS; i++) {
         if (queue[i][my_index].head.next != &queue[i][my_index].tail) {

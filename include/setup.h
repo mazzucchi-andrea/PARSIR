@@ -30,7 +30,7 @@ double Expent(double, uint32_t *, uint32_t *);
 
 #define NUMA_BALANCING
 // #define BENCHMARKING
-// #define TEST
+// #define DEBUG
 
 // int get_current(void);
 // double get_current_time(void);

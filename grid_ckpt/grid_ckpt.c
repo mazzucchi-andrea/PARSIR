@@ -20,7 +20,7 @@ extern uint32_t *seeds2[OBJECTS];
 
 seeds object_seeds[OBJECTS];
 
-#ifdef TEST
+#ifdef DEBUG
 int verify_restored_area(uint8_t *, uint8_t *);
 uint8_t *shadow_area[OBJECTS] = {NULL};
 #endif
@@ -46,7 +46,7 @@ void restore_object(int object) {
     restore_allocator(object);
     _restore_area(area);
     restore_seeds(object);
-#ifdef TEST
+#ifdef DEBUG
     if (memcmp(shadow_area[object], area, MAX_MEMORY)) {
         printf("ERROR: object %d restore failed\n", object);
         verify_restored_area(area, shadow_area[object]);
@@ -60,7 +60,7 @@ void set_ckpt(int object) {
     save_seeds(object);
     set_allocator_ckpt(object);
     uint8_t *area = (uint8_t *)(8 * (1024 * MAX_MEMORY) + object * (3 * MAX_MEMORY * MEM_NODES));
-#ifdef TEST
+#ifdef DEBUG
     if (shadow_area[object] == NULL) {
         shadow_area[object] = mmap(NULL, MAX_MEMORY, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, 0, 0);
         if (shadow_area[object] == MAP_FAILED) {
@@ -77,7 +77,7 @@ void set_ckpt(int object) {
     _set_ckpt(area);
 }
 
-#ifdef TEST
+#ifdef DEBUG
 int verify_restored_area(uint8_t *area, uint8_t *area_copy) {
     for (int offset = 0; offset < ALLOCATOR_AREA_SIZE; offset += MOD) {
         if (memcmp((void *)(area + offset), (void *)(area_copy + offset),

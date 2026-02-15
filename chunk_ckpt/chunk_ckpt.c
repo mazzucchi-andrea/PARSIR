@@ -9,7 +9,7 @@
 #include "memory.h"
 #include "setup.h"
 
-#ifdef TEST
+#ifdef DEBUG
 void verify_restored_area(uint8_t *, uint8_t *);
 uint8_t *shadow_area[OBJECTS] = {NULL};
 #endif
@@ -42,7 +42,7 @@ void restore_object(int object) {
     restore_allocator(object);
     restore_chunks(object);
     restore_seeds(object);
-#ifdef TEST
+#ifdef DEBUG
     uint8_t *area = (uint8_t *)(8 * (1024 * MAX_MEMORY) + object * (2 * MAX_MEMORY * MEM_NODES));
     if (memcmp(shadow_area[object], area, MAX_MEMORY)) {
         printf("ERROR: object %d restore failed\n", object);
@@ -56,7 +56,7 @@ void restore_object(int object) {
 void set_ckpt(int object) {
     save_seeds(object);
     set_allocator_ckpt(object);
-#ifdef TEST
+#ifdef DEBUG
     uint8_t *area = (uint8_t *)(8 * (1024 * MAX_MEMORY) + object * (2 * MAX_MEMORY * MEM_NODES));
     if (shadow_area[object] == NULL) {
         shadow_area[object] = mmap(NULL, MAX_MEMORY, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, 0, 0);
@@ -76,7 +76,7 @@ void set_ckpt(int object) {
 #endif
 }
 
-#ifdef TEST
+#ifdef DEBUG
 void verify_restored_area(uint8_t *area, uint8_t *area_copy) {
     for (int offset = 0; offset < MAX_MEMORY; offset += 32) {
         if (memcmp((void *)(area + offset), (void *)(area_copy + offset), 32)) {

@@ -23,7 +23,7 @@ object_status speculation[OBJECTS]; // an entry of this array needs to be manage
 alignas(64) lock_buffer speculation_locks[OBJECTS];
 
 extern double filter_message[OBJECTS];
-extern log_element log_queue[OBJECTS];
+extern send_log log_queue[OBJECTS];
 
 __thread int object_stack[STACKABLE_OBJECTS];
 __thread int stack_index = -1;
@@ -37,12 +37,8 @@ int speculation_init(void) {
     for (j = 0; j < OBJECTS; j++) {
         pthread_spin_init(&(speculation_locks[j].lock), PTHREAD_PROCESS_PRIVATE);
         filter_message[j] = 0.0 - epsilon;
-        log_queue[j].the_element = NULL;
-        log_queue[j].send_time = 0.0 - epsilon;
-        log_queue[j].next = NULL;
-        log_queue[j].prev = NULL;
-        log_queue[j].first = NULL;
-        log_queue[j].last = NULL;
+        log_queue[j].head = NULL;
+        log_queue[j].tail = NULL;
         speculation[j].owner = -1;
 #ifdef AVOID_THROTTLING
         speculation[j].checkpointed = 1;
@@ -115,7 +111,7 @@ void restore_state(int object) {
 }
 
 int run_rollback(int object, double rollback_time) {
-    AUDIT {
+    {
         printf("object %d - rollback with rollback_time %e\n", object, rollback_time);
         fflush(stdout);
     }

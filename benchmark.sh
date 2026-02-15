@@ -6,13 +6,7 @@ declare -a M_VALUES=(1 100)
 declare -a PCS_OBJECTS=(1024)
 declare -a TA=(0.4 0.1)
 
-threads=$(getconf _NPROCESSORS_ONLN)
-
-THREADS=(
-  $((threads * 25 / 100))
-  $((threads * 50 / 100))
-  $threads
-)
+declare -a THREADS=(2 4 8)
 
 PERIOD=5
 SAMPLES=12
