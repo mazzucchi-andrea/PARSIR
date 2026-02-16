@@ -64,7 +64,7 @@ int ScheduleNewEvent(int destination, double timestamp, int event_type, char *bo
         __sync_fetch_and_add(&filtered_events, 1);
 #endif
         AUDIT {
-            printf("message filtered\n");
+            printf("object %d - message filtered", source);
             fflush(stdout);
         }
         return 0;

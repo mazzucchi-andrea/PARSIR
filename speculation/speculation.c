@@ -136,6 +136,5 @@ int run_rollback(int object, double rollback_time) {
         printf("object %d - restore_retractable_events completed\n", object);
         fflush(stdout);
     }
-    speculation[object].causality_violation_time = 0.0;
     return 0;
 }

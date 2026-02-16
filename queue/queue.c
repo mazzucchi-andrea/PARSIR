@@ -636,8 +636,8 @@ void log_the_send(queue_elem *the_elem, int current_object, double current_time)
 
 #ifdef DEBUG
     if (queue->tail && queue->tail->send_time > current_time) {
-        printf("FATAL: non-monotonic send time: %.15e -> %.15e (obj %d)\n", queue->tail->send_time, current_time,
-               current_object);
+        printf("ERROR: object %d current_time is %e but last send is %e (destination is %d with timestamp %e)\n",
+               current_object, current_time, queue->tail->send_time, the_elem->destination, the_elem->timestamp);
         exit(EXIT_FAILURE);
     }
 #endif
