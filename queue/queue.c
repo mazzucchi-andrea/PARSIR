@@ -727,15 +727,15 @@ int speculation_queue_insert(queue_elem *elem) {
         } else {
             speculation[destination].standing_rollback = 1;
             speculation[destination].causality_violation_time = elem->timestamp;
+            if (speculation[destination].the_state == FREE) { // get the object for processing
+                speculation[destination].the_state = BUSY;
+                speculation[destination].owner = me;
+                put_head_into_stack(source);
+                put_into_stack(destination);
+                target = -1;
+            }
         }
         queue_insert_in_epoch(elem);
-        if (speculation[destination].the_state == FREE) { // get the object for processing
-            speculation[destination].the_state = BUSY;
-            speculation[destination].owner = me;
-            put_head_into_stack(source);
-            put_into_stack(destination);
-            target = -1;
-        }
     } else {
         queue_insert_in_epoch(elem);
         AUDIT {
@@ -939,23 +939,23 @@ void queue_elem_annihilation(int source, queue_elem *the_elem) {
     } else {
         speculation[object].standing_rollback = 1;
         speculation[object].causality_violation_time = cancellation_time;
-    }
-    if (speculation[object].the_state == FREE) {
-        speculation[object].the_state = BUSY;
-        speculation[object].owner = me;
-        put_into_stack(object);
-        // put_head_into_stack(source);
-        // target = -1;
+        if (speculation[object].the_state == FREE) {
+            speculation[object].the_state = BUSY;
+            speculation[object].owner = me;
+            put_into_stack(object);
+            // put_head_into_stack(source);
+            // target = -1;
+        }
     }
     if (speculation[object].current_time >
-        the_elem->timestamp) { // now remove the event to be annihilated from the retractable_queue
+        the_elem->timestamp) { // remove the event to be annihilated from the retractable_queue
         the_elem->prev->next = the_elem->next;
         the_elem->next->prev = the_elem->prev;
         __sync_fetch_and_add(&retractable_events, -1);
 #ifdef DEBUG
         verify_retractable_queue_order(object);
 #endif
-    } else { // now remove the event to be annihilated from the queue
+    } else { // remove the event to be annihilated from the queue
         pthread_spin_lock(&locks[object][my_index].lock);
         the_elem->prev->next = the_elem->next;
         the_elem->next->prev = the_elem->prev;
