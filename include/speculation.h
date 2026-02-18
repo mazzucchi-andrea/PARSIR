@@ -26,7 +26,7 @@ void put_head_into_stack(int);
 int get_from_stack(int *);
 int run_rollback(int, double);
 
-#ifdef BENCHMARKING
+#ifdef DEBUG
 void verify_empty_stack(void);
 #endif
 

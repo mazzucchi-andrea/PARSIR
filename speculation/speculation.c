@@ -139,7 +139,7 @@ int run_rollback(int object, double rollback_time) {
     return 0;
 }
 
-#ifdef BENCHMARKING
+#ifdef DEBUG
 void verify_empty_stack() {
     if (stack_index != -1) {
         printf("thread %d - stack not empty (%d)\n", me, stack_index);
