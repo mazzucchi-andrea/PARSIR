@@ -99,7 +99,7 @@ do
                     epochs=$(awk '/^EPOCHS:/ {print $2}' <<< "$output")
                     rollbacks=$(awk '/^ROLLBACKS:/ {print $2}' <<< "$output")
                     filtered=$(awk '/^FILTERED_EVENTS:/ {print $2}' <<< "$output")
-                    echo "grid_ckpt,$t,$l,$o,$ta,,$throughput_mean,$throughput_ci,$epochs,$rollbacks,$filtered" >> pcs_bench.csv
+                    echo "grid_ckpt,$t,$l,$o,$ta,$throughput_mean,$throughput_ci,$epochs,$rollbacks,$filtered" >> pcs_bench.csv
                     make -C build pcs_chunk_ckpt BENCHMARK=1 THREADS=$t LOOKAHEAD=$l OBJECTS=$o TA=$ta PERIOD=$PERIOD SAMPLES=$SAMPLES
                     output=$(./bin/PARSIR-simulator) 
                     throughput_mean=$(awk '/^THROHGHPUT_MEAN:/ {print $2}' <<< "$output")

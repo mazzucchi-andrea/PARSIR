@@ -1,3 +1,4 @@
+#include <linux/version.h>
 #include <numaif.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,7 +11,6 @@
 
 #define MIN_CHUNK_SIZE (32)
 #define MAX_CHUNK_SIZE (MIN_CHUNK_SIZE << 7) // 4KB is the currently set max chunk size
-#define EPSILON 0.000001
 
 unsigned long MAX_MEMORY = (1 << 21); // maximum amount of memory manageable per object
 
@@ -72,6 +72,7 @@ void object_allocator_setup(void) {
     void *mapping;
     void *addr;
     int ret;
+    int flags;
     unsigned long mask;
     int chunk_size;
     void *limit;
@@ -96,15 +97,18 @@ void object_allocator_setup(void) {
     AUDIT printf("thread running on NUMA node %d - mask for setting up object %d is %lu\n", NUMAnode, current, mask);
     for (i = 0; i < 1; i++) {
         // the above line is left just to let the developer restart from here for NUMA ubiquitousness
-#if GRID_CKPT
-        addr = mmap((void *)target_address, MAX_MEMORY * 2 + BITMAP_SIZE, PROT_READ | PROT_WRITE,
-                    MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED, 0, 0);
-#elif CHUNK_BASED
-        addr = mmap((void *)target_address, MAX_MEMORY * 2, PROT_READ | PROT_WRITE,
-                    MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED, 0, 0);
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 17, 0)
+        flags = MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED;
 #else
-        addr = mmap((void *)target_address, MAX_MEMORY, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED,
-                    0, 0);
+        flags = MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED_NOREPLACE;
+#endif
+#if GRID_CKPT
+        addr = mmap((void *)target_address, MAX_MEMORY * 2 + BITMAP_SIZE, PROT_READ | PROT_WRITE, flags, 0, 0);
+#elif CHUNK_BASED
+        addr = mmap((void *)target_address, MAX_MEMORY * 2, PROT_READ | PROT_WRITE, flags, 0, 0);
+#else
+        addr = mmap((void *)target_address, MAX_MEMORY, PROT_READ | PROT_WRITE, flags, 0, 0);
 #endif
         if (addr != (void *)target_address) {
             printf("mmap failure for object %d\n", current);
@@ -373,7 +377,6 @@ void *__wrap_malloc(size_t size) {
         chunk_size = chunk_size << 1;
         index = i;
     }
-    // index = (int)( ((double)size / (double)MIN_CHUNK_SIZE) - EPSILON);
     AUDIT printf("wrapping malloc for object %d - size is %ld - index is %d\n", current, size, index);
 redo:
     if (index >= (int)((double)(MAX_MEMORY >> 12) / (double)(SEGMENT_PAGES))) {

@@ -5,8 +5,8 @@
 
 typedef struct _object_status {
     double current_time;
-    int owner;
     double causality_violation_time;
+    int owner;
     int standing_rollback;
     int in_stack;
     int the_state; // this is required in order to handle the rollback phase
@@ -25,5 +25,9 @@ void put_into_stack(int);
 void put_head_into_stack(int);
 int get_from_stack(int *);
 int run_rollback(int, double);
+
+#ifdef BENCHMARKING
+void verify_empty_stack(void);
+#endif
 
 #endif

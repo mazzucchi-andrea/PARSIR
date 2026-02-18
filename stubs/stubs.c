@@ -88,6 +88,7 @@ int ScheduleNewEvent(int destination, double timestamp, int event_type, char *bo
     p->q.timestamp = timestamp;
 
 #ifdef SPECULATION
+    p->q.cancelled = 0;
     if (get_current_time() == STARTUP_TIME) {
         AUDIT {
             printf("object %d - inserting an event at startup as committed\n", p->e.destination);

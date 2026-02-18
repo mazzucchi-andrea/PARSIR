@@ -10,11 +10,12 @@
 #define QUEUE_TIME_INTERVAL (SLOT_LEN * NUM_SLOTS)
 typedef struct _queue_elem {
     int destination;
-    double timestamp;
 #ifdef SPECULATION
+    int cancelled;
     double send_time; // this is required to keep track of what to undo at sender side
                       // if some straggler hits an object
 #endif
+    double timestamp;
     struct _queue_elem *next;
     struct _queue_elem *prev;
 } queue_elem;
