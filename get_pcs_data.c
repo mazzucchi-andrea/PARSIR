@@ -68,39 +68,35 @@ int main(void) {
 
     for (int i = 0; i < 3; i++) {
         double throughputs[RUN];
-        double rollbacks_arr[RUN];
-        double epochs_arr[RUN];
-        double filtered_arr[RUN];
+        double rb_spec_w[RUN];
         int count = 0;
 
         fseek(input_file, 0, SEEK_SET);
         fgets(line, MAX_LINE, input_file); // Skip header
         while (fgets(line, MAX_LINE, input_file)) {
             char ckpt_type[64];
-            int threads, objects, epochs, rollbacks, filtered;
-            double lookahead, mit, throughput, throughput_ci;
+            int threads, objects, epochs, rollbacks, events, committed, filtered;
+            double spec_window, throughput, committed_tput, mit;
 
-            sscanf(line, "%[^,],%d,%lf,%d,%lf,%lf,%lf,%d,%d,%d", ckpt_type, &threads, &lookahead, &objects, &mit,
-                   &throughput, &throughput_ci, &epochs, &rollbacks, &filtered);
-            if (strcmp(ckpt_type, ckpt_types[i]) || threads != THREADS || lookahead != SPEC || objects != OBJECTS ||
+            sscanf(line, "%[^,],%d,%lf,%d,%lf,%lf,%lf,%d,%d,%d,%d,%d", ckpt_type, &threads, &spec_window, &objects, &mit,
+                   &throughput, &committed_tput, &epochs, &rollbacks, &events, &committed, &filtered);
+            if (strcmp(ckpt_type, ckpt_types[i]) || threads != THREADS || spec_window != SPEC || objects != OBJECTS ||
                 mit != MIT) {
                 continue;
             }
             throughputs[count] = throughput;
-            rollbacks_arr[count] = rollbacks;
-            epochs_arr[count] = epochs;
-            filtered_arr[count] = filtered;
+            if (epochs > 0) {
+                rb_spec_w[count] = (double)rollbacks / (double)epochs;
+            } else {
+                rb_spec_w[count] = (double)rollbacks / 1;
+            }
             count++;
         }
-        double throughput_mean, throughput_ci, epochs_mean, epochs_ci, rollbacks_mean, rollbacks_ci, filtered_mean,
-            filtered_ci;
+        double throughput_mean, throughput_ci, rb_spec_w_mean, rb_spec_w_ci;
         mean_ci_95(throughputs, RUN, &throughput_mean, &throughput_ci);
-        mean_ci_95(epochs_arr, RUN, &epochs_mean, &epochs_ci);
-        mean_ci_95(rollbacks_arr, RUN, &rollbacks_mean, &rollbacks_ci);
-        mean_ci_95(filtered_arr, RUN, &filtered_mean, &filtered_ci);
-        fprintf(output_file, "%s,%d,%f,%d,%f,%f,%f,%f,%f,%f,%f,%f,%f\n", ckpt_types[i], THREADS, SPEC, OBJECTS, MIT,
-                throughput_mean, throughput_ci, epochs_mean, epochs_ci, rollbacks_mean, rollbacks_ci, filtered_mean,
-                filtered_ci);
+        mean_ci_95(rb_spec_w, RUN, &rb_spec_w_mean, &rb_spec_w_ci);
+        fprintf(output_file, "%s,%d,%f,%d,%f,%f,%f,%f,%f\n", ckpt_types[i], THREADS, SPEC, OBJECTS, MIT,
+                throughput_mean, throughput_ci, rb_spec_w_mean, rb_spec_w_ci);
     }
 
     fclose(input_file);

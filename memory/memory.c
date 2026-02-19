@@ -31,10 +31,10 @@ typedef struct _area {
 #ifdef CHUNK_BASED
     void *base;
 #endif
-#if CHUNK_BASED_SAVE || CHUNK_FULL
+#if CHUNK_BASED_SAVE || FULL_CKPT
     void *bitmap;
 #endif
-#ifdef CHUNK_FULL
+#ifdef FULL_CKPT
     void *bitmap_ckpt;
 #endif
     void **addresses_ckpt;
@@ -186,7 +186,7 @@ void object_allocator_setup(void) {
 #ifdef CHUNK_BASED
         size_t bitmap_size = (sizeof(void *) * ((allocators[current])[i].size)) >> 3;
 #endif
-#if CHUNK_BASED_SAVE || CHUNK_FULL
+#if CHUNK_BASED_SAVE || FULL_CKPT
         (allocators[current])[i].bitmap = malloc(bitmap_size);
         if (!(allocators[current])[i].bitmap) {
             printf("(ckpt) area-bitmap allocation error\n");
@@ -196,7 +196,7 @@ void object_allocator_setup(void) {
                      (sizeof(void *) * ((SEGMENT_PAGES << 12) / chunk_size)));
         memset((allocators[current])[i].bitmap, 0, bitmap_size);
 #endif
-#ifdef CHUNK_FULL
+#ifdef FULL_CKPT
         (allocators[current])[i].bitmap_ckpt = malloc(bitmap_size);
         if (!(allocators[current])[i].bitmap_ckpt) {
             printf("(ckpt) usage bitmap allocation error\n");
@@ -301,7 +301,7 @@ void restore_chunks(int current) {
 }
 #endif
 
-#ifdef CHUNK_FULL
+#ifdef FULL_CKPT
 void set_used_chunks_ckpt(int current) {
     int bitmap_size, chunk_size;
     uint8_t current_byte;
@@ -390,7 +390,7 @@ redo:
     }
     chunk_address = (allocators[current])[index].addresses[(allocators[current])[index].top_elem];
     (allocators[current])[index].top_elem++;
-#ifdef CHUNK_FULL
+#ifdef FULL_CKPT
     uint64_t chunk_offset = (uintptr_t)chunk_address - (uintptr_t)((allocators[current])[index].base);
     uint32_t chunk = chunk_offset >> (index + 5);
     uint8_t bit_index = chunk & 7;
@@ -421,7 +421,7 @@ void __wrap_free(void *ptr) {
         printf("allocator corruption on free by object %d\n", current);
         exit(EXIT_FAILURE);
     }
-#ifdef CHUNK_FULL
+#ifdef FULL_CKPT
     uint64_t chunk_offset = (uintptr_t)ptr - (uintptr_t)((allocators[current])[index].base);
     uint32_t chunk = chunk_offset >> (index + 5);
     uint8_t bit_index = chunk & 7;

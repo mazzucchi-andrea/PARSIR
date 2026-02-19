@@ -1,125 +1,92 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-declare -a LOOKAHEAD=(0.25 0.5 1.0)
-declare -a PHOLD_OBJECTS=(1024)
-declare -a M_VALUES=(1 100) 
-declare -a PCS_OBJECTS=(1024)
-declare -a TA=(0.4 0.1)
-
-declare -a THREADS=(2 4 8)
-
-PERIOD=5
-SAMPLES=12
+LOOKAHEAD=(0.25 0.5 1.0)
+THREADS=(10 20 40)
 RUN=5
+WARMUP=10
+DURATION=60
 
-# --- Error Checking ---
-if ! command -v gnuplot &> /dev/null
-then
-    echo "Error: Gnuplot could not be found."
-    echo "Please install gnuplot to run this script."
-    exit 1
-fi
+PHOLD_OBJECTS=(1024)
+M=(1 100)
 
-if [ ! -f "plot_phold.gp" ]; then
-    echo "Error: Gnuplot template 'plot_phold.gp' not found!"
-    echo "Please make sure it's in the same directory as this script."
-    exit 1
-fi
+PCS_OBJECTS=(1024)
+MIT=(0.4 0.1)
 
-if [ ! -f "plot_pcs.gp" ]; then
-    echo "Error: Gnuplot template 'plot_pcs.gp' not found!"
-    echo "Please make sure it's in the same directory as this script."
-    exit 1
-fi
+SIM=./bin/PARSIR-simulator
 
-# Phold Benchmark
+parse_output() {
+awk '
+/^MEAN_TOT_THROUGHPUT:/ {tot=$2}
+/^MEAN_COM_THROUGHPUT:/ {com=$2}
+/^EPOCHS:/ {ep=$2}
+/^ROLLBACKS:/ {rb=$2}
+/^TOTAL_EVENTS:/ {te=$2}
+/^COMMITTED_EVENTS:/ {ce=$2}
+/^FILTERED_EVENTS:/ {fe=$2}
+END {printf "%s,%s,%s,%s,%s,%s,%s\n",tot,com,ep,rb,te,ce,fe}'
+}
 
-rm phold_bench.csv
-echo "CKPT_TYPE,THREADS,SPEC_WINDOW,OBJECTS,M,THROHGHPUT_MEAN,THROHGHPUT_CI,EPOCHS,ROLLBACKS,FILTERED" > phold_bench.csv
-
-for t in ${THREADS[@]};
-do
-    for l in ${LOOKAHEAD[@]};
-    do
-        for o in ${PHOLD_OBJECTS[@]};
-        do
-            for m in ${M_VALUES[@]};
-            do
-                for ((i=0; i< RUN; i++))
-                do
-                    make -C build phold_grid_ckpt BENCHMARK=1 THREADS=$t LOOKAHEAD=$l OBJECTS=$o M=$m PERIOD=$PERIOD SAMPLES=$SAMPLES
-                    output=$(./bin/PARSIR-simulator) 
-                    throughput_mean=$(awk '/^THROHGHPUT_MEAN:/ {print $2}' <<< "$output")
-                    throughput_ci=$(awk '/^THROHGHPUT_CI:/ {print $2}' <<< "$output")
-                    epochs=$(awk '/^EPOCHS:/ {print $2}' <<< "$output")
-                    rollbacks=$(awk '/^ROLLBACKS:/ {print $2}' <<< "$output")
-                    filtered=$(awk '/^FILTERED_EVENTS:/ {print $2}' <<< "$output")
-                    echo "grid_ckpt,$t,$l,$o,$m,$throughput_mean,$throughput_ci,$epochs,$rollbacks,$filtered" >> phold_bench.csv
-                    make -C build phold_chunk_ckpt BENCHMARK=1 THREADS=$t LOOKAHEAD=$l OBJECTS=$o M=$m PERIOD=$PERIOD SAMPLES=$SAMPLES
-                    output=$(./bin/PARSIR-simulator) 
-                    throughput_mean=$(awk '/^THROHGHPUT_MEAN:/ {print $2}' <<< "$output")
-                    throughput_ci=$(awk '/^THROHGHPUT_CI:/ {print $2}' <<< "$output")
-                    epochs=$(awk '/^EPOCHS:/ {print $2}' <<< "$output")
-                    rollbacks=$(awk '/^ROLLBACKS:/ {print $2}' <<< "$output")
-                    filtered=$(awk '/^FILTERED_EVENTS:/ {print $2}' <<< "$output")
-                    echo "chunk_ckpt,$t,$l,$o,$m,$throughput_mean,$throughput_ci,$epochs,$rollbacks,$filtered" >> phold_bench.csv
-                    make -C build phold_chunk_full_ckpt BENCHMARK=1 THREADS=$t LOOKAHEAD=$l OBJECTS=$o M=$m PERIOD=$PERIOD SAMPLES=$SAMPLES
-                    output=$(./bin/PARSIR-simulator) 
-                    throughput_mean=$(awk '/^THROHGHPUT_MEAN:/ {print $2}' <<< "$output")
-                    throughput_ci=$(awk '/^THROHGHPUT_CI:/ {print $2}' <<< "$output")
-                    epochs=$(awk '/^EPOCHS:/ {print $2}' <<< "$output")
-                    rollbacks=$(awk '/^ROLLBACKS:/ {print $2}' <<< "$output")
-                    filtered=$(awk '/^FILTERED_EVENTS:/ {print $2}' <<< "$output")
-                    echo "full_ckpt,$t,$l,$o,$m,$throughput_mean,$throughput_ci,$epochs,$rollbacks,$filtered" >> phold_bench.csv
-                done
-            done
-        done
+format_params() {
+    local out=()
+    for kv in "$@"; do
+        out+=("${kv#*=}")
     done
+    IFS=,; echo "${out[*]}"
+}
+
+run_series() {
+    local target=$1
+    local csv=$2
+    shift 2
+    local args=("$@")
+
+    echo "Compiling $target ${args[*]}"
+    make -C build "$target" BENCHMARK=1 "${args[@]}" WARMUP=$WARMUP DURATION=$DURATION >/dev/null
+
+    ckpt_type=${target#*_}
+
+    for ((i=0;i<RUN;i++)); do
+        echo "Run $((i+1))/$RUN : $target ${args[*]}"
+        output=$($SIM)
+        parsed=$(printf "%s\n" "$output" | parse_output)
+        params=$(format_params "${args[@]}")
+        echo "$ckpt_type,$params,$parsed" >> "$csv"
+    done
+}
+
+# ---------------- PHOLD ----------------
+echo "CKPT_TYPE,THREADS,SPEC_WINDOW,OBJECTS,M,MEAN_TOT_THROUGHPUT,MEAN_COM_THROUGHPUT,EPOCHS,ROLLBACKS,TOTAL_EVENTS,COMMITTED_EVENTS,FILTERED_EVENTS" > phold_bench.csv
+
+for t in "${THREADS[@]}"; do
+for l in "${LOOKAHEAD[@]}"; do
+for o in "${PHOLD_OBJECTS[@]}"; do
+for m in "${M[@]}"; do
+
+    run_series phold_grid_ckpt phold_bench.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o M=$m
+    run_series phold_chunk_ckpt phold_bench.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o M=$m
+    run_series phold_full_ckpt phold_bench.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o M=$m
+
+done
+done
+done
 done
 
-# PCS Benchmark
+# ---------------- PCS ----------------
+echo "CKPT_TYPE,THREADS,SPEC_WINDOW,OBJECTS,MIT,MEAN_TOT_THROUGHPUT,MEAN_COM_THROUGHPUT,EPOCHS,ROLLBACKS,TOTAL_EVENTS,COMMITTED_EVENTS,FILTERED_EVENTS" > pcs_bench.csv
 
-rm pcs_output.csv
-echo "CKPT_TYPE,THREADS,SPEC_WINDOW,OBJECTS,MIT,THROHGHPUT_MEAN,THROHGHPUT_CI,EPOCHS,ROLLBACKS,FILTERED" > pcs_bench.csv
+for t in "${THREADS[@]}"; do
+for l in "${LOOKAHEAD[@]}"; do
+for o in "${PCS_OBJECTS[@]}"; do
+for ta in "${MIT[@]}"; do
 
-for t in ${THREADS[@]};
-do
-    for l in ${LOOKAHEAD[@]};
-    do
-        for o in ${PCS_OBJECTS[@]};
-        do
-            for ta in ${TA[@]};
-            do
-                for ((i=0; i< RUN; i++))
-                do
-                    make -C build pcs_grid_ckpt BENCHMARK=1 THREADS=$t LOOKAHEAD=$l OBJECTS=$o TA=$ta PERIOD=$PERIOD SAMPLES=$SAMPLES
-                    output=$(./bin/PARSIR-simulator) 
-                    throughput_mean=$(awk '/^THROHGHPUT_MEAN:/ {print $2}' <<< "$output")
-                    throughput_ci=$(awk '/^THROHGHPUT_CI:/ {print $2}' <<< "$output")
-                    epochs=$(awk '/^EPOCHS:/ {print $2}' <<< "$output")
-                    rollbacks=$(awk '/^ROLLBACKS:/ {print $2}' <<< "$output")
-                    filtered=$(awk '/^FILTERED_EVENTS:/ {print $2}' <<< "$output")
-                    echo "grid_ckpt,$t,$l,$o,$ta,$throughput_mean,$throughput_ci,$epochs,$rollbacks,$filtered" >> pcs_bench.csv
-                    make -C build pcs_chunk_ckpt BENCHMARK=1 THREADS=$t LOOKAHEAD=$l OBJECTS=$o TA=$ta PERIOD=$PERIOD SAMPLES=$SAMPLES
-                    output=$(./bin/PARSIR-simulator) 
-                    throughput_mean=$(awk '/^THROHGHPUT_MEAN:/ {print $2}' <<< "$output")
-                    throughput_ci=$(awk '/^THROHGHPUT_CI:/ {print $2}' <<< "$output")
-                    epochs=$(awk '/^EPOCHS:/ {print $2}' <<< "$output")
-                    rollbacks=$(awk '/^ROLLBACKS:/ {print $2}' <<< "$output")
-                    filtered=$(awk '/^FILTERED_EVENTS:/ {print $2}' <<< "$output")
-                    echo "chunk_ckpt,$t,$l,$o,$ta,$throughput_mean,$throughput_ci,$epochs,$rollbacks,$filtered" >> pcs_bench.csv
-                    make -C build pcs_chunk_full_ckpt BENCHMARK=1 THREADS=$t LOOKAHEAD=$l OBJECTS=$o TA=$ta PERIOD=$PERIOD SAMPLES=$SAMPLES
-                    output=$(./bin/PARSIR-simulator) 
-                    throughput_mean=$(awk '/^THROHGHPUT_MEAN:/ {print $2}' <<< "$output")
-                    throughput_ci=$(awk '/^THROHGHPUT_CI:/ {print $2}' <<< "$output")
-                    epochs=$(awk '/^EPOCHS:/ {print $2}' <<< "$output")
-                    rollbacks=$(awk '/^ROLLBACKS:/ {print $2}' <<< "$output")
-                    filtered=$(awk '/^FILTERED_EVENTS:/ {print $2}' <<< "$output")
-                    echo "full_ckpt,$t,$l,$o,$ta,$throughput_mean,$throughput_ci,$epochs,$rollbacks,$filtered" >> pcs_bench.csv
-                done
-            done
-        done
-    done
+    run_series pcs_grid_ckpt pcs_bench.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$ta
+    run_series pcs_chunk_ckpt pcs_bench.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$ta
+    run_series pcs_full_ckpt pcs_bench.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$ta
+
+done
+done
+done
 done
 
-sh generate_plot.sh
+bash generate_plot.sh

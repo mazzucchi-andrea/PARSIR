@@ -140,10 +140,14 @@ void ProcessEvent(unsigned int me, double now, int event_type, void *event_conte
 
     case NORMAL:
 
+#ifndef BENCHMARKING
         res = (state->event_count++) % 1000;
         if (!res) {
             printf("object %d - count of events is %d\n", me, state->event_count);
         }
+#else
+        state->event_count++;
+#endif
 
         s1 = &(state->seed1);
         s2 = &(state->seed2);

@@ -1,7 +1,7 @@
 #ifndef RUN_H
 #define RUN_H
 
-#ifndef THREADS
+/* #ifndef THREADS
 #define THREADS (8)
 #endif
 #ifndef OBJECTS
@@ -9,7 +9,7 @@
 #endif
 #ifndef LOOKAHEAD
 #define LOOKAHEAD (1.0)
-#endif
+#endif */
 #define AUDIT if (0)
 
 #endif

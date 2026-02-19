@@ -429,7 +429,7 @@ redo:
             speculation[target].checkpointed = 1;
         }
 #endif
-        speculation[target].already_taken = 1;
+        speculation[target].already_taken = TAKEN;
         rollback_time = 0.0;
         if (speculation[target].standing_rollback) {
             rollback_time = speculation[target].causality_violation_time;
@@ -560,12 +560,12 @@ redo:
     }
 
 #ifdef SPECULATION
-get_another:
     object_lock(target);
     if (speculation[target].standing_rollback == 1) {
         object_unlock(target);
         goto redo;
     }
+get_another:
 #endif
     pthread_spin_lock(&locks[target][index].lock);
 
@@ -622,7 +622,6 @@ get_another:
     }
 #endif
     if (elem->cancelled) {
-        object_unlock(target);
         free(container_of(elem, event, q));
         __sync_fetch_and_add(&pending_events, -1);
         goto get_another;
@@ -755,7 +754,7 @@ int speculation_queue_insert(queue_elem *elem) {
             printf("object %d - inserted event in the current epoch with timestamp %e\n", destination, elem->timestamp);
             fflush(stdout);
         }
-        if (speculation[destination].the_state == FREE && speculation[destination].already_taken) {
+        if (speculation[destination].the_state == FREE && speculation[destination].already_taken == TAKEN) {
             speculation[destination].the_state = BUSY;
             speculation[destination].owner = me;
             put_into_stack(destination);
@@ -782,7 +781,7 @@ flush_another:
         speculation[target_object].standing_rollback = 0;
         speculation[target_object].the_state = FREE;
         speculation[target_object].owner = -1;
-        speculation[target_object].already_taken = 0;
+        speculation[target_object].already_taken = NOT_TAKEN;
         filter_message[target_object] = current_min_limit + LOOKAHEAD - epsilon;
 
         flush_log(target_object);
@@ -947,27 +946,21 @@ void queue_elem_annihilation(int source, queue_elem *the_elem) {
         fflush(stdout);
     }
     object_lock(object);
-    if (speculation[object].standing_rollback) {
-        if (speculation[object].causality_violation_time > cancellation_time) {
-            speculation[object].causality_violation_time = cancellation_time;
-        }
-    } else {
-        if (speculation[object].current_time >= cancellation_time) {
+    if (speculation[object].current_time >= cancellation_time) {
+        if (speculation[object].standing_rollback) {
+            if (speculation[object].causality_violation_time > cancellation_time) {
+                speculation[object].causality_violation_time = cancellation_time;
+            }
+        } else {
             speculation[object].standing_rollback = 1;
             speculation[object].causality_violation_time = cancellation_time;
             if (speculation[object].the_state == FREE) {
                 speculation[object].the_state = BUSY;
                 speculation[object].owner = me;
-                put_into_stack(object);
                 if (!speculation[source].in_stack) {
                     put_head_into_stack(source);
                     target = -1;
                 }
-            }
-        } else {
-            if (speculation[object].the_state == FREE && speculation[object].already_taken) {
-                speculation[object].the_state = BUSY;
-                speculation[object].owner = me;
                 put_into_stack(object);
             }
         }

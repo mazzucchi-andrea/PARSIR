@@ -1,6 +1,5 @@
 #include <stdint.h>
 #include <stdlib.h>
-// #include <params.h>
 
 #define FLT_EPSILON 1.19209290E-07F // decimal constant
 

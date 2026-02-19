@@ -3,6 +3,9 @@
 #define FREE (0)
 #define BUSY (1)
 
+#define NOT_TAKEN (0)
+#define TAKEN (1)
+
 typedef struct _object_status {
     double current_time;
     double causality_violation_time;

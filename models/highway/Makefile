@@ -1,7 +1,7 @@
 CC = gcc 
 CFLAGS = -c -Wall -Wextra -Wpedantic -I../../include/ -I./ 
 CHUNK_CKPT_FLAGS = -pie -fpie -I../../MVM_CHUNK/include -DSPECULATION
-CHUNK_FULL_CKPT_FLAGS = -DSPECULATION
+FULL_CKPT_FLAGS = -DSPECULATION
 GRID_CKPT_FLAGS = -pie -fpie -I../../MVM_GRID_CKPT/include -DSPECULATION
 GRID_CKPT_BS_FLAGS = -pie -fpie -I../../MVM_GRID_CKPT_BS/include -DSPECULATION
 TARGET = intermediate-highway.o 
@@ -16,8 +16,8 @@ chunk_ckpt:
 	$(CC) $(SRCS) $(CFLAGS) $(CHUNK_CKPT_FLAGS) -o $(TARGET)
 	ld -r $(TARGET) --wrap=malloc --wrap=free -o highway.o
 
-chunk_full_ckpt:
-	$(CC) $(SRCS) $(CFLAGS) $(CHUNK_FULL_CKPT_FLAGS) -o $(TARGET)
+full_ckpt:
+	$(CC) $(SRCS) $(CFLAGS) $(FULL_CKPT_FLAGS) -o $(TARGET)
 	ld -r $(TARGET) --wrap=malloc --wrap=free -o highway.o
 
 grid_ckpt:
@@ -27,7 +27,6 @@ grid_ckpt:
 grid_ckpt_bs:
 	$(CC) $(SRCS) $(CFLAGS) $(GRID_CKPT_BS_FLAGS) -o $(TARGET)
 	ld -r $(TARGET) --wrap=malloc --wrap=free -o highway.o
-
 
 clean:
 	$(RM) *.o $(TARGET)

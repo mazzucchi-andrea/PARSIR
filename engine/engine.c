@@ -1,12 +1,10 @@
 #define _GNU_SOURCE
 
-#include <math.h>
 #include <pthread.h>
+#include <stdatomic.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/resource.h>
-#include <sys/time.h>
 #include <unistd.h>
 
 #include "engine.h"
@@ -45,11 +43,11 @@ thread_startup startup_info[THREADS];
 volatile int processed_events[THREADS];
 // sampling period (this is setup in seconds)
 #ifdef BENCHMARKING
-#ifndef PERIOD
-#define PERIOD 5
+#ifndef WARMUP
+#define WARMUP 5
 #endif
-#ifndef SAMPLES
-#define SAMPLES 5
+#ifndef DURATION
+#define DURATION 60
 #endif
 extern uint64_t rollbacks;
 extern uint64_t epochs;
@@ -194,15 +192,15 @@ int hw = 0;
 int CPUs = 0;
 int NUMA_NODES = 0;
 int cpu_id_per_numa_node[MAX_NUMA_NODES][MAX_CPUS_PER_NODE];
-int cpus_per_numa_node[MAX_NUMA_NODES] = {[0 ...(MAX_NUMA_NODES - 1)] - 1};
-int objects_per_numa_node[MAX_NUMA_NODES] = {[0 ...(MAX_NUMA_NODES - 1)] 0};
+int cpus_per_numa_node[MAX_NUMA_NODES] = {[0 ...(MAX_NUMA_NODES - 1)] = - 1};
+int objects_per_numa_node[MAX_NUMA_NODES] = {[0 ...(MAX_NUMA_NODES - 1)] = 0};
 
 inline int get_totNUMAnodes(void) { return NUMA_NODES; }
 
 // the below stuff is for NUMA workload distribution
-int c[MAX_NUMA_NODES] = {[0 ... MAX_NUMA_NODES - 1] 0};
-int min[MAX_NUMA_NODES] = {[0 ... MAX_NUMA_NODES - 1] 0};
-int max[MAX_NUMA_NODES] = {[0 ... MAX_NUMA_NODES - 1] 0};
+int c[MAX_NUMA_NODES] = {[0 ... MAX_NUMA_NODES - 1] = 0};
+int min[MAX_NUMA_NODES] = {[0 ... MAX_NUMA_NODES - 1] = 0};
+int max[MAX_NUMA_NODES] = {[0 ... MAX_NUMA_NODES - 1] = 0};
 
 // this function attemts to setup data based on the HW level
 // configuration of the machine
@@ -297,49 +295,6 @@ default_config:
     return;
 }
 
-#ifdef BENCHMARKING
-
-double get_t_value(int df) {
-    // Approximate t-values for 95% CI (two-tailed, alpha = 0.05)
-    // For large samples (df > 30), approaches 1.96 (z-score)
-    double t_table[] = {
-        12.706, 4.303, 3.182, 2.776, 2.571, // df: 1-5
-        2.447,  2.365, 2.306, 2.262, 2.228, // df: 6-10
-        2.201,  2.179, 2.160, 2.145, 2.131, // df: 11-15
-        2.120,  2.110, 2.101, 2.093, 2.086, // df: 16-20
-        2.080,  2.074, 2.069, 2.064, 2.060, // df: 21-25
-        2.056,  2.052, 2.048, 2.045, 2.042  // df: 26-30
-    };
-
-    if (df >= 1 && df <= 30) {
-        return t_table[df - 1];
-    } else if (df > 30) {
-        return 1.96; // Use z-score for large samples
-    }
-    return 1.96; // Default
-}
-void mean_ci_95(double *samples, int n, double *mean, double *ci) {
-    double sum = 0.0;
-    for (int i = 0; i < n; i++) {
-
-        sum += samples[i];
-    }
-    *mean = sum / n;
-
-    double var = 0.0;
-    for (int i = 0; i < n; i++) {
-
-        double d = samples[i] - *mean;
-        var += d * d;
-    }
-
-    double sd = sqrt(var / (n - 1)); // sample SD
-    double sem = sd / sqrt(n);       // standard error
-
-    *ci = get_t_value(n - 1) * sem;
-}
-#endif
-
 int main(int argc, char **argv) {
     long i, j;
     event *the_event;
@@ -353,11 +308,6 @@ int main(int argc, char **argv) {
     int numaNodeRound = 0; // this is for assigning a thread to a NUMA node
     int numaNodeInit = 0;  // this is for setting up objects to NUMA node(s)
                            // starting form the NUMA node with id set to 0
-    unsigned long total;
-#ifdef BENCHMARKING
-    double throughputs[SAMPLES];
-    double throughput_mean, throughput_ci;
-#endif
     // this function uses the lscpu command to take information
     // on the hardware level configuration
     // if this command is not available a default config is adopted
@@ -457,24 +407,42 @@ int main(int argc, char **argv) {
     }
 
 #ifdef BENCHMARKING
-    j = 0;
-    sleep(2 * PERIOD);
-    while (j < SAMPLES) {
-        sleep(PERIOD);
-        total = 0;
-        for (i = 0; i < THREADS; i++) {
-            total += processed_events[i];
-            processed_events[i] = 0;
-        }
-        throughputs[j] = (float)total / (float)PERIOD;
-        j++;
+    sleep(WARMUP);
+
+    long start_total = 0;
+    for (int i = 0; i < THREADS; i++) {
+        start_total += atomic_load_explicit(&processed_events[i], memory_order_relaxed);
     }
-    mean_ci_95(throughputs, SAMPLES, &throughput_mean, &throughput_ci);
-    printf("THROHGHPUT_MEAN: %f\n", throughput_mean);
-    printf("THROHGHPUT_CI: %f\n", throughput_ci);
-    printf("ROLLBACKS: %ld\n", rollbacks);
-    printf("EPOCHS: %ld\n", epochs);
-    printf("FILTERED_EVENTS: %ld\n", filtered_events);
+    long start_filtered = atomic_load_explicit(&filtered_events, memory_order_relaxed);
+    long start_rollbacks = atomic_load_explicit(&rollbacks, memory_order_relaxed);
+    long start_epochs = atomic_load_explicit(&epochs, memory_order_relaxed);
+
+    sleep(DURATION);
+
+    long end_total = 0;
+    for (int i = 0; i < THREADS; i++) {
+        end_total += atomic_load_explicit(&processed_events[i], memory_order_relaxed);
+    }
+    long end_filtered = atomic_load_explicit(&filtered_events, memory_order_relaxed);
+    long end_rollbacks = atomic_load_explicit(&rollbacks, memory_order_relaxed);
+    long end_epochs = atomic_load_explicit(&epochs, memory_order_relaxed);
+
+    long total_events = end_total - start_total;
+    long total_filtered = end_filtered -start_filtered;
+    long committed_events = total_events - total_filtered;
+    double throughput = (double)total_events / (double)DURATION;
+    double committed_throughput = (double)committed_events / (double)DURATION;
+
+    printf("MEAN_TOT_THROUGHPUT: %f\n", throughput);
+    printf("MEAN_COM_THROUGHPUT: %f\n", committed_throughput);
+
+    printf("EPOCHS: %ld\n", end_epochs - start_epochs);
+    printf("ROLLBACKS: %ld\n", end_rollbacks - start_rollbacks);
+
+    printf("TOTAL_EVENTS: %ld\n", total_events);
+    printf("COMMITTED_EVENTS: %ld\n", committed_events);
+    printf("FILTERED_EVENTS: %ld\n", total_filtered);
+
     exit(EXIT_SUCCESS);
 #else
     pause();

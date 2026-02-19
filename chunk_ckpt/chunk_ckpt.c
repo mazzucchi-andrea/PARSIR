@@ -71,7 +71,7 @@ void set_ckpt(int object) {
         exit(EXIT_FAILURE);
     }
 #endif
-#ifdef CHUNK_FULL
+#ifdef FULL_CKPT
     set_used_chunks_ckpt(object);
 #endif
 }
