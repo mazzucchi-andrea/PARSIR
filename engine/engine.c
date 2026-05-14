@@ -1,3 +1,10 @@
+/*
+ * SPDX-FileCopyrightText: 2026 Andrea Mazzucchi <andrea.mazzucchi@tutamail.com>
+ * SPDX-FileCopyrightText: 2026 Francesco Quaglia <francesco.quaglia@uniroma2.it>
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 #define _GNU_SOURCE
 
 #include <pthread.h>
@@ -20,6 +27,8 @@
 #include "grid_ckpt.h"
 #elif CHUNK_BASED
 #include "chunk_ckpt.h"
+#elif MMAP_MV
+#include "mmap_mv.h"
 #else
 #endif
 
@@ -192,7 +201,7 @@ int hw = 0;
 int CPUs = 0;
 int NUMA_NODES = 0;
 int cpu_id_per_numa_node[MAX_NUMA_NODES][MAX_CPUS_PER_NODE];
-int cpus_per_numa_node[MAX_NUMA_NODES] = {[0 ...(MAX_NUMA_NODES - 1)] = - 1};
+int cpus_per_numa_node[MAX_NUMA_NODES] = {[0 ...(MAX_NUMA_NODES - 1)] = -1};
 int objects_per_numa_node[MAX_NUMA_NODES] = {[0 ...(MAX_NUMA_NODES - 1)] = 0};
 
 inline int get_totNUMAnodes(void) { return NUMA_NODES; }
@@ -411,32 +420,27 @@ int main(int argc, char **argv) {
 
     long start_total = 0;
     for (int i = 0; i < THREADS; i++) {
-        start_total += atomic_load_explicit(&processed_events[i], memory_order_relaxed);
+        start_total += processed_events[i];
     }
     long start_filtered = atomic_load_explicit(&filtered_events, memory_order_relaxed);
     long start_rollbacks = atomic_load_explicit(&rollbacks, memory_order_relaxed);
-    long start_epochs = atomic_load_explicit(&epochs, memory_order_relaxed);
+    long start_epochs = epochs;
 
     sleep(DURATION);
 
     long end_total = 0;
     for (int i = 0; i < THREADS; i++) {
-        end_total += atomic_load_explicit(&processed_events[i], memory_order_relaxed);
+        end_total += processed_events[i];
     }
     long end_filtered = atomic_load_explicit(&filtered_events, memory_order_relaxed);
     long end_rollbacks = atomic_load_explicit(&rollbacks, memory_order_relaxed);
-    long end_epochs = atomic_load_explicit(&epochs, memory_order_relaxed);
+    long end_epochs = epochs;
 
     long total_events = end_total - start_total;
-    long total_filtered = end_filtered -start_filtered;
+    long total_filtered = end_filtered - start_filtered;
     long committed_events = total_events - total_filtered;
-    double throughput = (double)total_events / (double)DURATION;
-    double committed_throughput = (double)committed_events / (double)DURATION;
 
-    printf("MEAN_TOT_THROUGHPUT: %f\n", throughput);
-    printf("MEAN_COM_THROUGHPUT: %f\n", committed_throughput);
-
-    printf("EPOCHS: %ld\n", end_epochs - start_epochs);
+    printf("SPEC_WINDOWS: %ld\n", end_epochs - start_epochs);
     printf("ROLLBACKS: %ld\n", end_rollbacks - start_rollbacks);
 
     printf("TOTAL_EVENTS: %ld\n", total_events);

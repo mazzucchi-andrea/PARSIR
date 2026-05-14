@@ -1,3 +1,10 @@
+/*
+ * SPDX-FileCopyrightText: 2026 Andrea Mazzucchi <andrea.mazzucchi@tutamail.com>
+ * SPDX-FileCopyrightText: 2026 Francesco Quaglia <francesco.quaglia@uniroma2.it>
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 #include <asm/prctl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -80,16 +87,14 @@ void set_ckpt(int object) {
 #ifdef DEBUG
 int verify_restored_area(uint8_t *area, uint8_t *area_copy) {
     for (int offset = 0; offset < ALLOCATOR_AREA_SIZE; offset += MOD) {
-        if (memcmp((void *)(area + offset), (void *)(area_copy + offset),
-                   MOD)) {
+        if (memcmp((void *)(area + offset), (void *)(area_copy + offset), MOD)) {
 #if MOD == 8
             fprintf(stderr,
                     "Checkpoint verify failed:\n"
                     "Offeset 0x%x\n"
                     "Area S value: 0x%lx\n"
                     "Area A Value: 0x%lx\n",
-                    offset, *(int64_t *)(area + offset),
-                    *(int64_t *)(area_copy + offset));
+                    offset, *(int64_t *)(area + offset), *(int64_t *)(area_copy + offset));
             return -1;
         }
 #elif MOD == 16
@@ -98,10 +103,8 @@ int verify_restored_area(uint8_t *area, uint8_t *area_copy) {
                     "Offset: %d\n"
                     "Area A value: First qword: 0x%lx Second qword: 0x%lx\n"
                     "Area S value: First qword: 0x%lx Second qword: 0x%lx\n",
-                    offset, *(int64_t *)(area + offset),
-                    *(int64_t *)(area + offset + 8),
-                    *(int64_t *)(area_copy + offset),
-                    *(int64_t *)(area_copy + offset + 8));
+                    offset, *(int64_t *)(area + offset), *(int64_t *)(area + offset + 8),
+                    *(int64_t *)(area_copy + offset), *(int64_t *)(area_copy + offset + 8));
             return -1;
         }
 #elif MOD == 32
@@ -112,14 +115,10 @@ int verify_restored_area(uint8_t *area, uint8_t *area_copy) {
                     "Third qword: 0x%lx Fourth qword: 0x%lx\n"
                     "Area S Value: First qword: 0x%lx Second qword: 0x%lx "
                     "Third qword: 0x%lx Fourth qword: 0x%lx\n",
-                    offset, *(int64_t *)(area + offset),
-                    *(int64_t *)(area + offset + 8),
-                    *(int64_t *)(area + offset + 16),
-                    *(int64_t *)(area + offset + 24),
-                    *(int64_t *)(area_copy + offset),
-                    *(int64_t *)(area_copy + offset + 8),
-                    *(int64_t *)(area_copy + offset + 16),
-                    *(int64_t *)(area_copy + offset + 24));
+                    offset, *(int64_t *)(area + offset), *(int64_t *)(area + offset + 8),
+                    *(int64_t *)(area + offset + 16), *(int64_t *)(area + offset + 24),
+                    *(int64_t *)(area_copy + offset), *(int64_t *)(area_copy + offset + 8),
+                    *(int64_t *)(area_copy + offset + 16), *(int64_t *)(area_copy + offset + 24));
             return -1;
         }
 #else

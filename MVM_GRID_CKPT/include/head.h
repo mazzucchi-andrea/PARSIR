@@ -1,8 +1,15 @@
+/*
+ * SPDX-FileCopyrightText: 2026 Andrea Mazzucchi <andrea.mazzucchi@tutamail.com>
+ * SPDX-FileCopyrightText: 2026 Francesco Quaglia <francesco.quaglia@uniroma2.it>
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 #ifndef _HEAD_
 #define _HEAD_
 
 #define PAGE 4096
-#define SIZE                                                                   \
+#define SIZE                                                                                                           \
     (PAGE << 4) // actual size of the head arrays with instructions, patches and
                 // code map
 

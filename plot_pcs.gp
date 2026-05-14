@@ -1,6 +1,11 @@
+# SPDX-FileCopyrightText: 2026 Andrea Mazzucchi <andrea.mazzucchi@tutamail.com>
+# SPDX-FileCopyrightText: 2026 Francesco Quaglia <francesco.quaglia@uniroma2.it>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 set datafile separator comma
 set datafile missing "NaN"
-set terminal png size 1200,800 font 'Arial,26'
+set terminal png size 1200,800 font 'Arial,26' noenhanced
 set key inside right top
 set grid
 
@@ -19,32 +24,18 @@ ckpt_types  = "grid_ckpt chunk_ckpt full_ckpt"
 set style data yerrorlines
 
 # Define point styles for each checkpoint type
-set style line 1 lw 2 pt 6 ps 3.0  # grid_ckpt: filled circle
-set style line 2 lw 2 pt 4 ps 3.0  # chunk_ckpt: filled square
-set style line 3 lw 2 pt 8 ps 3.0  # full_ckpt: filled triangle
+set style line 1 lw 2 pt 6 ps 3.0  # grid_ckpt: open circle
+set style line 2 lw 2 pt 4 ps 3.0  # chunk_ckpt: open square
+set style line 3 lw 2 pt 8 ps 3.0  # full_ckpt: open triangle
 
 set title sprintf("PCS (MIT = %s, Speculative Window %s)", ARG1, ARG2)
 set xlabel "Threads"
 set ylabel "Throughput (events/s)"
-set output sprintf("plots/pcs/throughput_obj1024_spec_windows%s_mit%s.png", ARG2, ARG1)
-plot for [c in ckpt_types] 'pcs_plot_data.csv' using \
-    (strcol(COL_CKPT) eq c ? column(COL_THREADS) : 1/0): \
-    (strcol(COL_CKPT) eq c ? column(COL_TPUT) : 1/0): \
-    (strcol(COL_CKPT) eq c ? column(COL_TPUT_DELTA) : 1/0) \
-    with yerrorlines ls (c eq 'grid_ckpt' ? 1 : (c eq 'chunk_ckpt' ? 2 : 3)) title (c eq 'grid_ckpt' ? 'grid ckpt' : (c eq 'chunk_ckpt' ? 'chunk ckpt' : 'full ckpt'))
-unset output
-
-set title sprintf("PCS (MIT = %s, Speculative Window %s)", ARG1, ARG2)
-set xlabel "Threads"
-set ylabel "Rollbacks per Speculation Window"
-set output sprintf("plots/pcs/rollbacks_per_epoch_obj1024_spec_windows%s_m%s.png", ARG2, ARG1)
-
-plot for [c in ckpt_types] 'pcs_plot_data.csv' using \
-    (strcol(COL_CKPT) eq c ? column(COL_THREADS) : 1/0) : \
-    (strcol(COL_CKPT) eq c ? column(COL_RB_SPEC) : 1/0) : \
-    (strcol(COL_CKPT) eq c ? column(COL_RB_SPEC_DELTA) : 1/0) \
-    with yerrorlines \
-    ls (c eq 'grid_ckpt' ? 1 : (c eq 'chunk_ckpt' ? 2 : 3)) \
-    title (c eq 'grid_ckpt' ? 'grid ckpt' : (c eq 'chunk_ckpt' ? 'chunk ckpt' : 'full ckpt'))
+set output sprintf("plots/pcs/throughput_mit_%s_spec_window_%s_obj1024.png", ARG1, ARG2)
+plot for [i=1:words(ckpt_types)] 'pcs_plot_data.csv' using \
+    (strcol(COL_CKPT) eq word(ckpt_types,i) ? column(COL_THREADS) : 1/0): \
+    (strcol(COL_CKPT) eq word(ckpt_types,i) ? column(COL_TPUT) : 1/0): \
+    (strcol(COL_CKPT) eq word(ckpt_types,i) ? column(COL_TPUT_DELTA) : 1/0) \
+    with yerrorlines ls i title word(ckpt_types,i)
 
 unset output

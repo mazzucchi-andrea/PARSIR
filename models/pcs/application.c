@@ -1,3 +1,10 @@
+/*
+ * SPDX-FileCopyrightText: 2026 Andrea Mazzucchi <andrea.mazzucchi@tutamail.com>
+ * SPDX-FileCopyrightText: 2026 Francesco Quaglia <francesco.quaglia@uniroma2.it>
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -49,6 +56,9 @@ void ProcessEvent(unsigned int me, double now, int event_type, void *the_event_c
     uint32_t *s1, *s2;
     event_content_type *event_content;
     event_content_type new_event_content;
+
+    size = size; // suppress warning
+    ptr = ptr;   // suppress warning
 
     init_calls = INITIAL_CALLS;
 
