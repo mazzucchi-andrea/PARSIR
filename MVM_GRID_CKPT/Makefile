@@ -1,8 +1,3 @@
-# SPDX-FileCopyrightText: 2026 Andrea Mazzucchi <andrea.mazzucchi@tutamail.com>
-# SPDX-FileCopyrightText: 2026 Francesco Quaglia <francesco.quaglia@uniroma2.it>
-#
-# SPDX-License-Identifier: GPL-3.0-or-later
-
 #APPLICATION SPECIFIC STUFF
 #the below specify the directory where the user application is located, the name of the executable to be generated, the name of the object file of the program and the names of the target functions to instrument 
 #IMPORTANT: a Makefile in the APP dir is responsible for generating the .o file specified by APP_OBJ
@@ -50,7 +45,7 @@ ADDITIONAL_FLAGS = -O3 -DCKPT -DAPPLY_PATCHES -DVERBOSE
 ALLOCATOR_AREA_SIZE=0x200000UL
 MOD=8
 
-THE_VM = -DVM_NAME=\"MVM_GRID_CKPT\"
+THE_VM = -DVM_NAME=\"MVM_GRID_CKPT_SAVE_SET\"
 
 all: checks backup-files file-rewriting compile-and-link restore-files
 
@@ -105,4 +100,4 @@ file-rewriting:
 	export MVM_TEMP_FILE=$(TEMP)/__temp_file ; ./scripts/file-processor.sh $(APP) $(TARGET_MODULES)
 
 clean:
-	find . -name "*.o" -type f -delete ; rm -f $(EXECUTABLE) ; find $(TEMP) -type f -exec rm {} + ; rm -f $(USER_DEFINED)/$(USER_DEFINED_FILE) $(USER_DEFINED)/final-binary $(USER_DEFINED)/translate-to-binary
+	find . -name "*.o" -type f -delete ; rm -f $(EXECUTABLE) ; find $(TEMP) -type f -exec rm {} +

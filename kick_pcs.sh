@@ -1,9 +1,6 @@
 #!/bin/bash
 
-# SPDX-FileCopyrightText: 2026 Andrea Mazzucchi <andrea.mazzucchi@tutamail.com>
-# SPDX-FileCopyrightText: 2026 Francesco Quaglia <francesco.quaglia@uniroma2.it>
-#
-# SPDX-License-Identifier: GPL-3.0-or-later
+set -xeuo pipefail
 
 THREADS=($(nproc))
 
@@ -11,7 +8,7 @@ RUN=1
 WARMUP=10
 DURATION=60
 
-LOOKAHEAD=(0.25)
+LOOKAHEAD=(0.5)
 OBJECTS=(1024)
 MIT=(0.4)
 
@@ -45,7 +42,7 @@ run_series() {
     local args=("$@")
 
     echo "Compiling $target ${args[*]}"
-    make -C build "$target" BENCHMARK=1 "${args[@]}" WARMUP=$WARMUP DURATION=$DURATION >/dev/null \
+    make -C build "$target" BENCHMARK=1 "${args[@]}" WARMUP=$WARMUP DURATION=$DURATION DEBUG=1 >/dev/null \
         || die "make failed for target '$target' with args: ${args[*]}"
 
     local ckpt_type=${target#*_}
@@ -76,14 +73,18 @@ echo "CKPT_TYPE,THREADS,SPEC_WINDOW,OBJECTS,MIT,SPEC_WINDOWS,ROLLBACKS,TOTAL_EVE
 
 # --- Simulation runs ---
 for t in "${THREADS[@]}"; do
-    for l in "${LOOKAHEAD[@]}"; do
-        for o in "${OBJECTS[@]}"; do
-            for ta in "${MIT[@]}"; do
-                run_series pcs_grid_ckpt  pcs.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$ta
-                run_series pcs_chunk_ckpt pcs.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$ta
-                run_series pcs_full_ckpt  pcs.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$ta
-                run_series pcs_mmap_mv pcs.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$ta
-            done
-        done
-    done
+for l in "${LOOKAHEAD[@]}"; do
+for o in "${OBJECTS[@]}"; do
+for ta in "${MIT[@]}"; do
+    run_series pcs_grid_ckpt pcs.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$ta
+    run_series pcs_grid_ckpt_save pcs.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$ta
+    run_series pcs_chunk_ckpt pcs.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$ta
+    run_series pcs_full_ckpt pcs.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$ta
+    run_series pcs_mmap_mv pcs.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$ta
 done
+done
+done
+done
+
+cd build
+make clean

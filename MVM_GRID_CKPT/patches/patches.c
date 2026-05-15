@@ -1,10 +1,3 @@
-/*
- * SPDX-FileCopyrightText: 2026 Andrea Mazzucchi <andrea.mazzucchi@tutamail.com>
- * SPDX-FileCopyrightText: 2026 Francesco Quaglia <francesco.quaglia@uniroma2.it>
- *
- * SPDX-License-Identifier: GPL-3.0-or-later
- */
-
 #include <fcntl.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -80,15 +73,11 @@ char buffer[1024];
 // skipping the instrumentatn of this instruction
 
 void user_defined(instruction_record *actual_instruction, patch *actual_patch) {
-
-    int fd;
-    int ret;
-    int i;
+    int fd, ret;
 
     // here is stuff used for instrumenting applications in "PARSIR ubiquitous"
     // it replicates memory updates that are executed on malloc-ed/mmap-ed
     // memory areas at a given distance which is here set to 2^{21}
-    int offset = 0x200000;
     char *offset_string = "0x200000";
     char *aux;
 
@@ -129,7 +118,7 @@ void user_defined(instruction_record *actual_instruction, patch *actual_patch) {
         ret = system(buffer);
 
         // put the binary on a file
-        sprintf(buffer, "cd %s; ./provide_binary.sh %s > final-binary", user_defined_dir, user_defined_temp_obj_file);
+        sprintf(buffer, "cd %s; ./provide_binary %s > final-binary", user_defined_dir, user_defined_temp_obj_file);
         ret = system(buffer);
 
         sprintf(buffer, "%s/final-binary", user_defined_dir);
@@ -165,11 +154,14 @@ void user_defined(instruction_record *actual_instruction, patch *actual_patch) {
 
 int ckpt_patch(instruction_record *actual_instruction, patch *actual_patch) {
     int fd, ret;
-    uint8_t instructions[9] = {0x65, 0x48, 0x89, 0x0c, 0x25, 0x10, 0x00, 0x00, 0x00}; // mov %rcx, %gs:0x10
+    // save the regs and the eflags before using in instrumentation
+    uint8_t instructions[9] = {
+        0x65, 0x48, 0x89, 0x1c, 0x25, 0x08, 0x00, 0x00, 0x00 // mov %rbx, %gs:0x08
+    };
     memcpy(actual_patch->code, (void *)instructions, 9);
 
-    sprintf(buffer, "lea %s, %%rcx\n", actual_instruction->dest);
-    AUDIT printf("Load the store's address into rcx: %s", buffer);
+    sprintf(buffer, "lea %s, %%rbx\n", actual_instruction->dest);
+    AUDIT printf("Load the store's address into rbx: %s", buffer);
     fd = open(user_defined_temp_file, O_CREAT | O_TRUNC | O_RDWR, 0666);
     if (fd == -1) {
         printf("%s: error opening temp file %s\n", VM_NAME, user_defined_temp_file);
@@ -183,7 +175,7 @@ int ckpt_patch(instruction_record *actual_instruction, patch *actual_patch) {
     ret = system(buffer);
 
     // put the binary on a file
-    sprintf(buffer, "cd %s; ./provide_binary.sh %s > final-binary", user_defined_dir, user_defined_temp_obj_file);
+    sprintf(buffer, "cd %s; ./provide_binary %s > final-binary", user_defined_dir, user_defined_temp_obj_file);
     ret = system(buffer);
 
     sprintf(buffer, "%s/final-binary", user_defined_dir);

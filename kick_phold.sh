@@ -1,10 +1,6 @@
 #!/bin/bash
 
-# SPDX-FileCopyrightText: 2026 Andrea Mazzucchi <andrea.mazzucchi@tutamail.com>
-# SPDX-FileCopyrightText: 2026 Francesco Quaglia <francesco.quaglia@uniroma2.it>
-#
-# SPDX-License-Identifier: GPL-3.0-or-later
-
+set -xeuo pipefail
 
 THREADS=($(nproc))
 
@@ -12,10 +8,10 @@ RUN=1
 WARMUP=10
 DURATION=60
 
-LOOKAHEAD=(0.25)
+LOOKAHEAD=(0.5)
 OBJECTS=(1024)
 M=(1)
-P_SHIFT=(4)
+P_SHIFT=(6)
 
 SIM=./bin/PARSIR-simulator
 
@@ -83,6 +79,7 @@ for o in "${OBJECTS[@]}"; do
 for m in "${M[@]}"; do
 for p in "${P_SHIFT[@]}"; do
     run_series phold_grid_ckpt phold.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o M=$m P_SHIFT=$p
+    run_series phold_grid_ckpt_save phold.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o M=$m P_SHIFT=$p
     run_series phold_chunk_ckpt phold.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o M=$m P_SHIFT=$p
     run_series phold_full_ckpt phold.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o M=$m P_SHIFT=$p
     run_series phold_mmap_mv phold.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o M=$m P_SHIFT=$p
@@ -91,3 +88,6 @@ done
 done
 done
 done
+
+cd build
+make clean

@@ -101,7 +101,7 @@ void ProcessEvent(unsigned int me, double now, int event_type, void *event_conte
     uint32_t *s1, *s2;
     unsigned int dest;
     event_content = event_content;
-    int res, i;
+    int i;
 
     // just bypassing compile time indications on unused parameters
     ptr = ptr;
@@ -148,7 +148,7 @@ void ProcessEvent(unsigned int me, double now, int event_type, void *event_conte
     case NORMAL:
 
 #ifndef BENCHMARKING
-        res = (state->event_count++) % 1000;
+        int res = (state->event_count++) % 1000;
         if (!res) {
             printf("object %d - count of events is %d\n", me, state->event_count);
         }

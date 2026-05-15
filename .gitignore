@@ -65,4 +65,5 @@ bin/*
 
 MVM_CHUNK/temp/*
 MVM_GRID_CKPT/temp/*
-MVM_GRID_CKPT_BS/temp/*
+MVM_GRID_CKPT_SAVE/temp/*
+MVM_MMAP_MV/temp/*

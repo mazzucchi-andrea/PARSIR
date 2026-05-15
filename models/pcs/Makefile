@@ -5,9 +5,12 @@
 
 CC = gcc 
 CFLAGS = -c -Wall -Wextra -Wpedantic -I../../include/ -I./ -lm -Wimplicit-fallthrough
+GRID_CKPT_FLAGS = -pie -fpie -I../../MVM_GRID_CKPT/include -DSPECULATION
+GRID_CKPT_SAVE_FLAGS = -pie -fpie -I../../MVM_GRID_CKPT_SAVE/include -DSPECULATION
 CHUNK_CKPT_FLAGS = -pie -fpie -I../../MVM_CHUNK/include -DSPECULATION
 FULL_CKPT_FLAGS = -DSPECULATION
-GRID_CKPT_FLAGS = -pie -fpie -I../../MVM_GRID_CKPT/include -DSPECULATION
+MMAP_MV_FLAGS = -pie -fpie -I../../MVM_MMAP_MV/include -DSPECULATION -DMMAP_MV
+
 TARGET1 = intermediate-pcs1.o 
 TARGET2 =  
 TARGET3 = intermediate-pcs3.o 
@@ -32,6 +35,16 @@ all:
 	$(CC) $(SRCS3) $(CFLAGS) -o $(TARGET3)
 	ld -r $(TARGET1) $(TARGET2) $(TARGET3) --wrap=malloc --wrap=free -o pcs.o
 
+grid_ckpt:
+	$(CC) $(SRCS1) $(CFLAGS) $(GRID_CKPT_FLAGS) $(RUN_FLAGS) -o $(TARGET1)
+	$(CC) $(SRCS3) $(CFLAGS) $(GRID_CKPT_FLAGS) $(RUN_FLAGS) -o $(TARGET3)
+	ld -r $(TARGET1) $(TARGET2) $(TARGET3) --wrap=malloc --wrap=free -o pcs.o
+
+grid_ckpt_save:
+	$(CC) $(SRCS1) $(CFLAGS) $(GRID_CKPT_SAVE_FLAGS) $(RUN_FLAGS) -o $(TARGET1)
+	$(CC) $(SRCS3) $(CFLAGS) $(GRID_CKPT_SAVE_FLAGS) $(RUN_FLAGS) -o $(TARGET3)
+	ld -r $(TARGET1) $(TARGET2) $(TARGET3) --wrap=malloc --wrap=free -o pcs.o
+
 chunk_ckpt:
 	$(CC) $(SRCS1) $(CFLAGS) $(CHUNK_CKPT_FLAGS) $(RUN_FLAGS) -o $(TARGET1)
 	$(CC) $(SRCS3) $(CFLAGS) $(CHUNK_CKPT_FLAGS) $(RUN_FLAGS) -o $(TARGET3)
@@ -42,9 +55,9 @@ full_ckpt:
 	$(CC) $(SRCS3) $(CFLAGS) $(FULL_CKPT_FLAGS) $(RUN_FLAGS) -o $(TARGET3)
 	ld -r $(TARGET1) $(TARGET2) $(TARGET3) --wrap=malloc --wrap=free -o pcs.o
 
-grid_ckpt:
-	$(CC) $(SRCS1) $(CFLAGS) $(GRID_CKPT_FLAGS) $(RUN_FLAGS) -o $(TARGET1)
-	$(CC) $(SRCS3) $(CFLAGS) $(GRID_CKPT_FLAGS) $(RUN_FLAGS) -o $(TARGET3)
+mmap_mv:
+	$(CC) $(SRCS1) $(CFLAGS) $(MMAP_MV_FLAGS) $(RUN_FLAGS) -o $(TARGET1)
+	$(CC) $(SRCS3) $(CFLAGS) $(MMAP_MV_FLAGS) $(RUN_FLAGS) -o $(TARGET3)
 	ld -r $(TARGET1) $(TARGET2) $(TARGET3) --wrap=malloc --wrap=free -o pcs.o
 
 clean:

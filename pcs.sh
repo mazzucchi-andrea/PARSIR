@@ -73,8 +73,10 @@ for o in "${OBJECTS[@]}"; do
 for ta in "${MIT[@]}"; do
 
     run_series pcs_grid_ckpt pcs.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$ta
+    run_series pcs_grid_ckpt_save pcs.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$ta
     run_series pcs_chunk_ckpt pcs.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$ta
     run_series pcs_full_ckpt pcs.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$ta
+    run_series pcs_mmap_mv pcs.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$ta
 
 done
 done

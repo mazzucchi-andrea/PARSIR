@@ -1,10 +1,3 @@
-/*
- * SPDX-FileCopyrightText: 2026 Andrea Mazzucchi <andrea.mazzucchi@tutamail.com>
- * SPDX-FileCopyrightText: 2026 Francesco Quaglia <francesco.quaglia@uniroma2.it>
- *
- * SPDX-License-Identifier: GPL-3.0-or-later
- */
-
 .global the_patch_assembly;
 .global ckpt_assembly;
 .global dummy_ckpt;
@@ -52,14 +45,20 @@ the_patch_assembly:
 	lea 0x1000(%rsp),%rsp
 
 // CKPT ASM CODE
-#if MOD != 8 && MOD != 16 && MOD != 32 && MOD != 64
-#error "Valid MODs are 64, 128, 256, and 512."
-#endif
-
 #define LOG2_8 3
 #define LOG2_16 4
 #define LOG2_32 5
 #define LOG2_64 6
+#define LOG2_128 7
+#define LOG2_256 8
+#define LOG2_512 9
+#define LOG2_1024 10
+#define LOG2_2048 11
+#define LOG2_4096 12
+#define LOG2_8192 13
+#define LOG2_16384 14
+#define LOG2_32768 15
+#define LOG2_65536 16
 
 // Helper macro to concatenate and evaluate
 #define LOG2_EVAL(x) LOG2_##x
@@ -67,137 +66,67 @@ the_patch_assembly:
 
 ckpt_assembly:
         mov %rax, %gs:0x00
-        mov %rbx, %gs:0x08
+        mov %cl, %gs:0x10
         lahf
         mov %ah, %gs:0x18
-#if MOD == 16
-        movdqa %xmm1, %gs:0x20
-#elif MOD == 32
-        vmovdqa %ymm1, %gs:0x20
-#elif MOD == 64
-        vmovdqa64 %zmm1, %gs:0x40
+ #if ALLOCATOR_AREA_SIZE <= 0xFFFFFFFF
+        mov %ebx, %eax
+#else
+        mov %rbx, %rax
 #endif
-        mov %rcx, %rax
-        and $(~(ALLOCATOR_AREA_SIZE - 1)), %rcx
-        test $(MOD - 1), %al
-        jz aligned
-        and $(ALLOCATOR_AREA_SIZE - MOD),%rax
-#if MOD == 16
-        movdqa (%rcx, %rax,), %xmm1
-#elif MOD == 32
-        vmovdqa (%rcx, %rax,), %ymm1
-#elif MOD == 64
-        vmovdqa64 (%rcx, %rax,), %zmm1
+        and $(~(ALLOCATOR_AREA_SIZE - 1)), %rbx
+#if MOD <= 0x100
+        test $(MOD - 1),%al
+#elif MOD <= 0x10000
+        test $(MOD - 1),%ax
+#elif MOD <= 0x100000000ULL
+        test $(MOD - 1),%eax
+#else
+        test $(MOD - 1),%rax
 #endif
+        jz aligned      
+        and $(ALLOCATOR_AREA_SIZE - MOD),%rax      
 #if ALLOCATOR_AREA_SIZE <= 0xFFFFFFFF
         shr $(LOG2(MOD)), %eax
 #else
         shr $(LOG2(MOD)), %rax
 #endif
-        mov %rax, %rbx
-        and $15, %rbx
+        mov %al, %cl
+        and $7, %cl
 #if ALLOCATOR_AREA_SIZE <= 0xFFFFFFFF
-        shr $4, %eax
+        shr $3, %eax
 #else
-        shr $4, %rax
+        shr $3, %rax
 #endif
-        bts %bx, (2 *ALLOCATOR_AREA_SIZE)(%rcx, %rax, 2)
-        jc next
-#if ALLOCATOR_AREA_SIZE <= 0xFFFFFFFF
-        shl $4, %eax
-        add %ebx, %eax
-        shl $(LOG2(MOD)), %eax
-#else
-        shl $4, %rax
-        add %rbx, %rax
-        shl $(LOG2(MOD)), %rax
-#endif
-#if MOD == 8
-        mov (%rcx, %rax,), %rbx
-        mov %rbx, ALLOCATOR_AREA_SIZE(%rcx, %rax,)
-#elif MOD == 16
-        movdqa %xmm1, ALLOCATOR_AREA_SIZE(%rcx, %rax,)
-#elif MOD == 32
-        vmovdqa %ymm1, ALLOCATOR_AREA_SIZE(%rcx, %rax,)
-#elif MOD == 64
-        vmovdqa64 %zmm1, ALLOCATOR_AREA_SIZE(%rcx, %rax,)
-#endif
-        jmp check_last
-next:
-#if ALLOCATOR_AREA_SIZE <= 0xFFFFFFFF
-        shl $4, %eax
-        add %ebx, %eax
-        shl $(LOG2(MOD)), %eax
-#else
-        shl $4, %rax
-        add %rbx, %rax
-        shl $(LOG2(MOD)), %rax
-#endif
-check_last:
-#if ALLOCATOR_AREA_SIZE <= 0xFFFFFFFF
-        cmp $(ALLOCATOR_AREA_SIZE - 8), %eax
-        je end_checkpoint
-        add $MOD, %eax
-#else
-        cmp $(ALLOCATOR_AREA_SIZE - ), %rax
-        je end_checkpoint
-        add $MOD, %rax
-#endif
+        add %rax, %rbx
+        mov $3, %ax
+        shl %cl, %ax
+        or %ax, (2 * ALLOCATOR_AREA_SIZE)(%rbx)
+        jmp end_checkpoint
 aligned:
         and $(ALLOCATOR_AREA_SIZE - 1), %rax
-#if MOD == 16
-        movdqa (%rcx, %rax,), %xmm1
-#elif MOD == 32
-        vmovdqa (%rcx, %rax,), %ymm1
-#elif MOD == 64
-        vmovdqa64 (%rcx, %rax,), %zmm1
-#endif
 #if ALLOCATOR_AREA_SIZE <= 0xFFFFFFFF
         shr $(LOG2(MOD)), %eax
 #else
         shr $(LOG2(MOD)), %rax
 #endif
-        mov %rax, %rbx
-        and $15, %rbx
+        mov %al, %cl
+        and $7, %cl
 #if ALLOCATOR_AREA_SIZE <= 0xFFFFFFFF
-        shr $4, %eax
+        shr $3, %eax
 #else
-        shr $4, %rax
+        shr $3, %rax
 #endif
-        bts %bx, (2 *ALLOCATOR_AREA_SIZE)(%rcx, %rax, 2)
-        jc end_checkpoint
-#if ALLOCATOR_AREA_SIZE <= 0xFFFFFFFF
-        shl $4, %eax
-        add %ebx, %eax
-        shl $(LOG2(MOD)), %eax
-#else
-        shl $4, %rax
-        add %rbx, %rax
-        shl $(LOG2(MOD)), %rax
-#endif
-#if MOD == 8
-        mov (%rcx, %rax,), %rbx
-        mov %rbx, ALLOCATOR_AREA_SIZE(%rcx, %rax,)
-#elif MOD == 16
-        movdqa %xmm1, ALLOCATOR_AREA_SIZE(%rcx, %rax,)
-#elif MOD == 32
-        vmovdqa %ymm1, ALLOCATOR_AREA_SIZE(%rcx, %rax,)
-#elif MOD == 64
-        vmovdqa64 %zmm1, ALLOCATOR_AREA_SIZE(%rcx, %rax,)
-#endif
+        add %rax, %rbx
+        mov $1, %al
+        shl %cl, %al
+        or %al, (2 * ALLOCATOR_AREA_SIZE)(%rbx)
 end_checkpoint:
-#if MOD == 16
-        movdqa %gs:0x20, %xmm1
-#elif MOD == 32
-        vmovdqa %gs:0x20, %ymm1
-#elif MOD == 64
-        vmovdqa64 %gs:0x40, %zmm1
-#endif
-        mov %gs:0x18, %ah
+        mov %gs:14, %ah
+        mov %gs:0x10, %cl
         sahf
-        mov %gs:0x00, %rax
         mov %gs:0x08, %rbx
-        mov %gs:0x10, %rcx
+        mov %gs:0x00, %rax
 
 dummy_ckpt:
         nop

@@ -1,1 +1,1 @@
-lea (%rax), %rcx
+lea (%rax), %rbx

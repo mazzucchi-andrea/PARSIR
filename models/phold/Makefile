@@ -6,6 +6,7 @@
 CC = gcc 
 CFLAGS = -c -Wall -Wextra -Wpedantic -I../../include/ -I./
 GRID_CKPT_FLAGS = -pie -fpie -I../../MVM_GRID_CKPT/include -DSPECULATION
+GRID_CKPT_SAVE_FLAGS = -pie -fpie -I../../MVM_GRID_CKPT_SAVE/include -DSPECULATION
 CHUNK_CKPT_FLAGS = -pie -fpie -I../../MVM_CHUNK/include -DSPECULATION
 FULL_CKPT_FLAGS = -DSPECULATION
 MMAP_MV_FLAGS = -pie -fpie -I../../MVM_MMAP_MV/include -DSPECULATION -DMMAP_MV
@@ -30,6 +31,10 @@ all:
 
 grid_ckpt:
 	$(CC) $(SRCS) $(CFLAGS) $(GRID_CKPT_FLAGS) $(RUN_FLAGS) -o $(TARGET) 
+	ld -r $(TARGET) --wrap=malloc --wrap=free -o phold.o
+
+grid_ckpt_save:
+	$(CC) $(SRCS) $(CFLAGS) $(GRID_CKPT_SAVE_FLAGS) $(RUN_FLAGS) -o $(TARGET) 
 	ld -r $(TARGET) --wrap=malloc --wrap=free -o phold.o
 
 chunk_ckpt:
