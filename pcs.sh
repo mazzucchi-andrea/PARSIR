@@ -5,6 +5,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+#set -xeuo pipefail
 set -euo pipefail
 
 LOOKAHEAD=(0.25 0.5 1.0)
@@ -70,13 +71,12 @@ echo "CKPT_TYPE,THREADS,SPEC_WINDOW,OBJECTS,MIT,SPEC_WINDOWS,ROLLBACKS,TOTAL_EVE
 for t in "${THREADS[@]}"; do
 for l in "${LOOKAHEAD[@]}"; do
 for o in "${OBJECTS[@]}"; do
-for ta in "${MIT[@]}"; do
-
-    run_series pcs_grid_ckpt pcs.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$ta
-    run_series pcs_grid_ckpt_save pcs.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$ta
-    run_series pcs_chunk_ckpt pcs.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$ta
-    run_series pcs_full_ckpt pcs.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$ta
-    run_series pcs_mmap_mv pcs.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$ta
+for mit in "${MIT[@]}"; do
+    run_series pcs_grid_ckpt pcs.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$mit
+    #run_series pcs_grid_ckpt_save pcs.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$mit
+    run_series pcs_chunk_ckpt pcs.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$mit
+    run_series pcs_full_ckpt pcs.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$mit
+    run_series pcs_mmap_mv pcs.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$mit
 
 done
 done

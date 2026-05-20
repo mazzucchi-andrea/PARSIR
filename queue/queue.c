@@ -441,7 +441,7 @@ redo:
 #endif
         speculation[target].already_taken = TAKEN;
         rollback_time = 0.0;
-        if (speculation[target].standing_rollback) {
+        if (speculation[target].standing_rollback == 1) {
             rollback_time = speculation[target].causality_violation_time;
             speculation[target].standing_rollback = 0;
             speculation[target].current_time = current_min_limit;
@@ -957,7 +957,7 @@ void queue_elem_annihilation(int source, queue_elem *the_elem) {
     }
     object_lock(object);
     if (speculation[object].current_time >= cancellation_time) {
-        if (speculation[object].standing_rollback) {
+        if (speculation[object].standing_rollback == 1) {
             if (speculation[object].causality_violation_time > cancellation_time) {
                 speculation[object].causality_violation_time = cancellation_time;
             }

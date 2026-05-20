@@ -63,20 +63,20 @@ if [[ "$MODE" == "phold" || "$MODE" == "both" ]]; then
     done
     rm -f get_phold_data
     cd plots/phold
-    montage \
-        throughput_m_1_spec_window_0.25_obj1024.png \
-        throughput_m_1_spec_window_0.5_obj1024.png \
-        throughput_m_1_spec_window_1.0_obj1024.png \
-        rollbacks_m_1_spec_window_0.25_obj1024.png \
-        rollbacks_m_1_spec_window_0.5_obj1024.png \
-        rollbacks_m_1_spec_window_1.0_obj1024.png \
-        throughput_m_100_spec_window_0.25_obj1024.png \
-        throughput_m_100_spec_window_0.5_obj1024.png \
-        throughput_m_100_spec_window_1.0_obj1024.png \
-        rollbacks_m_100_spec_window_0.25_obj1024.png \
-        rollbacks_m_100_spec_window_0.5_obj1024.png \
-        rollbacks_m_100_spec_window_1.0_obj1024.png \
-        -tile 3x4 -geometry +2+2 fig6.png
+    for o in "${OBJECTS[@]}"; do
+    for m in "${M[@]}"; do
+    for p in "${P_SHIFT[@]}"; do
+        montage \
+            throughput_spec_window_0.25_obj_${o}_m_${m}_p_shift_${p}.png \
+            throughput_spec_window_0.5_obj_${o}_m_${m}_p_shift_${p}.png \
+            throughput_spec_window_1.0_obj_${o}_m_${m}_p_shift_${p}.png \
+            rollbacks_spec_window_0.25_obj_${o}_m_${m}_p_shift_${p}.png \
+            rollbacks_spec_window_0.5_obj_${o}_m_${m}_p_shift_${p}.png \
+            rollbacks_spec_window_1.0_obj_${o}_m_${m}_p_shift_${p}.png \
+            -tile 3x2 -geometry +2+2 obj_${o}_m_${m}_p_shift_${p}.png
+    done
+    done
+    done
     cd ../..
     echo "PHOLD plots generated successfully!"
 fi

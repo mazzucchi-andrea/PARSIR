@@ -1,8 +1,13 @@
 #!/bin/bash
 
-set -xeuo pipefail
+set -euo pipefail
 
-THREADS=($(nproc))
+# Detect total CPU threads and compute 50%
+TOTAL_THREADS=$(nproc)
+T50=$(( TOTAL_THREADS / 2 ))
+# Ensure minimums of 1
+[[ $T50 -lt 1 ]] && T50=1
+THREADS=($T50)
 
 RUN=1
 WARMUP=10

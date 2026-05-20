@@ -1,8 +1,14 @@
 #!/bin/bash
 
-set -xeuo pipefail
+#set -xeuo pipefail
+set -euo pipefail
 
-THREADS=($(nproc))
+# Detect total CPU threads and compute 50%
+TOTAL_THREADS=$(nproc)
+T50=$(( TOTAL_THREADS / 2 ))
+# Ensure minimums of 1
+[[ $T50 -lt 1 ]] && T50=1
+THREADS=($T50)
 
 RUN=1
 WARMUP=10
@@ -72,15 +78,15 @@ echo "CKPT_TYPE,THREADS,SPEC_WINDOW,OBJECTS,MIT,SPEC_WINDOWS,ROLLBACKS,TOTAL_EVE
     || die "Failed to create pcs.csv"
 
 # --- Simulation runs ---
-for t in "${THREADS[@]}"; do
-for l in "${LOOKAHEAD[@]}"; do
 for o in "${OBJECTS[@]}"; do
-for ta in "${MIT[@]}"; do
-    run_series pcs_grid_ckpt pcs.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$ta
-    run_series pcs_grid_ckpt_save pcs.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$ta
-    run_series pcs_chunk_ckpt pcs.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$ta
-    run_series pcs_full_ckpt pcs.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$ta
-    run_series pcs_mmap_mv pcs.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$ta
+for mit in "${MIT[@]}"; do
+for l in "${LOOKAHEAD[@]}"; do
+for t in "${THREADS[@]}"; do
+    run_series pcs_grid_ckpt pcs.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$mit
+    run_series pcs_grid_ckpt_save pcs.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$mit
+    run_series pcs_chunk_ckpt pcs.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$mit
+    run_series pcs_full_ckpt pcs.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$mit
+    run_series pcs_mmap_mv pcs.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MIT=$mit
 done
 done
 done

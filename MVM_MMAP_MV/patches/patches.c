@@ -11,6 +11,34 @@
 #include "memory.h"
 #include "run.h"
 
+#ifdef DEBUG
+uint8_t *shadow_area[OBJECTS] = {NULL};
+#endif
+
+typedef struct _seeds {
+    uint32_t seed1; // seed passed in input to randomization functions
+    uint32_t seed2; // seed passed in input to randomization functions
+} seeds;
+
+extern uint32_t *seeds1[OBJECTS];
+extern uint32_t *seeds2[OBJECTS];
+
+seeds object_seeds[OBJECTS];
+
+void save_seeds(int object) {
+    object_seeds[object].seed1 = *seeds1[object];
+    AUDIT printf("object %d - saving seed1 %d\n", object, object_seeds[object].seed1);
+    object_seeds[object].seed2 = *seeds2[object];
+    AUDIT printf("object %d - saving seed2 %d\n", object, object_seeds[object].seed2);
+}
+
+void restore_seeds(int object) {
+    *seeds1[object] = object_seeds[object].seed1;
+    AUDIT printf("object %d - restore seed1 %d\n", object, *seeds1[object]);
+    *seeds2[object] = object_seeds[object].seed2;
+    AUDIT printf("object %d - restore seed2 %d\n", object, *seeds2[object]);
+}
+
 /* MVMM usa sempre due slot per pagina e alterna tra i due durante il COW. */
 enum { MVMM_SLOT_0 = 0u, MVMM_SLOT_1 = 1u, MVMM_NUM_SLOTS = 2u };
 
@@ -822,8 +850,23 @@ static void mvmm_rollback_region(mvmm_region *r, uint64_t target_ts) {
 
 /* Hook PARSIR: chiude il checkpoint dell'object e avanza l'epoch globale quando tutti hanno flushato. */
 void set_ckpt(int object) {
+    save_seeds(object);
     set_allocator_ckpt(object);
-
+#ifdef DEBUG
+    uint8_t *area = (uint8_t *)(8 * (1024 * MAX_MEMORY) + object * (2 * MAX_MEMORY * MEM_NODES));
+    if (shadow_area[object] == NULL) {
+        shadow_area[object] = mmap(NULL, MAX_MEMORY, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, 0, 0);
+        if (shadow_area[object] == MAP_FAILED) {
+            printf("object %d - shadow_area mmap failed\n", object);
+            exit(EXIT_FAILURE);
+        }
+    }
+    memcpy(shadow_area[object], area, MAX_MEMORY);
+    if (memcmp(shadow_area[object], area, MAX_MEMORY)) {
+        printf("object %d - set ckpt failed\n", object);
+        exit(EXIT_FAILURE);
+    }
+#endif
     if (__sync_add_and_fetch(&g_ckpt_counter, 1) == OBJECTS) {
         __atomic_store_n(&g_ckpt_counter, 0, __ATOMIC_RELEASE);
         __sync_add_and_fetch(&g_epoch_round, 1);
@@ -837,4 +880,13 @@ void restore_object(int object) {
     uint64_t target_ts = (ts_now >= 1) ? (ts_now - 1) : 0;
     restore_allocator(object);
     mvmm_rollback_region(r, target_ts);
+    restore_seeds(object);
+#ifdef DEBUG
+    uint8_t *area = (uint8_t *)(8 * (1024 * MAX_MEMORY) + object * (2 * MAX_MEMORY * MEM_NODES));
+    if (memcmp(shadow_area[object], area, MAX_MEMORY)) {
+        printf("ERROR: object %d restore failed\n", object);
+        fflush(stdout);
+        exit(EXIT_FAILURE);
+    }
+#endif
 }

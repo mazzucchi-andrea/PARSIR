@@ -4,18 +4,17 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 MAX_MEMORY = 0x200000UL
+
 MOD = 8
-GRID_CKPT_FLAGS = -pie -fPIE -fstack-protector-all -DGRID_CKPT -DMOD=$(MOD) -DSPECULATION
+GRID_CKPT_FLAGS = -pie -fPIE -fstack-protector-all -DSPECULATION -DGRID_CKPT -DMOD=$(MOD) -DSPECULATION
 
 CHUNK_CKPT_FLAGS = -pie -fPIE -fstack-protector-all -DSPECULATION -DCHUNK_BASED -DCHUNK_BASED_SAVE
 
 CHUNK_CKPT_FULL_FLAGS = -DSPECULATION -DCHUNK_BASED -DFULL_CKPT
 
-MMAP_MV_RT_FLAGS = -pie -fPIE -fstack-protector-all -DSPECULATION -DMMAP_MV
-MMAP_MV_MODEL_FLAGS = -pie -fpie -I../MVM_MMAP_MV/include -DSPECULATION -DMMAP_MV
-
 MMAP_MV_PAGE_SIZE ?= 4096
 MMAP_MV_BACKEND_FLAGS = -DMVMM_PAGE_SIZE=$(MMAP_MV_PAGE_SIZE)
+MMAP_MV_RT_FLAGS = -pie -fPIE -fstack-protector-all -DSPECULATION -DMMAP_MV
 
 PHOLD_TARGET_FUNCTIONS = \""<add1>:","<dell1>:","<add2>:","<dell2>:","<read1>:","<read2>:","<update1>:","<update2>:","<ProcessEvent>:"\"
 PHOLD_TARGET_MODULES = ../models/phold/application.c

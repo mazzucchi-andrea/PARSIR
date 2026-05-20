@@ -61,6 +61,8 @@ dkms.conf
 # python venv
 *.venv
 
+clang-format-all.sh
+
 bin/*
 
 MVM_CHUNK/temp/*
