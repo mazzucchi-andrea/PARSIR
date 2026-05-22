@@ -62,22 +62,6 @@ if [[ "$MODE" == "phold" || "$MODE" == "both" ]]; then
         done
     done
     rm -f get_phold_data
-    cd plots/phold
-    for o in "${OBJECTS[@]}"; do
-    for m in "${M[@]}"; do
-    for p in "${P_SHIFT[@]}"; do
-        montage \
-            throughput_spec_window_0.25_obj_${o}_m_${m}_p_shift_${p}.png \
-            throughput_spec_window_0.5_obj_${o}_m_${m}_p_shift_${p}.png \
-            throughput_spec_window_1.0_obj_${o}_m_${m}_p_shift_${p}.png \
-            rollbacks_spec_window_0.25_obj_${o}_m_${m}_p_shift_${p}.png \
-            rollbacks_spec_window_0.5_obj_${o}_m_${m}_p_shift_${p}.png \
-            rollbacks_spec_window_1.0_obj_${o}_m_${m}_p_shift_${p}.png \
-            -tile 3x2 -geometry +2+2 obj_${o}_m_${m}_p_shift_${p}.png
-    done
-    done
-    done
-    cd ../..
     echo "PHOLD plots generated successfully!"
 fi
  

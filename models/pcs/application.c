@@ -314,7 +314,7 @@ void ProcessEvent(unsigned int me, double now, int event_type, void *the_event_c
         break;
 
     default:
-        printf("PCS: Unknown event type! (me = %d - event type = %d)\n", me, event_type);
+        fprintf(stderr, "PCS: Unknown event type! (me = %d - event type = %d)\n", me, event_type);
         abort();
     }
 

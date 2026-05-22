@@ -110,4 +110,4 @@ file-rewriting:
 	export MVM_TEMP_FILE=$(TEMP)/__temp_file ; ./scripts/file-processor.sh $(APP) $(TARGET_MODULES)
 
 clean:
-	find . -name "*.o" -type f -delete ; rm -f $(EXECUTABLE) ; find $(TEMP) -type f -exec rm {} +
+	find . -name "*.o" -type f -delete ; rm -f $(EXECUTABLE) ; find $(TEMP) -type f -exec rm {} + ; rm -f $(USER_DEFINED)/$(USER_DEFINED_FILE) $(USER_DEFINED)/final-binary $(USER_DEFINED)/translate-to-binary

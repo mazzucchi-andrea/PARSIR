@@ -66,17 +66,18 @@ void mean_ci_95(double *samples, int n, double *mean, double *ci) {
 }
 
 static void usage(const char *prog) {
-    printf("Usage: %s [options]\n"
-           "  -r <run>      Number of runs         (default: %d)\n"
-           "  -d <duration> Run Duration           (default: %d)\n"
-           "  -t <threads>  Number of threads      (default: %d)\n"
-           "  -s <spec>     Speculation window     (default: %.2f)\n"
-           "  -o <objects>  Number of objects      (default: %d)\n"
-           "  -m <m>        M value                (default: %d)\n"
-           "  -p <p>        shift value for P value(default: %d)\n"
-           "  -c <0|1>      Use events(0) or committed(1) for throughput "
-           "(default: %d)\n",
-           prog, RUN, DURATION, THREADS, (double)SPEC, OBJECTS, M, P_SHIFT, COMMITTED);
+    fprintf(stderr,
+            "Usage: %s [options]\n"
+            "  -r <run>      Number of runs         (default: %d)\n"
+            "  -d <duration> Run Duration           (default: %d)\n"
+            "  -t <threads>  Number of threads      (default: %d)\n"
+            "  -s <spec>     Speculation window     (default: %.2f)\n"
+            "  -o <objects>  Number of objects      (default: %d)\n"
+            "  -m <m>        M value                (default: %d)\n"
+            "  -p <p>        shift value for P value(default: %d)\n"
+            "  -c <0|1>      Use events(0) or committed(1) for throughput "
+            "(default: %d)\n",
+            prog, RUN, DURATION, THREADS, (double)SPEC, OBJECTS, M, P_SHIFT, COMMITTED);
 }
 
 int main(int argc, char *argv[]) {
@@ -107,7 +108,7 @@ int main(int argc, char *argv[]) {
         } else if (strcmp(argv[i], "-p") == 0 && i + 1 < argc) {
             p_shift = atoi(argv[++i]);
         } else {
-            printf("Unknown or incomplete argument: %s\n", argv[i]);
+            fprintf(stderr, "Unknown or incomplete argument: %s\n", argv[i]);
             usage(argv[0]);
             return 1;
         }
@@ -125,14 +126,14 @@ int main(int argc, char *argv[]) {
     double *throughputs = malloc(run * sizeof(double));
     double *rb_spec_w = malloc(run * sizeof(double));
     if (!throughputs || !rb_spec_w) {
-        printf("Memory allocation failed\n");
+        fprintf(stderr, "Memory allocation failed\n");
         return 1;
     }
 
     FILE *input_file = fopen("phold.csv", "r");
     FILE *output_file = fopen("phold_plot_data.csv", "a");
     if (!input_file || !output_file) {
-        printf("Failed to open file(s)\n");
+        fprintf(stderr, "Failed to open file(s)\n");
         return 1;
     }
 
@@ -152,7 +153,7 @@ int main(int argc, char *argv[]) {
                    &epochs, &rollbacks, &events, &committed, &filtered);
 
             if (strcmp(ckpt_type, ckpt_types[i]) || t != threads || spec_window != spec || obj != objects ||
-                m_value != m || p_value != p_shift) {
+                m_value != m) {
                 continue;
             }
 
@@ -164,7 +165,7 @@ int main(int argc, char *argv[]) {
         }
 
         if (count < run) {
-            printf("Warning: only %d/%d runs found for %s\n", count, run, ckpt_types[i]);
+            fprintf(stderr, "Warning: only %d/%d runs found for %s\n", count, run, ckpt_types[i]);
         }
 
         double throughput_mean, throughput_ci, rb_spec_w_mean, rb_spec_w_ci;

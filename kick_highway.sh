@@ -15,8 +15,6 @@ DURATION=60
 
 LOOKAHEAD=(0.5)
 OBJECTS=(1024)
-M=(1)
-P_SHIFT=(6)
 
 SIM=./bin/PARSIR-simulator
 
@@ -53,12 +51,12 @@ run_series() {
 
 	echo "Compiling $target ${args[*]}"
 	make -C build "$target" "${args[@]}" WARMUP=$WARMUP DURATION=$DURATION BENCHMARK=1 DEBUG=1 >/dev/null ||
-		die "make failed for target '$target' with args: ${args[*]} BENCHMARK=1 DEBUG=1"
+		die "make failed for target '$target' with args: ${args[*]} WARMUP=$WARMUP DURATION=$DURATION BENCHMARK=1 DEBUG=1"
 
 	local ckpt_type=${target#*_}
 
 	local filtered_args=()
-	if [[ "$target" == "phold_mmap_mv" ]]; then
+	if [[ "$target" == "highway_mmap_mv" ]]; then
 		for arg in "${args[@]}"; do
 			if [[ "$arg" == MMAP_MV_PAGE_SIZE=* ]]; then
 				local page_size="${arg#*=}"
@@ -93,23 +91,19 @@ run_series() {
 }
 
 # --- CSV header ---
-echo "CKPT_TYPE,THREADS,SPEC_WINDOW,OBJECTS,M,P_SHIFT,SPEC_WINDOWS,ROLLBACKS,TOTAL_EVENTS,COMMITTED_EVENTS,FILTERED_EVENTS" >phold.csv ||
-	die "Failed to create phold.csv"
+echo "CKPT_TYPE,THREADS,SPEC_WINDOW,OBJECTS,SPEC_WINDOWS,ROLLBACKS,TOTAL_EVENTS,COMMITTED_EVENTS,FILTERED_EVENTS" >highway.csv ||
+	die "Failed to create highway.csv"
 
 # --- Simulation runs ---
 for t in "${THREADS[@]}"; do
 	for l in "${LOOKAHEAD[@]}"; do
 		for o in "${OBJECTS[@]}"; do
-			for m in "${M[@]}"; do
-				for p in "${P_SHIFT[@]}"; do
-					run_series phold_grid_ckpt phold.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o M=$m P_SHIFT=$p
-					run_series phold_grid_ckpt_save phold.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o M=$m P_SHIFT=$p
-					run_series phold_chunk_ckpt phold.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o M=$m P_SHIFT=$p
-					run_series phold_full_ckpt phold.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o M=$m P_SHIFT=$p
-					run_series phold_mmap_mv phold.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o M=$m P_SHIFT=$p MMAP_MV_PAGE_SIZE=256
-					run_series phold_mmap_mv phold.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o M=$m P_SHIFT=$p MMAP_MV_PAGE_SIZE=4096
-				done
-			done
+			run_series highway_grid_ckpt highway.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o
+			run_series highway_grid_ckpt_save highway.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o
+			run_series highway_chunk_ckpt highway.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o
+			run_series highway_full_ckpt highway.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o
+			run_series highway_mmap_mv highway.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MMAP_MV_PAGE_SIZE=256
+			run_series highway_mmap_mv highway.csv THREADS=$t LOOKAHEAD=$l OBJECTS=$o MMAP_MV_PAGE_SIZE=4096
 		done
 	done
 done

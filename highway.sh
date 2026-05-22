@@ -8,9 +8,9 @@
 set -euo pipefail
 
 # Configuration
-TARGETS=(phold_grid_ckpt phold_chunk_ckpt phold_full_ckpt phold_mmap_mv) # phold_grid_ckpt_save
+TARGETS=(highway_grid_ckpt highway_chunk_ckpt highway_full_ckpt highway_mmap_mv) # highway_grid_ckpt_save
 
-SPEC_WINDOW=(0.25 0.5 1.0)
+SPEC_WINDOW=(0.5 1.0)
 
 # Detect total CPU threads and compute 25%, 50%, 100%
 TOTAL_THREADS=$(nproc)
@@ -19,22 +19,21 @@ T50=$((TOTAL_THREADS / 2))
 # Ensure minimums of 1
 [[ $T25 -lt 1 ]] && T25=1
 [[ $T50 -lt 1 ]] && T50=1
-THREADS=($T25 $T50 $TOTAL_THREADS)
+THREADS=($TOTAL_THREADS)
 
 RUN=5
 WARMUP=10
 DURATION=60
 
-OBJECTS=(128 1024)
-M=(1 10 100)
-P_SHIFT=(4 5 6 7 8)
+OBJECTS=(1024)
+MMAP_MV_PAGE_SIZE=(256 4096)
 
 SIM=./bin/PARSIR-simulator
 
 RUN_ID=0
 
 # Output files
-CSV_FILE="phold.csv"
+CSV_FILE="highway.csv"
 LOG_FILE="benchmark.log"
 PROGRESS_FILE=".benchmark_progress"
 
@@ -109,7 +108,7 @@ format_params() {
 
 # Calculate total number of experiments
 calculate_total_experiments() {
-	echo $((${#OBJECTS[@]} * ${#M[@]} * ${#P_SHIFT[@]} * ${#SPEC_WINDOW[@]} * ${#THREADS[@]} * ${#TARGETS[@]} * RUN))
+	echo $((${#OBJECTS[@]} * ${#SPEC_WINDOW[@]} * ${#MMAP_MV_PAGE_SIZE[@]} * ${#THREADS[@]} * ${#TARGETS[@]} * RUN))
 }
 
 # Load progress if resuming
@@ -133,8 +132,22 @@ run_series() {
 	local csv=$2
 	shift 2
 	local args=("$@")
-	local TARGETS=${target#*_}
 	local ckpt_type=${target#*_}
+
+	local filtered_args=()
+	if [[ "$target" == "highway_mmap_mv" ]]; then
+		for arg in "${args[@]}"; do
+			if [[ "$arg" == MMAP_MV_PAGE_SIZE=* ]]; then
+				local page_size="${arg#*=}"
+				ckpt_type="${ckpt_type}_${page_size}"
+				# Don't add to filtered_args - we're excluding it from CSV params
+			else
+				filtered_args+=("$arg")
+			fi
+		done
+	else
+		filtered_args=("${args[@]}")
+	fi
 
 	log "Compiling $target ${args[*]}"
 
@@ -158,7 +171,8 @@ run_series() {
 
 		if ! output=$($SIM 2>&1); then
 			error "Simulation failed for $target ${args[*]}"
-			echo "$TARGETS,$(format_params "${args[@]}"),ERROR,ERROR,ERROR,ERROR,ERROR" >>"$csv"
+			error "$output"
+			echo "$ckpt_type,$(format_params "${args[@]}"),ERROR,ERROR,ERROR,ERROR,ERROR" >>"$csv"
 			continue
 		fi
 
@@ -168,8 +182,8 @@ run_series() {
 			warn "Failed to parse output for $target ${args[*]}"
 		fi
 
-		params=$(format_params "${args[@]}")
-		echo "$TARGETS,$params,$parsed" >>"$csv"
+		params=$(format_params "${filtered_args[@]}")
+		echo "$ckpt_type,$params,$parsed" >>"$csv"
 
 		# Flush CSV to disk
 		sync "$csv" 2>/dev/null || true
@@ -197,21 +211,17 @@ main() {
 
 	# Initialize CSV if starting fresh
 	if [[ $COMPLETED_EXPERIMENTS -eq 0 ]]; then
-		echo "TARGETS,THREADS,SPEC_WINDOW,OBJECTS,M,P_SHIFT,SPEC_WINDOWS,ROLLBACKS,TOTAL_EVENTS,COMMITTED_EVENTS,FILTERED_EVENTS" >"$CSV_FILE"
+		echo "TARGETS,THREADS,SPEC_WINDOW,OBJECTS,SPEC_WINDOWS,ROLLBACKS,TOTAL_EVENTS,COMMITTED_EVENTS,FILTERED_EVENTS" >"$CSV_FILE"
 		log "Created output file: $CSV_FILE"
 	fi
 
 	local start_time=$(date +%s)
 
 	for o in "${OBJECTS[@]}"; do
-		for m in "${M[@]}"; do
-			for p in "${P_SHIFT[@]}"; do
-				for l in "${SPEC_WINDOW[@]}"; do
-					for t in "${THREADS[@]}"; do
-						for target in "${TARGETS[@]}"; do
-							run_series "$target" "$CSV_FILE" THREADS=$t LOOKAHEAD=$l OBJECTS=$o M=$m P_SHIFT=$p
-						done
-					done
+		for l in "${SPEC_WINDOW[@]}"; do
+			for t in "${THREADS[@]}"; do
+				for target in "${TARGETS[@]}"; do
+					run_series "$target" "$CSV_FILE" THREADS=$t LOOKAHEAD=$l OBJECTS=$o
 				done
 			done
 		done

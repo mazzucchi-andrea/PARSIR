@@ -63,9 +63,18 @@ dkms.conf
 
 clang-format-all.sh
 
+*.csv
+
 bin/*
 
 MVM_CHUNK/temp/*
+MVM_CHUNK/user-defined/translate-to-binary
+
 MVM_GRID_CKPT/temp/*
+MVM_GRID_CKPT/user-defined/translate-to-binary
+
 MVM_GRID_CKPT_SAVE/temp/*
+MVM_GRID_CKPT_SAVE/user-defined/translate-to-binary
+
 MVM_MMAP_MV/temp/*
+MVM_MMAP_MV/user-defined/translate-to-binary
